@@ -20,6 +20,26 @@ repositories {
 }
 
 dependencies {
+    //JPA
+    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+    //Web
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+    //Validation
+    implementation 'org.springframework.boot:spring-boot-starter-validation'
+    //PostgresSQL
+    runtimeOnly 'org.postgresql:postgresql'
+    //actuator
+    implementation 'org.springframework.boot:spring-boot-starter-actuator'
+    //zipkin
+    implementation 'org.springframework.cloud:spring-cloud-starter-sleuth'
+    implementation 'org.springframework.cloud:spring-cloud-starter-zipkin:2.2.3.RELEASE'
+    //prometheus
+    runtimeOnly 'io.micrometer:micrometer-registry-prometheus'
+    //lombok
+    compileOnly 'org.projectlombok:lombok'
+    annotationProcessor 'org.projectlombok:lombok'
+
+    //init
 	implementation 'org.springframework.boot:spring-boot-starter'
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'

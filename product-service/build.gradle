@@ -28,6 +28,8 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-validation'
     //PostgresSQL
     runtimeOnly 'org.postgresql:postgresql'
+    //actuator
+    implementation 'org.springframework.boot:spring-boot-starter-actuator'
     //zipkin
     implementation 'org.springframework.cloud:spring-cloud-starter-sleuth'
     implementation 'org.springframework.cloud:spring-cloud-starter-zipkin:2.2.3.RELEASE'

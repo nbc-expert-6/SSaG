@@ -12,7 +12,7 @@ import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 
 @Entity
-@Table(name = "p_product_analysis", schema = "recommend_service_db")
+@Table(name = "p_product_analysis")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class ProductAnalysis {
 

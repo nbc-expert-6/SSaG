@@ -44,8 +44,6 @@ dependencies {
     // PGVector 타입
     implementation group: 'com.pgvector', name: 'pgvector', version: '0.1.6'
 
-    // Jython
-    implementation 'org.python:jython-slim:2.7.3rc1'
 
     // JUnit Platform Launcher
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'

@@ -1,0 +1,20 @@
+spring:
+  config:
+    activate:
+      on-profile: test
+  cloud:
+    config:
+      enabled: false
+    discovery:
+      enabled: false
+
+---
+spring:
+  config:
+    activate:
+      on-profile: local
+  cloud:
+    config:
+      enabled: false
+    discovery:
+      enabled: false

@@ -5,3 +5,5 @@ spring:
   profiles:
     include:
       - datasource
+server:
+  port: 8081

@@ -6,7 +6,7 @@ from selenium.webdriver.support import expected_conditions as EC
 import time
 from typing import List
 from ..url_parser import UrlParser
-from .config import *
+from ...common.config import *
 
 class AuctionUrlParser(UrlParser):
     def __init__(self, url=TARGET_AUCTION_URL, max_links=MAX_LINKS):

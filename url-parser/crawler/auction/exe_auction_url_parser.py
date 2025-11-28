@@ -1,39 +1,22 @@
-from kafka import KafkaProducer
-from sqlalchemy import create_engine, MetaData, Table, select
+from ...common.database_utils import Database
+from ...common.logging_utils import setup_logger
+from ...common.kafka_utils import create_producer
 from .auction_url_parser import AuctionUrlParser
 from .config import *
-import json
 import logging
 
-# 로깅 설정
-logging.basicConfig(
-    level=logging.INFO,  # INFO 이상 레벨만 출력
-    format="%(asctime)s [%(levelname)s] %(message)s",
-    handlers=[
-        logging.StreamHandler()  # 콘솔 출력
-    ]
-)
+# Logging 설정
+setup_logger()
 
-# DB 연결
-engine = create_engine(DATABASE_URL)
-metadata = MetaData()
+# DB
+db = Database(DATABASE_URL)
+p_main_product = db.load_table("p_main_product", schema="product_service_db")
+# 데이터 조회
+with db.connect() as conn:
+    rows = conn.execute(p_main_product.select()).mappings().all()
 
-p_main_product = Table(
-    "p_main_product",
-    metadata,
-    schema="product_service_db",
-    autoload_with=engine
-)
-
-with engine.connect() as conn:
-    stmt = select(p_main_product.c.id, p_main_product.c.name)
-    rows = conn.execute(stmt).mappings().all()
-
-# Kafka Producer 설정
-producer = KafkaProducer(
-    bootstrap_servers='localhost:9092',
-    value_serializer=lambda v: json.dumps(v).encode('utf-8')
-)
+# Kafka Producer
+producer = create_producer()
 
 # 검색 수행 후 링크 publish
 parser = AuctionUrlParser()

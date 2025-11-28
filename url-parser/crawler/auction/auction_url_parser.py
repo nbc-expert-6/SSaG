@@ -9,7 +9,7 @@ from ..url_parser import UrlParser
 from .config import *
 
 class AuctionUrlParser(UrlParser):
-    def __init__(self, url=TARGET_AUCTION_URL, max_links=TOP_N):
+    def __init__(self, url=TARGET_AUCTION_URL, max_links=MAX_LINKS):
         super().__init__(url, max_links)
 
         options = uc.ChromeOptions()

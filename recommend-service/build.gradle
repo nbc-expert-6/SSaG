@@ -41,6 +41,10 @@ dependencies {
     // PostgreSQL 드라이버
     runtimeOnly 'org.postgresql:postgresql'
 
+    // PGVector 타입
+    implementation group: 'com.pgvector', name: 'pgvector', version: '0.1.6'
+
+
     // JUnit Platform Launcher
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 }
@@ -48,6 +52,7 @@ dependencies {
 dependencyManagement {
 
 }
+
 
 tasks.named('test') {
     useJUnitPlatform()

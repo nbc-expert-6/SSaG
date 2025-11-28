@@ -1,6 +1,6 @@
 spring:
   datasource:
-    url: jdbc:postgresql://localhost:5433/postgres?currentSchema=recommend_service_db
+    url: jdbc:postgresql://localhost:5433/recommend_service_db
     username: postgres
     password: qwer1234!
     driver-class-name: org.postgresql.Driver

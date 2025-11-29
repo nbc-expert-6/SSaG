@@ -71,7 +71,7 @@ public class ProductVectorService {
 
 				double priceScore = 1.0 - priceDiff / Double.parseDouble(targetMeta.get("price").toString());
 
-				score += priceScore;
+				score += priceScore * wPrice;
 
 				return new ScoredProduct(p.getProductId(), score);
 			})

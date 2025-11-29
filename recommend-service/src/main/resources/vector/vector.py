@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import psycopg2  # Python에서 PostgreSQL 데이터베이스 접속
+import uuid
 from gensim.models import Word2Vec  # 벡터 임베딩
 from itertools import groupby  # 연속된 동일 값들을 그룹화할때
 from operator import itemgetter  # 특정 항목을 기준으로 정렬/추출
@@ -9,7 +10,7 @@ from psycopg2.extras import execute_values  # Postgre에 대량 데이터를 효
 conn = psycopg2.connect(
     host="localhost",
     port=5433,
-    dbname="postgres",
+    dbname="recommend_service_db",
     user="postgres",
     password="qwer1234!",
 )
@@ -22,7 +23,7 @@ def test_postgres_connection():
         conn = psycopg2.connect(
             host="localhost",
             port=5433,
-            dbname="postgres",
+            dbname="recommend_service_db",
             user="postgres",
             password="qwer1234!",
         )
@@ -34,9 +35,10 @@ def test_postgres_connection():
             result = cur.fetchone()
             print("Test query result:", result)
 
-            cur.execute("INSERT INTO recommend_service_db.test_entity (id, name) VALUES (1, 'brian');", )
+            cur.execute(
+                "INSERT INTO recommend_service_db.test_entity (id, name) VALUES (1, 'brian');",
+            )
             conn.commit()
-
 
     except Exception as e:
         print("Error connecting to PostgreSQL:", e)
@@ -62,6 +64,24 @@ def load_logs():
     return logs
 
 
+def load_sample_logs():
+    # 샘플 UUID 생성
+    s1 = str(uuid.uuid4())
+    s2 = str(uuid.uuid4())
+    p101 = str(uuid.uuid4())
+    p102 = str(uuid.uuid4())
+    p201 = str(uuid.uuid4())
+    p202 = str(uuid.uuid4())
+
+    logs = [
+        {"session_id": s1, "product_id": p101, "ts": "2025-11-28 10:00:00"},
+        {"session_id": s1, "product_id": p102, "ts": "2025-11-28 10:01:00"},
+        {"session_id": s2, "product_id": p201, "ts": "2025-11-28 10:05:00"},
+        {"session_id": s2, "product_id": p202, "ts": "2025-11-28 10:06:00"},
+    ]
+    return logs
+
+
 # 3) 세션별 클릭 로그를 순서대로 정리해서 상품 시퀀스를 만드는 함수
 def build_sequences(logs):
     # session_id, ts 기준 정렬
@@ -72,20 +92,34 @@ def build_sequences(logs):
         # 너무 짧은 시퀀스는 버릴 수도 있음 (예: 길이 1)
         if len(seq) >= 2:
             sequences.append(seq)
+  
     return sequences
 
 
 # 4) p_product_anaylsis 테이블에 저장
 def save_sequences_to_pg(logs):
     session_map = {}
+
     for log in logs:
-        sid = log["session_id"]
-        session_map.setdefault(sid, []).append(log["product_id"])
+        sid = str(uuid.UUID(log["session_id"]))
+        pid = str(uuid.UUID(log["product_id"]))
+
+        print("sid:", sid, "pid:", pid)
+
+        # UUID가 아닌 값 필터링
+        if not sid or not pid:
+            continue
+
+        session_map.setdefault(sid, []).append(pid)
 
     data = []
     for sid, seq in session_map.items():
         if len(seq) >= 2:
             data.append((sid, seq))
+
+    if not data:
+        print("No valid data to insert")
+        return
 
     with conn.cursor() as cur:
         execute_values(
@@ -97,8 +131,10 @@ def save_sequences_to_pg(logs):
                 SET click_sequence = EXCLUDED.click_sequence
             """,
             data,
+            template="(%s, %s::uuid[])",
         )
     conn.commit()
+    print("Insert to p_product_analysis successful!")
 
 
 # 5) 상품 시퀀스를 모델에 학습하여 각 상품을 벡터로 임베딩하는 함수
@@ -111,6 +147,8 @@ def train_item2vec(sequences):
         sg=1,  # 중심 단어로 단어 예측
         workers=8,  # CPU 코어 수에 맞춰 병렬 처리 가능 -> 학습 속도 향상
     )
+    print("model trained!")
+    print(model)
     return model
 
 
@@ -127,7 +165,7 @@ def save_vectors_to_pg(model):
         execute_values(
             cur,
             """
-            INSERT INTO product_embedding (product_id, embedding)
+            INSERT INTO p_product_vector (product_id, embedding)
             VALUES %s ON CONFLICT (product_id) DO
             UPDATE
                 SET embedding = EXCLUDED.embedding
@@ -135,27 +173,13 @@ def save_vectors_to_pg(model):
             data,
         )
     conn.commit()
+    print("Insert to p_product_vector successful!")
 
 
 # 실행 메인 함수
 if __name__ == "__main__":
-    test_postgres_connection()
-    # 1) 클릭 로그 로드
-    # logs = load_logs()
-    # print(f"loaded logs: {len(logs)} rows")
-
-    # 2) 시퀀스 생성
-    # sequences = build_sequences(logs)
-    # print(f"built sequences: {len(sequences)} sessions")
-
-    # 3) p_product_analysis 테이블에 저장
-    # save_sequences_to_pg(logs)
-    # print("saved click sequences to p_product_analysis")
-
-    # 4) Word2Vec 학습
-    # model = train_item2vec(sequences)
-    # print("Item2Vec trained")
-
-    # 5) 벡터 저장
-    # save_vectors_to_pg(model)
-    # print("vectors saved to PostgreSQL (pgvector)")
+    logs = load_sample_logs()
+    sequences = build_sequences(logs)
+    save_sequences_to_pg(logs)
+    model = train_item2vec(sequences)
+    save_vectors_to_pg(model)

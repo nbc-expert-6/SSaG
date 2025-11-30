@@ -8,25 +8,27 @@ import logging
 # Logging 설정
 setup_logger()
 
-# DB
-db = Database(DATABASE_URL)
-p_main_product = db.load_table("p_main_product", schema="product_service_db")
-# 데이터 조회
-with db.connect() as conn:
-    rows = conn.execute(p_main_product.select()).mappings().all()
+if __name__ == "__main__":
 
-# Kafka Producer
-producer = create_producer()
+    # DB
+    db = Database(DATABASE_URL)
+    p_main_product = db.load_table("p_main_product", schema="product_service_db")
+    # 데이터 조회
+    with db.connect() as conn:
+        rows = conn.execute(p_main_product.select()).mappings().all()
 
-# 검색 수행 후 링크 publish
-parser = AuctionUrlParser()
-for row in rows:
-    product_id = str(row['id'])
-    keyword = row['name']
-    links = parser.get_product_urls(keyword)
-    logging.info(f"{keyword} 검색 완료: {len(links)}개 링크")
-    producer.send('auction_links', {'id': product_id, 'urls': links})
+    # Kafka Producer
+    producer = create_producer()
 
-parser.quit()
-producer.flush()
-producer.close()
+    # 검색 수행 후 링크 publish
+    parser = AuctionUrlParser()
+    for row in rows:
+        product_id = str(row['id'])
+        keyword = row['name']
+        links = parser.get_product_urls(keyword)
+        logging.info(f"{keyword} 검색 완료: {len(links)}개 링크")
+        producer.send('auction_links', {'id': product_id, 'urls': links})
+
+    parser.quit()
+    producer.flush()
+    producer.close()

@@ -90,7 +90,7 @@ class AuctionReviewParser(ReviewParser):
         print(f"\n[get_review_info] 총 {len(all_reviews)}개 리뷰 수집 완료")
         return all_reviews
 
-    # ------------ 내부 메서드 ------------
+    # ------------------------ 내부 메서드 ------------------------
     def _get_total_pages(self) -> int:
         """전체 페이지 개수 파악"""
         try:
@@ -127,7 +127,6 @@ class AuctionReviewParser(ReviewParser):
 
         return True
 
-    # ---------------------------------------
     def _parse_review(self, review) -> dict:
         """리뷰 하나 파싱"""
 

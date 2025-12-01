@@ -27,11 +27,13 @@ class AuctionReviewParser(ReviewParser):
         self.driver = uc.Chrome(options=options)
         self.wait = WebDriverWait(self.driver, 10)
 
+    # 제품 상세 페이지 열기
     def open_product_detail_page(self, url: str):
         logging.info(f"[open_product_detail_page] {url}")
         self.driver.get(url)
         time.sleep(2)
 
+    # 리뷰 탭으로 이동
     def move_to_review(self):
         review_tab = self.wait.until(
             ec.presence_of_element_located((By.CSS_SELECTOR, "a[href*='#vip_tab_comment']"))
@@ -39,7 +41,7 @@ class AuctionReviewParser(ReviewParser):
         self.driver.execute_script("arguments[0].scrollIntoView(true);", review_tab)
         time.sleep(1)
         self.driver.execute_script("arguments[0].click();", review_tab)
-        time.sleep(2)
+        time.sleep(1)
 
         # 리뷰 없음 확인
         if self.driver.find_elements(By.CSS_SELECTOR, ".box__vip-review--none"):
@@ -48,17 +50,20 @@ class AuctionReviewParser(ReviewParser):
         else:
             self.no_review = False
 
+    # 리뷰 내용 파싱
     def get_review_info(self) -> List[dict]:
+        # 리뷰 없는 경우
         if getattr(self, "no_review", False):
             return []
 
         # 리뷰 목록 로딩 대기
         self.wait.until(ec.presence_of_element_located((By.CSS_SELECTOR, "ul.list__review")))
 
+        # 전체 리뷰 페이지 수 확인
         total_pages = self._get_total_pages()
         logging.info(f"[get_review_info] 총 리뷰 페이지 수: {total_pages}")
 
-        # max_pages가 설정한 경우 max_pages => total_page
+        # max_pages가 설정된 경우 max_pages => total_page
         if self.max_pages is not None:
             total_pages = min(total_pages, self.max_pages)
 
@@ -72,11 +77,10 @@ class AuctionReviewParser(ReviewParser):
                 logging.info("[get_review_info] 페이지 이동 실패. 종료")
                 break
 
-            # 리뷰 로딩 대기
+            # 리뷰 로딩
             self.wait.until(
                 ec.presence_of_element_located((By.CSS_SELECTOR, "ul.list__review li.list-item"))
             )
-
             review_elements = self.driver.find_elements(By.CSS_SELECTOR,"ul.list__review > li.list-item")
 
             for r in review_elements:
@@ -87,23 +91,20 @@ class AuctionReviewParser(ReviewParser):
 
             current_page += 1
 
-        print(f"\n[get_review_info] 총 {len(all_reviews)}개 리뷰 수집 완료")
+        logging.info(f"\n[get_review_info] 총 {len(all_reviews)}개 리뷰 수집 완료")
         return all_reviews
 
     # ------------------------ 내부 메서드 ------------------------
+    # 전체 페이지 개수 파악
     def _get_total_pages(self) -> int:
-        """전체 페이지 개수 파악"""
         try:
-            text = self.driver.find_element(
-                By.CSS_SELECTOR,
-                ".box__page-jump span.text__total em.text"
-            ).text
+            text = self.driver.find_element(By.CSS_SELECTOR,".box__page-jump span.text__total em.text").text
             return int(text)
         except NoSuchElementException:
             return 1
 
+    # 특정 페이지로 이동
     def _move_page(self, page: int) -> bool:
-        """특정 페이지로 이동 (페이지 그룹 이동 포함)"""
         selector = f"a.link__page-number[data-page-index='{page}']"
         page_buttons = self.driver.find_elements(By.CSS_SELECTOR, selector)
 
@@ -111,7 +112,7 @@ class AuctionReviewParser(ReviewParser):
             # 페이지 번호 없으면 "다음" 버튼으로 그룹 이동
             next_btn = self.driver.find_elements(By.CSS_SELECTOR, "a.link__page-next")
             if next_btn:
-                print("➡ 다음 페이지 그룹 이동")
+                logging.info("[get_review_info][_move_page] 다음 페이지 그룹 이동")
                 self.driver.execute_script("arguments[0].scrollIntoView(true);", next_btn[0])
                 self.driver.execute_script("arguments[0].click();", next_btn[0])
                 time.sleep(1.5)
@@ -127,11 +128,16 @@ class AuctionReviewParser(ReviewParser):
 
         return True
 
+    # 개별 리뷰 파싱(평점, 내용, 이미지, 작성 날짜)
     def _parse_review(self, review) -> dict:
-        """리뷰 하나 파싱"""
+
+        # 초기값 설정
+        rating = None
+        content = ""
+        images = []
+        date = ""
 
         # 평점
-        rating = None
         try:
             star_fill = review.find_element(By.CSS_SELECTOR, ".image__star-fill")
             style_value = star_fill.get_attribute("style")
@@ -141,7 +147,6 @@ class AuctionReviewParser(ReviewParser):
                 rating = percent // 20
             else:
                 rating = None
-
         except NoSuchElementException:
             rating = None
         except Exception as e:
@@ -158,19 +163,14 @@ class AuctionReviewParser(ReviewParser):
             raise
 
         # 이미지
-        images = []
         try:
-            thumbnails = review.find_elements(
-                By.CSS_SELECTOR,
-                ".box__list-thumbnail ul.list li.list-item a.link"
-            )
+            thumbnails = review.find_elements(By.CSS_SELECTOR, ".box__list-thumbnail ul.list li.list-item a.link")
             for t in thumbnails:
                 style = t.get_attribute("style")
+                # url 추출
                 m = re.search(r'url\(["\']?(.*?)["\']?\)', style)
                 if m:
                     images.append(m.group(1))
-        except NoSuchElementException:
-            images = []
         except Exception as e:
             logging.exception("리뷰 이미지 파싱 오류:", e)
             raise

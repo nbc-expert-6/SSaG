@@ -9,12 +9,15 @@ class AuctionDetailParser(DetailParser):
         options.add_argument("--disable-gpu")
         options.add_argument("--no-sandbox")
         options.add_argument("--disable-dev-shm-usage")
+
         self.driver = uc.Chrome(options=options)
         self.wait = WebDriverWait(self.driver, 10)
 
+    # 제품 상세 페이지 열기
     def open_product_detail_page(self, url: str):
         self.driver.get(url)
 
+    # 제품 상세 정보 수집
     def get_product_info(self) -> dict:
         driver = self.driver
 
@@ -35,6 +38,7 @@ class AuctionDetailParser(DetailParser):
 
         return {
             "image_url": img,
+            "brand": brand,
             "seller_info": seller_info,
             "name": name,
             "price": price,

@@ -1,4 +1,4 @@
-package com.sparta.recommendservice.domain.product_analysis.domain;
+package com.sparta.recommendservice.domain.product_analysis.domain.entity;
 
 import java.util.Collections;
 import java.util.List;

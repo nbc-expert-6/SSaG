@@ -21,7 +21,6 @@ class DetailParser(ABC):
         """
         pass
 
-    @abstractmethod
     def get_product_details(self, url: str) -> dict:
         """
         전체 플로우

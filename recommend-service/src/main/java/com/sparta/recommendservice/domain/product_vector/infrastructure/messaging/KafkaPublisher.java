@@ -24,13 +24,13 @@ public class KafkaPublisher {
 	private final ObjectMapper objectMapper;
 
 	@CircuitBreaker(name = "kafkaPublishCB", fallbackMethod = "fallbackPublishEmbeddingUpdated")
-	public void publishEmbeddingUpdated(UUID productId) {
+	public void publishEmbeddingUpdated(List<UUID> productIds) {
 		try {
-			String message = objectMapper.writeValueAsString(new EmbeddingUpdatedEvent(productId));
+			String message = objectMapper.writeValueAsString(new EmbeddingUpdatedEvent(productIds));
 			kafkaTemplate.send("embedding.updated", message);
-			log.info("Kafka 메시지 전송 성공: embedding.updated -> productId={}", productId);
+			log.info("Kafka 배치 메시지 전송 성공 -> size={}", productIds.size());
 		} catch (JsonProcessingException e) {
-			log.error("Kafka embedding.updated 직렬화 실패: {}", productId, e);
+			log.error("Kafka 직렬화 실패", e);
 		}
 	}
 

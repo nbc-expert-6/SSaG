@@ -1,6 +1,7 @@
 package com.sparta.recommendservice.domain.product_vector.domain.event;
 
+import java.util.List;
 import java.util.UUID;
 
-public record EmbeddingUpdatedEvent(UUID productId) {
+public record EmbeddingUpdatedEvent(List<UUID> productIds) {
 }

@@ -3,6 +3,9 @@ plugins {
     id 'org.springframework.boot' version '3.5.9-SNAPSHOT'
     id 'io.spring.dependency-management' version '1.1.7'
 }
+ext {
+    springCloudVersion = "2025.0.0"
+}
 
 
 group = 'com.sparta'
@@ -33,7 +36,15 @@ dependencies {
     // Lombok
     implementation 'org.projectlombok:lombok'
 
-    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    // kafka
+    implementation 'org.springframework.kafka:spring-kafka'
+
+    // Redis
+    implementation 'org.springframework.boot:spring-boot-starter-data-redis'
+
+    // Circuitbreaker-Resilience4j
+    implementation 'org.springframework.cloud:spring-cloud-starter-circuitbreaker-resilience4j'
+
 
     // DevTools
     developmentOnly 'org.springframework.boot:spring-boot-devtools'
@@ -45,12 +56,16 @@ dependencies {
     implementation group: 'com.pgvector', name: 'pgvector', version: '0.1.6'
 
 
-    // JUnit Platform Launcher
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    testImplementation 'org.springframework.kafka:spring-kafka-test'
 }
 
 dependencyManagement {
 
+    imports {
+        mavenBom "org.springframework.cloud:spring-cloud-dependencies:$springCloudVersion"
+    }
 }
 
 

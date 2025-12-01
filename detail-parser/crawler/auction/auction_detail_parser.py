@@ -1,7 +1,14 @@
 import undetected_chromedriver as uc
+import time
+import logging
+
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from ..detail_parser import DetailParser
+from ...common.logging_utils import setup_logger
+
+# Logging 설정
+setup_logger()
 
 class AuctionDetailParser(DetailParser):
     def __init__(self):
@@ -15,7 +22,9 @@ class AuctionDetailParser(DetailParser):
 
     # 제품 상세 페이지 열기
     def open_product_detail_page(self, url: str):
+        logging.info(f"[open_product_detail_page] {url}")
         self.driver.get(url)
+        time.sleep(2)
 
     # 제품 상세 정보 수집
     def get_product_info(self) -> dict:
@@ -24,7 +33,8 @@ class AuctionDetailParser(DetailParser):
         # 이미지
         img = driver.find_element(By.CSS_SELECTOR, "ul.viewer li.on img").get_attribute('src')
         # 브랜드
-        brand = driver.find_element(By.CSS_SELECTOR, "div.box__official-store span.text__brand span.text").text
+        brand_element = driver.find_elements(By.CSS_SELECTOR, "div.box__official-store span.text__brand span.text")
+        brand = brand_element[0].text if brand_element else ""
         # 판매자 정보
         seller_info = driver.find_element(By.CSS_SELECTOR, "div.box__official-store span.text__seller a.link__seller").text
         # 제품명

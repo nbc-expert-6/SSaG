@@ -3,3 +3,6 @@ undetected-chromedriver
 requests
 beautifulsoup4
 lxml
+sqlalchemy
+psycopg2-binary
+kafka-python

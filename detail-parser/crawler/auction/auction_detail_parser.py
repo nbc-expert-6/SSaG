@@ -20,6 +20,8 @@ class AuctionDetailParser(DetailParser):
 
         # 이미지
         img = driver.find_element(By.CSS_SELECTOR, "ul.viewer li.on img").get_attribute('src')
+        # 브랜드
+        brand = driver.find_element(By.CSS_SELECTOR, "div.box__official-store span.text__brand span.text").text
         # 판매자 정보
         seller_info = driver.find_element(By.CSS_SELECTOR, "div.box__official-store span.text__seller a.link__seller").text
         # 제품명

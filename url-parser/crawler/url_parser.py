@@ -51,7 +51,6 @@ class UrlParser(ABC):
         """
         pass
 
-    @abstractmethod
     def get_product_urls(self, keyword: str) -> List[str]:
         """
         전체 플로우

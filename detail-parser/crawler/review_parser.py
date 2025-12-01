@@ -6,8 +6,7 @@ from typing import List
 # 사이트별로 해당 추상 클래스를 구현
 class ReviewParser(ABC):
 
-    #
-    #리뷰 이미지, 리뷰 평점, 리뷰 제목, 리뷰 내용
+    # 리뷰 이미지, 리뷰 평점, 리뷰 제목, 리뷰 내용
     @abstractmethod
     def open_product_detail_page(self, url: str):
         """
@@ -40,7 +39,6 @@ class ReviewParser(ABC):
         """
         pass
 
-    @abstractmethod
     def get_reviews(self,url: str) -> List[dict]:
         self.open_product_detail_page(url)
         self.move_to_review()

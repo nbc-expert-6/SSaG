@@ -7,6 +7,7 @@ import org.hibernate.annotations.SQLRestriction;
 import org.hibernate.annotations.UuidGenerator;
 
 import com.sparta.productservice.common.entity.BaseEntity;
+import com.sparta.productservice.product.domain.vo.PlatformType;
 import com.sparta.productservice.product.domain.vo.ProductLink;
 import com.sparta.productservice.product.domain.vo.ProductPrice;
 
@@ -54,5 +55,25 @@ public class Product extends BaseEntity {
 		this.name = name;
 		this.productPrice = productPrice;
 		this.productLink = productLink;
+	}
+
+	public PlatformType getPlatformType() {
+		return productLink.getPlatformType();
+	}
+
+	public String getLink() {
+		return productLink.getUrl();
+	}
+
+	public BigDecimal getPrice() {
+		return productPrice.getPrice();
+	}
+
+	public BigDecimal getShippingFee() {
+		return productPrice.getShippingFee();
+	}
+
+	public boolean isFreeShipping() {
+		return productPrice.isFreeShipping();
 	}
 }

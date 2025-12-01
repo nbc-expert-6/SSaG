@@ -5,7 +5,7 @@ import logging
 
 # Kafka Consumer 설정
 consumer = create_consumer(
-    topic='elevenst_product-urls',
+    topic='elevenst-product-urls',
     group_id='elevenst-detail-parser'
 )
 

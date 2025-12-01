@@ -92,7 +92,7 @@ def build_sequences(logs):
         # 너무 짧은 시퀀스는 버릴 수도 있음 (예: 길이 1)
         if len(seq) >= 2:
             sequences.append(seq)
-  
+
     return sequences
 
 
@@ -104,7 +104,7 @@ def save_sequences_to_pg(logs):
         sid = str(uuid.UUID(log["session_id"]))
         pid = str(uuid.UUID(log["product_id"]))
 
-        print("sid:", sid, "pid:", pid)
+        # print("sid:", sid, "pid:", pid)
 
         # UUID가 아닌 값 필터링
         if not sid or not pid:
@@ -171,6 +171,7 @@ def save_vectors_to_pg(model):
                 SET embedding = EXCLUDED.embedding
             """,
             data,
+            template="(%s, %s)"
         )
     conn.commit()
     print("Insert to p_product_vector successful!")

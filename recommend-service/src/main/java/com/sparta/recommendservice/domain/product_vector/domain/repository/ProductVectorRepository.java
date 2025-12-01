@@ -1,5 +1,6 @@
 package com.sparta.recommendservice.domain.product_vector.domain.repository;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -19,5 +20,7 @@ public interface ProductVectorRepository {
 	Optional<ProductVector> findByProductId(UUID productId);
 
 	List<UUID> findAllProductId();
+
+	List<UUID> findUpdatedProductIdsSince(@Param("since") LocalDateTime since);
 
 }

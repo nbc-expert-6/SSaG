@@ -41,15 +41,17 @@ public class RecommendEventConsumer {
 			return; // 변환 실패 시 건너뜀
 		}
 
-		UUID productId = event.productId();
-		log.info("[KafkaListener] embedding.updated 이벤트 수신 -> productId={}", productId);
+		List<UUID> productIds = event.productIds();
+		log.info("배치 이벤트 수신 -> size={}", productIds.size());
 
-		try {
-			// CircuitBreaker 적용
-			processRecommendation(productId);
-		} catch (Exception e) {
-			log.error("[KafkaListener] 추천 처리 실패 -> productId={}", productId, e);
-			// fallback 큐 적재나 알림 처리 가능
+		for (UUID productId : productIds) {
+			try {
+				// CircuitBreaker 적용
+				processRecommendation(productId);
+			} catch (Exception e) {
+				log.error("[KafkaListener] 추천 처리 실패 -> productId={}", productId, e);
+				// fallback 큐 적재나 알림 처리 가능
+			}
 		}
 	}
 
@@ -69,7 +71,8 @@ public class RecommendEventConsumer {
 	}
 
 	public void fallbackEmbeddingUpdated(EmbeddingUpdatedEvent event, Throwable e) {
-		log.error("추천 계산/Redis 저장 실패, event: {}", event.productId(), e);
+		List<UUID> productIds = event.productIds();
+		log.error("[Fallback] 추천 계산 또는 Redis 저장 실패, productIds={}, exception={}", productIds, e);
 		// 재시도 큐 적재, 모니터링, 알림 등
 	}
 

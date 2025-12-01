@@ -1,11 +1,8 @@
 package com.sparta.recommendservice.domain.product_vector.domain.entity;
 
+import java.time.LocalDateTime;
 import java.util.UUID;
 
-import org.hibernate.annotations.JdbcTypeCode;
-import org.hibernate.type.SqlTypes;
-
-import com.fasterxml.jackson.databind.JsonNode;
 import com.pgvector.PGvector;
 import com.sparta.recommendservice.domain.product_vector.domain.convert.PGVectorConverter;
 
@@ -13,9 +10,10 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Convert;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
+import jakarta.persistence.PrePersist;
+import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
 import lombok.AccessLevel;
-import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -33,15 +31,17 @@ public class ProductVector {
 	@Convert(converter = PGVectorConverter.class)
 	private PGvector embedding;
 
-	@Column(name = "metadata", columnDefinition = "jsonb")
-	@JdbcTypeCode(SqlTypes.JSON)
-	private JsonNode metadata;
+	@Column(name = "updated_at", nullable = false)
+	private LocalDateTime updatedAt;
 
-	@Builder
-	public ProductVector(UUID productId, PGvector embedding, JsonNode metadata) {
-		this.productId = productId;
-		this.embedding = embedding;
-		this.metadata = metadata;
+	@PrePersist
+	public void prePersist() {
+		this.updatedAt = LocalDateTime.now();
+	}
+
+	@PreUpdate
+	public void preUpdate() {
+		this.updatedAt = LocalDateTime.now();
 	}
 
 }

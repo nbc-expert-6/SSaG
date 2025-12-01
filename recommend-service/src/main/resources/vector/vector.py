@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import psycopg2  # Python에서 PostgreSQL 데이터베이스 접속
 import uuid
+from datetime import datetime
 from gensim.models import Word2Vec  # 벡터 임베딩
 from itertools import groupby  # 연속된 동일 값들을 그룹화할때
 from operator import itemgetter  # 특정 항목을 기준으로 정렬/추출
@@ -154,24 +155,27 @@ def train_item2vec(sequences):
 
 # 6) 학습된 모델의 상품 벡터를 PostgreSQL에 저장하는 함수
 def save_vectors_to_pg(model):
+    now = datetime.now()
     with conn.cursor() as cur:
         data = []
         for pid in model.wv.index_to_key:
             vec = model.wv[pid].tolist()
             # pgvector는 문자열 '[v1,v2,...]' 형태도 파싱 가능
             vec_str = "[" + ",".join(str(v) for v in vec) + "]"
-            data.append((pid, vec_str))
+
+            data.append((pid, vec_str, now))
         # upsert
         execute_values(
             cur,
             """
-            INSERT INTO p_product_vector (product_id, embedding)
+            INSERT INTO p_product_vector (product_id, embedding, updated_at)
             VALUES %s ON CONFLICT (product_id) DO
             UPDATE
-                SET embedding = EXCLUDED.embedding
+                SET embedding = EXCLUDED.embedding,
+                updated_at = EXCLUDED.updated_at
             """,
             data,
-            template="(%s, %s)"
+            template="(%s, %s, %s)"
         )
     conn.commit()
     print("Insert to p_product_vector successful!")

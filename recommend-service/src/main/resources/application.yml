@@ -6,5 +6,8 @@ spring:
     include:
       - datasource
       - redis
+      - kafka
+      - service
 server:
   port: 8081
+

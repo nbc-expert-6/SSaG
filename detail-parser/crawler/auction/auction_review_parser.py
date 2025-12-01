@@ -175,10 +175,20 @@ class AuctionReviewParser(ReviewParser):
             logging.exception("리뷰 이미지 파싱 오류:", e)
             raise
 
+        # 작성 날짜
+        try:
+            date = review.find_element(By.CSS_SELECTOR, "p.text__date").text
+        except NoSuchElementException:
+            date = ""
+        except Exception as e:
+            logging.exception("리뷰 작성 날짜 파싱 오류:", e)
+            raise
+
         return {
             "rating": rating,
             "content": content,
-            "images": images
+            "images": images,
+            "date": date
         }
 
     def quit(self):

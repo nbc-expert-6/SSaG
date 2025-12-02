@@ -8,7 +8,7 @@ import org.springframework.context.annotation.Configuration;
 public class KafkaTopicConfig {
 
 	@Bean
-	public NewTopic embeddingUpdatedTopic() {
+	public NewTopic clickEventTopic() {
 		return new NewTopic("click.event", 3, (short)1);
 	}
 

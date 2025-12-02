@@ -43,4 +43,12 @@ public class CategoryMedium extends BaseEntity {
 		this.categoryLarge = categoryLarge;
 		this.name = name;
 	}
+
+	public UUID getLargeId() {
+		return categoryLarge.getId();
+	}
+
+	public String getLargeName() {
+		return categoryLarge.getName();
+	}
 }

@@ -14,12 +14,11 @@ public record CategoryMediumResult(
 	LocalDateTime updatedAt
 ) {
 
-	// Entity -> Result 변환
 	public static CategoryMediumResult from(CategoryMedium categoryMedium) {
 		return new CategoryMediumResult(
 			categoryMedium.getId(),
-			categoryMedium.getCategoryLarge().getId(),
-			categoryMedium.getCategoryLarge().getName(),
+			categoryMedium.getLargeId(),
+			categoryMedium.getLargeName(),
 			categoryMedium.getName(),
 			categoryMedium.getCreatedAt(),
 			categoryMedium.getUpdatedAt()

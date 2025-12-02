@@ -4,9 +4,9 @@ import lombok.Getter;
 
 @Getter
 public enum PlatformType {
-	COUPANG("쿠팡");
-	// AUCTION("옥션"),
-	// ELEVEN_ST("11번가");
+	COUPANG("쿠팡"),
+	AUCTION("옥션"),
+	G_MARKET("G마켓");
 
 	private final String description;
 

@@ -1,6 +1,6 @@
 plugins {
 	id 'java'
-	id 'org.springframework.boot' version '3.5.9-SNAPSHOT'
+	id 'org.springframework.boot' version '3.5.7'
 	id 'io.spring.dependency-management' version '1.1.7'
 }
 
@@ -16,7 +16,6 @@ java {
 
 repositories {
 	mavenCentral()
-	maven { url = 'https://repo.spring.io/snapshot' }
 }
 
 dependencies {
@@ -26,6 +25,8 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-web'
     //Validation
     implementation 'org.springframework.boot:spring-boot-starter-validation'
+    // Feign Client
+    implementation 'org.springframework.cloud:spring-cloud-starter-openfeign'
     //PostgresSQL
     runtimeOnly 'org.postgresql:postgresql'
     //actuator
@@ -48,6 +49,16 @@ dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter'
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+}
+
+ext {
+    set('springCloudVersion', "2025.0.0")
+}
+
+dependencyManagement {
+    imports {
+        mavenBom "org.springframework.cloud:spring-cloud-dependencies:${springCloudVersion}"
+    }
 }
 
 tasks.named('test') {

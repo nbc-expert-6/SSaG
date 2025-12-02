@@ -4,7 +4,6 @@ import java.util.List;
 import java.util.UUID;
 
 import com.sparta.productservice.category.app.dto.CategoryLargeResult;
-import com.sparta.productservice.category.domain.entity.CategoryLarge;
 
 public record ListCategoryResponse(
 	List<CategoryLargeDto> categories

@@ -9,3 +9,4 @@ spring:
     include:
       - datasource
       - elasticsearch
+      - serviceurl

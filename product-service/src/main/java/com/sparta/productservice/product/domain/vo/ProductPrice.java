@@ -32,6 +32,9 @@ public class ProductPrice {
 	}
 
 	public boolean isFreeShipping() {
+		if (shippingFee == null) {
+			return true;
+		}
 		return shippingFee.compareTo(BigDecimal.ZERO) == 0;
 	}
 

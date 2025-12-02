@@ -3,10 +3,28 @@ package com.sparta.recommendservice.domain.product_vector.application.service.dt
 import java.math.BigDecimal;
 import java.util.UUID;
 
+import com.sparta.recommendservice.domain.product_vector.infrastructure.external.dto.ProductInfoFeignClientResponse;
+
 public record ProductInfoDto(
 	UUID productId,
 	String brand,
 	UUID categoryMediumId,
-	BigDecimal price
+	BigDecimal price,
+	String name,
+	String imageUrl,
+	String platformType
 ) {
+
+	public static ProductInfoDto from(ProductInfoFeignClientResponse dto) {
+		return new ProductInfoDto(
+			dto.productId(),
+			dto.brand(),
+			dto.categoryMediumId(),
+			dto.price(),
+			dto.name(),
+			dto.imageUrl(),
+			dto.platformType()
+		);
+	}
 }
+

@@ -1,5 +1,6 @@
 package com.sparta.productservice.review.domain.entity;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -53,16 +54,28 @@ public class Review extends BaseEntity {
 	@Column(name = "title", nullable = false, length = 500)
 	private String title;
 
+	@Column(name = "author_name", length = 100)
+	private String authorName;
+
 	@OneToMany(mappedBy = "review", cascade = CascadeType.ALL, orphanRemoval = true)
-	private List<ReviewImage> reviewImages = new ArrayList<>();
+	private List<ReviewImage> images = new ArrayList<>();
 
 	@Builder
 	public Review(ReviewRating rating, String content, UUID mainProductId,
-		PlatformType platformType, String title) {
+		PlatformType platformType, String title, String authorName) {
 		this.rating = rating;
 		this.content = content;
 		this.mainProductId = mainProductId;
 		this.platformType = platformType;
 		this.title = title;
+		this.authorName = authorName;
+	}
+
+	public List<String> getImageUrls() {
+		return images.stream().map(ReviewImage::getImageUrl).toList();
+	}
+
+	public BigDecimal getRating() {
+		return rating.getValue();
 	}
 }

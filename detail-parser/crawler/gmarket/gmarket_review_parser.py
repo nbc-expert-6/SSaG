@@ -5,7 +5,7 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 
-from crawler.common_ts.platform import Platform
+from common.platform import Platform
 
 
 # 지마켓 리뷰 크롤러

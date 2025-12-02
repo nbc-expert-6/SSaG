@@ -1,8 +1,7 @@
-import re
 import time
 import undetected_chromedriver as uc
 
-from crawler.common_ts.platform import Platform
+from common.platform import Platform
 from crawler.detail_parser import DetailParser
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait

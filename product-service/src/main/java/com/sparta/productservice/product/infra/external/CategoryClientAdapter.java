@@ -22,7 +22,7 @@ public class CategoryClientAdapter implements CategoryClient {
 	public CategoryInfo getCategoryByMediumId(UUID id) {
 		ApiResponse<FeignGetCategoryResponse> response = categoryFeignClient.getCategoryByMediumCategoryId(id);
 		if (!response.success()) {
-			log.warn("카 - message: {}", response.message());
+			log.warn("카테고리 상세 조회 실패 - message: {}", response.message());
 			throw new IllegalArgumentException(response.message());
 		}
 		return response.data().toCategoryInfo();

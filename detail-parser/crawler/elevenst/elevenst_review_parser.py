@@ -49,7 +49,7 @@ class ElevenStReviewParser(ReviewParser):
         try:
             num_el = self.driver.find_element(By.CSS_SELECTOR, "#prdReview .text_num")
             total_count = int(num_el.text.strip())
-            logging.info(f"[get_review_info] 전체 리뷰 {total_count}개", total_count)
+            logging.info(f"[get_review_info] 전체 리뷰 {total_count}개")
         except:
             total_count = 0
 
@@ -79,6 +79,13 @@ class ElevenStReviewParser(ReviewParser):
             review_items = self.driver.find_elements(By.CSS_SELECTOR, "li.review_list_element")
 
             for item in review_items[loaded_count:]:
+                # 작성자
+                try:
+                    author_name = item.find_element(By.CSS_SELECTOR, ".c_product_reviewer .name").text.strip()
+                except Exception as e:
+                    logging.exception("리뷰 작성자 파싱 오류:", e)
+                    author_name = ""
+
                 # 평점
                 try:
                     rating = int(item.find_element(By.CSS_SELECTOR, ".grade em").text)
@@ -118,6 +125,7 @@ class ElevenStReviewParser(ReviewParser):
                     logging.exception("리뷰 이미지 파싱 오류:", e)
 
                 results.append({
+                    "author_name": author_name,
                     "title": "",
                     "rating": rating,
                     "created_at": created_at,

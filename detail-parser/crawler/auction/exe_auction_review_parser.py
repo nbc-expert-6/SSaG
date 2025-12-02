@@ -1,6 +1,7 @@
 from .auction_review_parser import AuctionReviewParser
-from ...common.logging_utils import setup_logger
 from ...common.kafka_utils import create_consumer
+from ...common.kafka_utils import create_producer
+from ...common.logging_utils import setup_logger
 import logging
 
 # Kafka Consumer 설정
@@ -8,6 +9,9 @@ consumer = create_consumer(
     topic='auction_links',
     group_id='auction-review-group'
 )
+
+# Kafka Producer 설정
+producer = create_producer()
 
 # Logging 설정
 setup_logger()
@@ -17,25 +21,33 @@ if __name__ == "__main__":
     parser = AuctionReviewParser(max_pages=6)
 
     for url_info in consumer:
-        # url 정보
-        logging.info("url_info: {}".format(url_info.value))
-        product_id = url_info.value['id']
+        # 받은 url 정보
+        logging.info("[auction-product-urls]: {}".format(url_info.value))
+        main_product_id = url_info.value['main_product_id']
         urls = url_info.value['urls']
 
-        # 대표 상품에 대한 리뷰 수집
-        logging.info(f"product_id: {product_id}")
+        # 제품 리뷰 정보 파싱 실행
         for url in urls:
+            product_reviews = {}
             reviews = parser.get_reviews(url)
-            for r in reviews:
-                logging.info(f"review: {r}")
+            product_reviews["main_product_id"] = main_product_id
+            product_reviews["platform"] = "auction"
+            product_reviews["reviews"] = reviews
 
-    # TODO: kafka publish( -> product-service에서 consume)
+            producer.send('product-reviews', product_reviews)
+            logging.info(f"[publish] product-reviews: {product_reviews}")
 
-    # # 동작 테스트용 귤 판매 페이지(리뷰 페이지 수 6768개)
-    # url = "https://itempage3.auction.co.kr/detailview.aspx?ItemNo=A564284718"
-    # reviews = parser.get_reviews(url)
+
+    # # 테스트용
+    # urls = ["https://itempage3.auction.co.kr/DetailView.aspx?itemno=F301578522",
+    #         "https://itempage3.auction.co.kr/detailview.aspx?ItemNo=A564284718"]
+    # for url in urls:
+    #     product_reviews = {}
+    #     reviews = parser.get_reviews(url)
+    #     product_reviews["main_product_id"] = "main_product_id"
+    #     product_reviews["platform"] = "auction"
+    #     product_reviews["reviews"] = reviews
     #
-    # for r in reviews:
-    #     logging.info(f"review: {r}")
+    #     logging.info(f"[publish] product-reviews: {product_reviews}")
 
     parser.quit()

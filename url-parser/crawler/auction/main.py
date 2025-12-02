@@ -1,3 +1,5 @@
+from distutils.command.install import main_key
+
 from ...common.database_utils import Database
 from ...common.logging_utils import setup_logger
 from ...common.kafka_utils import create_producer
@@ -23,11 +25,11 @@ if __name__ == "__main__":
     # 검색 수행 후 링크 publish
     parser = AuctionUrlParser()
     for row in rows:
-        product_id = str(row['id'])
+        main_product_id = str(row['id'])
         keyword = row['name']
-        links = parser.get_product_urls(keyword)
-        logging.info(f"{keyword} 검색 완료: {len(links)}개 링크")
-        producer.send('auction-product-urls', {'id': product_id, 'urls': links})
+        urls = parser.get_product_urls(keyword)
+        logging.info(f"{keyword} 검색 완료: {len(urls)}개 링크")
+        producer.send('auction-product-urls', {'main_product_id': main_product_id, 'urls': urls})
 
     parser.quit()
     producer.flush()

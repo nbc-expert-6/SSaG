@@ -49,6 +49,7 @@ class ElevenStReviewParser(ReviewParser):
         try:
             num_el = self.driver.find_element(By.CSS_SELECTOR, "#prdReview .text_num")
             total_count = int(num_el.text.strip())
+            logging.info(f"[get_review_info] 전체 리뷰 {total_count}개", total_count)
         except:
             total_count = 0
 
@@ -88,19 +89,21 @@ class ElevenStReviewParser(ReviewParser):
                 # 내용
                 try:
                     content = item.find_element(By.CSS_SELECTOR, ".cont_text_wrap p").get_attribute("innerText").strip()
+                except NoSuchElementException:
+                    content = ""
                 except Exception as e:
                     logging.exception("리뷰 내용 파싱 오류:", e)
                     content = ""
 
                 # 작성 날짜
                 try:
-                    date = item.find_element(By.CSS_SELECTOR, ".side .date").text.strip()
+                    created_at = item.find_element(By.CSS_SELECTOR, ".side .date").text.strip()
                 except Exception as e:
                     logging.exception("리뷰 작성 날짜 파싱 오류:", e)
-                    date = ""
+                    created_at = ""
 
                 # 이미지
-                images = []
+                image_urls = []
                 try:
                     thumbs = item.find_elements(By.CSS_SELECTOR, ".c_product_review_thumbnail2 ul.list li button")
                     for btn in thumbs:
@@ -110,15 +113,16 @@ class ElevenStReviewParser(ReviewParser):
                         style = btn.get_attribute("style")
                         m = re.search(r"url\(['\"]?(.*?)['\"]?\)", style)
                         if m:
-                            images.append(m.group(1))
+                            image_urls.append(m.group(1))
                 except Exception as e:
                     logging.exception("리뷰 이미지 파싱 오류:", e)
 
                 results.append({
+                    "title": "",
                     "rating": rating,
-                    "date": date,
+                    "created_at": created_at,
                     "content": content,
-                    "images": images
+                    "image_urls": image_urls
                 })
 
             loaded_count = len(results)

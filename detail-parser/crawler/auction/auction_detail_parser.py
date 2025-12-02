@@ -1,6 +1,7 @@
-import undetected_chromedriver as uc
+import re
 import time
 import logging
+import undetected_chromedriver as uc
 
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
@@ -31,28 +32,38 @@ class AuctionDetailParser(DetailParser):
         driver = self.driver
 
         # 이미지
-        img = driver.find_element(By.CSS_SELECTOR, "ul.viewer li.on img").get_attribute('src')
+        image_url = driver.find_element(By.CSS_SELECTOR, "ul.viewer li.on img").get_attribute('src')
         # 브랜드
         brand_element = driver.find_elements(By.CSS_SELECTOR, "div.box__official-store span.text__brand span.text")
         brand = brand_element[0].text if brand_element else ""
         # 판매자 정보
-        seller_info = driver.find_element(By.CSS_SELECTOR, "div.box__official-store span.text__seller a.link__seller").text
+        seller = driver.find_element(By.CSS_SELECTOR, "div.box__official-store span.text__seller a.link__seller").text
         # 제품명
         name = driver.find_element(By.CSS_SELECTOR, "h1.itemtit").text
         # 가격
-        price = driver.find_element(By.CSS_SELECTOR, "div.price strong.price_real").text.replace("판매가", "").replace("원", "").strip()
+        price_txt = driver.find_element(By.CSS_SELECTOR, "div.price strong.price_real").text.replace("판매가", "").replace("원", "").strip()
+        price = int(price_txt.replace(",", ""))
         # 배송비
         shipping_box = driver.find_element(By.CSS_SELECTOR, "div.box__information-title")
         shipping_texts = shipping_box.find_elements(By.CSS_SELECTOR, "div.box__txt-information > span.text__branch")
-        shipping_fee = shipping_texts[0].text if shipping_texts else ""
+        shipping_fee_txt = shipping_texts[0].text if shipping_texts else ""
+        if "무료" in shipping_fee_txt:
+            shipping_fee = 0
+        else:
+            match = re.search(r"\(([\d,]+)원\)", shipping_fee_txt)
+            if match:
+                amount = match.group(1)  # "3,000"
+                shipping_fee = int(amount.replace(",", ""))
+            else:
+                shipping_fee = None
 
         return {
-            "image_url": img,
             "brand": brand,
-            "seller_info": seller_info,
             "name": name,
+            "seller": seller,
             "price": price,
-            "shipping_fee": shipping_fee
+            "shipping_fee": shipping_fee,
+            "image_url": image_url
         }
 
     def get_product_details(self, url: str) -> dict:

@@ -132,10 +132,20 @@ class AuctionReviewParser(ReviewParser):
     def _parse_review(self, review) -> dict:
 
         # 초기값 설정
+        author_name = ""
         rating = None
         content = ""
         image_urls = []
         created_at = ""
+
+        # 작성자
+        try:
+            author_name = review.find_element(By.CSS_SELECTOR, "p.text__writer").text
+        except NoSuchElementException:
+            author_name = ""
+        except Exception as e:
+            logging.exception("리뷰 작성자 파싱 오류:", e)
+            raise
 
         # 평점
         try:
@@ -185,6 +195,7 @@ class AuctionReviewParser(ReviewParser):
             raise
 
         return {
+            "author_name": author_name,
             "title": "",
             "rating": rating,
             "created_at": created_at,

@@ -1,11 +1,11 @@
-package com.example.analysisservice.domain.product_analysis.infrastructure.messaging;
+package com.sparta.analysisservice.domain.product_analysis.infrastructure.messaging;
 
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Service;
 
-import com.example.analysisservice.domain.product_analysis.domain.entity.ClickEventDocument;
-import com.example.analysisservice.domain.product_analysis.domain.repository.ClickRepository;
-import com.example.analysisservice.domain.product_analysis.infrastructure.dto.ClickEvent;
+import com.sparta.analysisservice.domain.product_analysis.domain.entity.ClickEventDocument;
+import com.sparta.analysisservice.domain.product_analysis.domain.repository.ClickRepository;
+import com.sparta.analysisservice.domain.product_analysis.infrastructure.dto.ClickEvent;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -33,7 +33,7 @@ public class ClickEventConsumer {
 		log.info("Elasticsearch 저장 완료, id={}", doc.getId());
 
 		//Kafka 이벤트 발행
-		
+
 	}
 
 }

@@ -1,4 +1,4 @@
-package com.example.analysisservice.domain.product_analysis.infrastructure.dto;
+package com.sparta.analysisservice.domain.product_analysis.infrastructure.dto;
 
 import java.time.LocalDateTime;
 import java.util.UUID;

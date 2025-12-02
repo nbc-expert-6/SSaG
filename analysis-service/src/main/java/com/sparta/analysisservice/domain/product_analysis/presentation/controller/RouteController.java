@@ -1,4 +1,4 @@
-package com.example.analysisservice.domain.product_analysis.presentation.controller;
+package com.sparta.analysisservice.domain.product_analysis.presentation.controller;
 
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;

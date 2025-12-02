@@ -1,4 +1,4 @@
-package com.example.analysisservice.domain.product_analysis.presentation.dto;
+package com.sparta.analysisservice.domain.product_analysis.presentation.dto;
 
 import java.util.UUID;
 

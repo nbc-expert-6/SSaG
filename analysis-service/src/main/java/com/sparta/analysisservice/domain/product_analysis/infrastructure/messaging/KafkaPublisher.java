@@ -1,4 +1,4 @@
-package com.example.analysisservice.domain.product_analysis.infrastructure.messaging;
+package com.sparta.analysisservice.domain.product_analysis.infrastructure.messaging;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
@@ -6,7 +6,7 @@ import java.util.UUID;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 
-import com.example.analysisservice.domain.product_analysis.infrastructure.dto.ClickEvent;
+import com.sparta.analysisservice.domain.product_analysis.infrastructure.dto.ClickEvent;
 
 import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import lombok.RequiredArgsConstructor;

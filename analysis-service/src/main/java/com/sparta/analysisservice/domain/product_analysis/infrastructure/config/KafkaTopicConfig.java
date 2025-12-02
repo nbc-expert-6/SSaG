@@ -1,4 +1,4 @@
-package com.example.analysisservice.domain.product_analysis.infrastructure.config;
+package com.sparta.analysisservice.domain.product_analysis.infrastructure.config;
 
 import org.apache.kafka.clients.admin.NewTopic;
 import org.springframework.context.annotation.Bean;

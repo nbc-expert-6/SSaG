@@ -1,11 +1,11 @@
-package com.example.analysisservice.domain.product_analysis.application.service;
+package com.sparta.analysisservice.domain.product_analysis.application.service;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
 
 import org.springframework.stereotype.Service;
 
-import com.example.analysisservice.domain.product_analysis.infrastructure.messaging.KafkaPublisher;
+import com.sparta.analysisservice.domain.product_analysis.infrastructure.messaging.KafkaPublisher;
 
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;

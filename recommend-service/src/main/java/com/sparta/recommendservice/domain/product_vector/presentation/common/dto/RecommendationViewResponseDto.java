@@ -3,6 +3,8 @@ package com.sparta.recommendservice.domain.product_vector.presentation.common.dt
 import java.math.BigDecimal;
 import java.util.UUID;
 
+import com.sparta.recommendservice.domain.product_vector.application.service.dto.ProductInfoDto;
+
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -18,4 +20,13 @@ public class RecommendationViewResponseDto {
 	private String imageUrl;
 	private String platformType;
 
+	public static RecommendationViewResponseDto from(UUID productId, ProductInfoDto productInfo) {
+		return new RecommendationViewResponseDto(
+			productId,
+			productInfo.name(),
+			productInfo.price(),
+			productInfo.imageUrl(),
+			productInfo.platformType()
+		);
+	}
 }

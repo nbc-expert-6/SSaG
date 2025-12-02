@@ -3,6 +3,7 @@ package com.sparta.recommendservice.domain.product_vector.application.service;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
@@ -49,17 +50,12 @@ public class ProductVectorService {
 	public ApiResponse<List<RecommendationViewResponseDto>> getRecommendations(UUID productId) {
 		List<UUID> recommends = cacheService.getRecommend(productId);
 
+		if (recommends == null || recommends.isEmpty()) {
+			return ApiResponse.success(Collections.emptyList());
+		}
+
 		List<RecommendationViewResponseDto> result = recommends.stream()
-			.map(rPid -> {
-				ProductInfoDto productInfo = productClient.getProductInfo(rPid);
-				return new RecommendationViewResponseDto(
-					rPid,
-					productInfo.name(),
-					productInfo.price(),
-					productInfo.imageUrl(),
-					productInfo.platformType()
-				);
-			})
+			.map(rPid -> RecommendationViewResponseDto.from(rPid, productClient.getProductInfo(rPid)))
 			.toList();
 
 		return ApiResponse.success(result);

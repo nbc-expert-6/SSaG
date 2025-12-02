@@ -27,7 +27,7 @@ if __name__ == "__main__":
         keyword = row['name']
         links = parser.get_product_urls(keyword)
         logging.info(f"{keyword} 검색 완료: {len(links)}개 링크")
-        producer.send('auction_links', {'id': product_id, 'urls': links})
+        producer.send('auction-product-urls', {'id': product_id, 'urls': links})
 
     parser.quit()
     producer.flush()

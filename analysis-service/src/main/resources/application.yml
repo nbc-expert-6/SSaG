@@ -1,0 +1,10 @@
+spring:
+  application:
+    name: analysis-service
+
+  profiles:
+    include:
+      - kafka
+      - elasticsearch
+server:
+  port: 8082

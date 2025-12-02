@@ -7,10 +7,9 @@ ext {
     springCloudVersion = "2025.0.0"
 }
 
-
-group = 'com.sparta'
+group = 'com.example'
 version = '0.0.1-SNAPSHOT'
-description = 'recommend-service'
+description = 'analysis-service'
 
 java {
     toolchain {
@@ -20,56 +19,46 @@ java {
 
 repositories {
     mavenCentral()
-    maven { url = 'https://repo.spring.io/snapshot' }
 }
 
 dependencies {
-
+    // Spring Boot
     implementation 'org.springframework.boot:spring-boot-starter'
-
-    // Web
     implementation 'org.springframework.boot:spring-boot-starter-web'
 
-    // JPA
+    // Thymeleaf
+    implementation 'org.springframework.boot:spring-boot-starter-thymeleaf'
+
+    // Jpa
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+
+    // Elasticsearch
+    implementation 'org.springframework.boot:spring-boot-starter-data-elasticsearch'
+
+    // Kafka
+    implementation 'org.springframework.kafka:spring-kafka'
+    testImplementation 'org.springframework.kafka:spring-kafka-test'
 
     // Lombok
     implementation 'org.projectlombok:lombok'
     annotationProcessor 'org.projectlombok:lombok'
 
-    // kafka
-    implementation 'org.springframework.kafka:spring-kafka'
-
-    // Redis
-    implementation 'org.springframework.boot:spring-boot-starter-data-redis'
-
-    // Circuitbreaker-Resilience4j
+    // Circuit Breaker
     implementation 'org.springframework.cloud:spring-cloud-starter-circuitbreaker-resilience4j'
-
-    // Feign Client
-    implementation 'org.springframework.cloud:spring-cloud-starter-openfeign'
 
     // DevTools
     developmentOnly 'org.springframework.boot:spring-boot-devtools'
 
-    // PostgreSQL 드라이버
-    runtimeOnly 'org.postgresql:postgresql'
-
-    // PGVector 타입
-    implementation group: 'com.pgvector', name: 'pgvector', version: '0.1.6'
-
-    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+    // Test
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
-    testImplementation 'org.springframework.kafka:spring-kafka-test'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+
 }
-
 dependencyManagement {
-
     imports {
         mavenBom "org.springframework.cloud:spring-cloud-dependencies:$springCloudVersion"
     }
 }
-
 
 tasks.named('test') {
     useJUnitPlatform()

@@ -91,7 +91,7 @@ class AuctionReviewParser(ReviewParser):
 
             current_page += 1
 
-        logging.info(f"\n[get_review_info] 총 {len(all_reviews)}개 리뷰 수집 완료")
+        logging.info(f"[get_review_info] 총 {len(all_reviews)}개 리뷰 수집 완료")
         return all_reviews
 
     # ------------------------ 내부 메서드 ------------------------
@@ -134,8 +134,8 @@ class AuctionReviewParser(ReviewParser):
         # 초기값 설정
         rating = None
         content = ""
-        images = []
-        date = ""
+        image_urls = []
+        created_at = ""
 
         # 평점
         try:
@@ -170,25 +170,26 @@ class AuctionReviewParser(ReviewParser):
                 # url 추출
                 m = re.search(r'url\(["\']?(.*?)["\']?\)', style)
                 if m:
-                    images.append(m.group(1))
+                    image_urls.append(m.group(1))
         except Exception as e:
             logging.exception("리뷰 이미지 파싱 오류:", e)
             raise
 
         # 작성 날짜
         try:
-            date = review.find_element(By.CSS_SELECTOR, "p.text__date").text
+            created_at = review.find_element(By.CSS_SELECTOR, "p.text__date").text
         except NoSuchElementException:
-            date = ""
+            created_at = ""
         except Exception as e:
             logging.exception("리뷰 작성 날짜 파싱 오류:", e)
             raise
 
         return {
+            "title": "",
             "rating": rating,
+            "created_at": created_at,
             "content": content,
-            "images": images,
-            "date": date
+            "image_urls": image_urls,
         }
 
     def quit(self):

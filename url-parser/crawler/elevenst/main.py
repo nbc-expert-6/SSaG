@@ -23,12 +23,12 @@ if __name__ == "__main__":
     # 검색 수행 후 링크 publish
     parser = ElevenStUrlParser()
     for row in rows:
-        product_id = str(row['id'])
+        main_product_id = str(row['id'])
         keyword = row['name']
-        links = parser.get_product_urls(keyword)
-        logging.info(f"{keyword} 검색 완료: {len(links)}개 링크")
-        logging.info(links)
-        producer.send('elevenst-product-urls', {'id': product_id, 'urls': links})
+        urls = parser.get_product_urls(keyword)
+        logging.info(f"{keyword} 검색 완료: {len(urls)}개 링크")
+        logging.info(urls)
+        producer.send('elevenst-product-urls', {'main_product_id': main_product_id, 'urls': links})
 
     parser.quit()
     producer.flush()

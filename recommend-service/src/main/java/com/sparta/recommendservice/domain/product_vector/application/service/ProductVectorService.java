@@ -19,6 +19,8 @@ import com.sparta.recommendservice.domain.product_vector.domain.repository.Produ
 import com.sparta.recommendservice.domain.product_vector.infrastructure.dto.ProductVectorDto;
 import com.sparta.recommendservice.domain.product_vector.infrastructure.dto.ScoredProduct;
 import com.sparta.recommendservice.domain.product_vector.infrastructure.messaging.KafkaPublisher;
+import com.sparta.recommendservice.domain.product_vector.presentation.common.dto.ApiResponse;
+import com.sparta.recommendservice.domain.product_vector.presentation.common.dto.RecommendationViewResponseDto;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -33,6 +35,7 @@ public class ProductVectorService {
 	private final KafkaPublisher kafkaPublisher;
 	private final ProductClient productClient;
 	private final RedisTemplate<String, Object> redisTemplate;
+	private final RecommendCacheService cacheService;
 
 	private static final String LAST_UPDATE_KEY = "product_vector:last_update";
 
@@ -42,6 +45,25 @@ public class ProductVectorService {
 	private static final double W_BRAND = 0.1;
 	private static final double W_CATEGORY = 0.1;
 	private static final int BATCH_SIZE = 500;
+
+	public ApiResponse<List<RecommendationViewResponseDto>> getRecommendations(UUID productId) {
+		List<UUID> recommends = cacheService.getRecommend(productId);
+
+		List<RecommendationViewResponseDto> result = recommends.stream()
+			.map(rPid -> {
+				ProductInfoDto productInfo = productClient.getProductInfo(rPid);
+				return new RecommendationViewResponseDto(
+					rPid,
+					productInfo.name(),
+					productInfo.price(),
+					productInfo.imageUrl(),
+					productInfo.platformType()
+				);
+			})
+			.toList();
+
+		return ApiResponse.success(result);
+	}
 
 	// 매일 자정에 벡터 업데이트 실행
 	@Scheduled(cron = "0 0 0 * * *")
@@ -175,9 +197,12 @@ public class ProductVectorService {
 	private ProductInfoDto getDummyProductInfo(UUID productId) {
 		return new ProductInfoDto(
 			productId,
-			"dummyBrand",
-			UUID.randomUUID(),
-			BigDecimal.valueOf(1000)
+			"dummyBrand",                     // brand
+			UUID.randomUUID(),                // categoryMediumId
+			BigDecimal.valueOf(1000),         // price
+			"dummyProductName",               // name
+			"https://dummyimage.com/200x200", // imageUrl
+			"dummyPlatform"                  // platformType
 		);
 	}
 

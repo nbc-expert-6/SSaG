@@ -7,6 +7,10 @@ public record ProductInfoFeignClientResponse(
 	UUID productId,
 	String brand,
 	UUID categoryMediumId,
-	BigDecimal price
+	BigDecimal price,
+	String name,
+	String imageUrl,
+	String platformType
 ) {
+
 }

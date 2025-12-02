@@ -16,7 +16,6 @@ import com.sparta.productservice.category.app.dto.CategoryMediumResult;
 import com.sparta.productservice.category.present.dto.GetCategoryResponse;
 import com.sparta.productservice.category.present.dto.ListCategoryResponse;
 import com.sparta.productservice.common.dto.ApiResponse;
-import com.sparta.productservice.product.app.dto.GetProductResult;
 
 import lombok.RequiredArgsConstructor;
 

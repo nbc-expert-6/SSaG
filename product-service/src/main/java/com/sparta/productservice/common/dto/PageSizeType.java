@@ -4,6 +4,7 @@ import lombok.Getter;
 
 @Getter
 public enum PageSizeType {
+	SIZE_2(2),
 	SIZE_10(10),
 	SIZE_30(30),
 	SIZE_60(60);

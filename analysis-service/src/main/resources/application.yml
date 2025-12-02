@@ -1,0 +1,10 @@
+spring:
+  application:
+    name: analysis-service
+
+  profiles:
+    include:
+      - datasource
+      - kafka
+server:
+  port: 8082

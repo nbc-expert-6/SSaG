@@ -29,6 +29,7 @@ def fetch_recent_events(batch_size=1000):
         "product.analysis",
         bootstrap_servers="localhost:9092",
         auto_offset_reset="earliest",
+        group_id="my_consumer_group",
         enable_auto_commit=True,
         value_deserializer=lambda m: json.loads(m.decode("utf-8")),
         consumer_timeout_ms=10000
@@ -45,6 +46,9 @@ def fetch_recent_events(batch_size=1000):
             continue
 
         events.append(msg)
+
+        # 새로 가져온 메시지 출력
+        print(f"[NEW MESSAGE] sessionId={msg['sessionId']}, productId={msg['productId']}, clickedAt={msg['clickedAt']}")
 
         # batch_size가 되면 yield
         if len(events) >= batch_size:

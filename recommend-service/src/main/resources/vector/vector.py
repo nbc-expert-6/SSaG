@@ -1,13 +1,17 @@
 # -*- coding: utf-8 -*-
+import json
 import psycopg2  # Python에서 PostgreSQL 데이터베이스 접속
 import uuid
 from datetime import datetime
 from gensim.models import Word2Vec  # 벡터 임베딩
 from itertools import groupby  # 연속된 동일 값들을 그룹화할때
+from kafka import KafkaConsumer
 from operator import itemgetter  # 특정 항목을 기준으로 정렬/추출
 from psycopg2.extras import execute_values  # Postgre에 대량 데이터를 효율적으로 삽입
 
-# 1) DB 연결 설정
+# -----------------------------
+# 1) PostgreSQL 연결 설정
+# -----------------------------
 conn = psycopg2.connect(
     host="localhost",
     port=5433,
@@ -17,143 +21,77 @@ conn = psycopg2.connect(
 )
 
 
-# DB 연결 테스트용 함수
-def test_postgres_connection():
-    """PostgreSQL 연결 테스트 함수"""
-    try:
-        conn = psycopg2.connect(
-            host="localhost",
-            port=5433,
-            dbname="recommend_service_db",
-            user="postgres",
-            password="qwer1234!",
-        )
-        print("PostgreSQL connection successful!")
+# -----------------------------
+# 2) Kafka Consumer 설정
+# -----------------------------
+def fetch_recent_events(batch_size=1000):
+    consumer = KafkaConsumer(
+        "product.analysis",
+        bootstrap_servers="localhost:9092",
+        auto_offset_reset="earliest",
+        enable_auto_commit=True,
+        value_deserializer=lambda m: json.loads(m.decode("utf-8")),
+        consumer_timeout_ms=10000
+    )
 
-        # 간단한 테스트 쿼리 실행
-        with conn.cursor() as cur:
-            cur.execute("SELECT 1;")
-            result = cur.fetchone()
-            print("Test query result:", result)
+    events = []
+    for message in consumer:
+        raw = message.value
 
-            cur.execute(
-                "INSERT INTO recommend_service_db.test_entity (id, name) VALUES (1, 'brian');",
-            )
-            conn.commit()
+        try:
+            msg = json.loads(raw)
+        except Exception as e:
+            print(f"[JSON ERROR] raw={raw}, error={e}")
+            continue
 
-    except Exception as e:
-        print("Error connecting to PostgreSQL:", e)
+        events.append(msg)
 
-    finally:
-        if "conn" in locals() and conn:
-            conn.close()
+        # batch_size가 되면 yield
+        if len(events) >= batch_size:
+            print(f"[BATCH READY] size={len(events)}")
+            yield events
+            events = []  # reset
 
+    # 마지막 남은 데이터도 처리
+    if events:
+        print(f"[FINAL BATCH] size={len(events)}")
+        yield events
 
-# 2) 클릭 이벤트 데이터를 불러와서 Pyhton 리스트로 변환
-# 추후 분석 서버 만들 시 이 부분 수정 가능
-def load_logs():
-    with conn.cursor() as cur:
-        cur.execute(
-            """
-            SELECT session_id, product_id, ts
-            FROM user_product_event
-            WHERE event_type = 'PRODUCT_CLICK'
-            """
-        )
-        rows = cur.fetchall()
-        logs = [{"session_id": r[0], "product_id": r[1], "ts": r[2]} for r in rows]
-    return logs
+    consumer.close()
+    return events
 
 
-def load_sample_logs():
-    # 샘플 UUID 생성
-    s1 = str(uuid.uuid4())
-    s2 = str(uuid.uuid4())
-    p101 = str(uuid.uuid4())
-    p102 = str(uuid.uuid4())
-    p201 = str(uuid.uuid4())
-    p202 = str(uuid.uuid4())
-
-    logs = [
-        {"session_id": s1, "product_id": p101, "ts": "2025-11-28 10:00:00"},
-        {"session_id": s1, "product_id": p102, "ts": "2025-11-28 10:01:00"},
-        {"session_id": s2, "product_id": p201, "ts": "2025-11-28 10:05:00"},
-        {"session_id": s2, "product_id": p202, "ts": "2025-11-28 10:06:00"},
-    ]
-    return logs
-
-
-# 3) 세션별 클릭 로그를 순서대로 정리해서 상품 시퀀스를 만드는 함수
+# -----------------------------
+# 3) 이벤트 로그 → 세션별 클릭 시퀀스 생성
+# -----------------------------
 def build_sequences(logs):
-    # session_id, ts 기준 정렬
-    logs_sorted = sorted(logs, key=itemgetter("session_id", "ts"))
+    print("Sorting logs...")
+
+    logs_sorted = sorted(logs, key=itemgetter("sessionId", "clickedAt"))
+
     sequences = []
-    for user, items in groupby(logs_sorted, key=itemgetter("session_id")):
-        seq = [item["product_id"] for item in items]  # [101,102,103]
-        # 너무 짧은 시퀀스는 버릴 수도 있음 (예: 길이 1)
+    for session_id, items in groupby(logs_sorted, key=itemgetter("sessionId")):
+        seq = [item["productId"] for item in items]
         if len(seq) >= 2:
             sequences.append(seq)
 
     return sequences
 
 
-# 4) p_product_anaylsis 테이블에 저장
-def save_sequences_to_pg(logs):
-    session_map = {}
-
-    for log in logs:
-        sid = str(uuid.UUID(log["session_id"]))
-        pid = str(uuid.UUID(log["product_id"]))
-
-        # print("sid:", sid, "pid:", pid)
-
-        # UUID가 아닌 값 필터링
-        if not sid or not pid:
-            continue
-
-        session_map.setdefault(sid, []).append(pid)
-
-    data = []
-    for sid, seq in session_map.items():
-        if len(seq) >= 2:
-            data.append((sid, seq))
-
-    if not data:
-        print("No valid data to insert")
-        return
-
-    with conn.cursor() as cur:
-        execute_values(
-            cur,
-            """
-            INSERT INTO p_product_analysis (session_id, click_sequence)
-            VALUES %s ON CONFLICT (session_id) DO
-            UPDATE
-                SET click_sequence = EXCLUDED.click_sequence
-            """,
-            data,
-            template="(%s, %s::uuid[])",
-        )
-    conn.commit()
-    print("Insert to p_product_analysis successful!")
-
-
-# 5) 상품 시퀀스를 모델에 학습하여 각 상품을 벡터로 임베딩하는 함수
+# -----------------------------
+# 4) Word2Vec 학습
+# -----------------------------
 def train_item2vec(sequences):
     model = Word2Vec(
-        sentences=sequences,
-        vector_size=128,  # 128차원
-        window=5,  # 앞뒤 상품 5개까지 문맥으로 고려
-        min_count=1,  # 자주 안 나오는 상품도 포함하고 싶으면 1
-        sg=1,  # 중심 단어로 단어 예측
-        workers=8,  # CPU 코어 수에 맞춰 병렬 처리 가능 -> 학습 속도 향상
+        sentences=sequences, vector_size=128, window=5, min_count=1, sg=1, workers=8
     )
-    print("model trained!")
-    print(model)
+    print("Word2Vec model trained!")
     return model
 
 
-# 6) 학습된 모델의 상품 벡터를 PostgreSQL에 저장하는 함수
+# -----------------------------
+# 5) 학습된 벡터를 PostgreSQL에 저장
+# -----------------------------
 def save_vectors_to_pg(model):
     now = datetime.now()
     with conn.cursor() as cur:
@@ -175,16 +113,43 @@ def save_vectors_to_pg(model):
                 updated_at = EXCLUDED.updated_at
             """,
             data,
-            template="(%s, %s, %s)"
+            template="(%s, %s, %s)",
         )
     conn.commit()
     print("Insert to p_product_vector successful!")
 
 
-# 실행 메인 함수
-if __name__ == "__main__":
-    logs = load_sample_logs()
+# -----------------------------
+# 6) 배치 처리 함수
+# -----------------------------
+def process_batch_events(logs):
     sequences = build_sequences(logs)
-    save_sequences_to_pg(logs)
+    if not sequences:
+        print("No valid sequences found")
+        return
+
     model = train_item2vec(sequences)
     save_vectors_to_pg(model)
+
+
+# -----------------------------
+# 7) 메인 실행
+# -----------------------------
+def main():
+    print("Batch Recommendation Vector Processor started!")
+
+    for batch_logs in fetch_recent_events(batch_size=1000):
+        if not batch_logs:
+            print("No events in this batch, skipping.")
+            continue
+
+        process_batch_events(batch_logs)
+
+    print("Batch processing finished!")
+
+
+# -----------------------------
+# 8) 실행
+# -----------------------------
+if __name__ == "__main__":
+    main()

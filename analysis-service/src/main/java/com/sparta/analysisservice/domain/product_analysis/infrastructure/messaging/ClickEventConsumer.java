@@ -3,6 +3,7 @@ package com.sparta.analysisservice.domain.product_analysis.infrastructure.messag
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Service;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.sparta.analysisservice.domain.product_analysis.domain.entity.ClickEventDocument;
 import com.sparta.analysisservice.domain.product_analysis.domain.repository.ClickRepository;
 import com.sparta.analysisservice.domain.product_analysis.infrastructure.dto.ClickEvent;
@@ -19,7 +20,7 @@ public class ClickEventConsumer {
 	private final KafkaPublisher kafkaPublisher;
 
 	@KafkaListener(topics = "click.event", groupId = "click-group")
-	public void consume(ClickEvent event) {
+	public void consume(ClickEvent event) throws JsonProcessingException {
 		log.info("Kafka 메시지 수신: sessionId={}, productId={}", event.sessionId(), event.productId());
 
 		//Elasticsearch 저장
@@ -33,7 +34,11 @@ public class ClickEventConsumer {
 		log.info("Elasticsearch 저장 완료, id={}", doc.getId());
 
 		//Kafka 이벤트 발행
-
+		kafkaPublisher.publishProductAnalysisEvent(
+			event.sessionId(),
+			event.productId(),
+			event.clickedAt()
+		);
 	}
 
 }

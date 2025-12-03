@@ -65,6 +65,7 @@ public class ProductVectorService {
 	@Scheduled(cron = "0 0 0 * * *")
 	public void updateProductVectors() {
 		try {
+			log.info("PythonRunner.run() 호출 시작");
 			pythonRunner.run();
 
 			LocalDateTime lastUpdate = getLastUpdateTime();

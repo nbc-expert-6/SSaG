@@ -31,4 +31,13 @@ public class RecommendationController {
 		return ResponseEntity.status(HttpStatus.OK).body(recommendations);
 	}
 
+	// 파이썬 코드 실행이 스케쥴러에 의해 자정에 실행되기 때문에
+	// 임시용으로 파이썬 코드 강제 실행용 api
+	// TODO : 배포할때는 지우기
+	@GetMapping("/test")
+	public String test() {
+		service.updateProductVectors();
+		return "Test success!";
+	}
+
 }

@@ -28,7 +28,7 @@ if __name__ == "__main__":
         urls = parser.get_product_urls(keyword)
         logging.info(f"{keyword} 검색 완료: {len(urls)}개 링크")
         logging.info(urls)
-        producer.send('elevenst-product-urls', {'main_product_id': main_product_id, 'urls': links})
+        producer.send('elevenst-product-urls', {'main_product_id': main_product_id, 'urls': urls})
 
     parser.quit()
     producer.flush()

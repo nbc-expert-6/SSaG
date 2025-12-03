@@ -1,47 +1,49 @@
 from .auction_detail_parser import AuctionDetailParser
-from .auction_review_parser import AuctionReviewParser
 from ...common.kafka_utils import create_consumer
+from ...common.kafka_utils import create_producer
 from ...common.logging_utils import setup_logger
 import logging
+
+# Kafka Consumer 설정
+consumer = create_consumer(
+    topic='auction_links',
+    group_id='auction-detail-group'
+)
+
+# Kafka Producer 설정
+producer = create_producer()
 
 # Logging 설정
 setup_logger()
 
-def process_product(product_id: str, urls: list):
-    """
-    상품 상세(1개) → 리뷰(n개) 순서로 처리
-    (임시) 최대 6개의 리뷰 페이지 파싱
-    """
-    detail_parser = AuctionDetailParser()
-    review_parser = AuctionReviewParser(max_pages=6)
-
-    for url in urls:
-        # 1) 상세 정보 파싱
-        detail_info = detail_parser.get_product_details(url)
-        logging.info(f"[DETAIL] {product_id} | {detail_info}")
-
-        # TODO: 상세 정보 Kafka Publish -> Product Service
-
-        # 2) 리뷰 파싱
-        reviews = review_parser.get_reviews(url)
-        logging.info(f"[REVIEW] {product_id} | {len(reviews)} reviews")
-
-        # TODO: 리뷰 정보 Kafka Publish -> Product Service
-
-    detail_parser.quit()
-    review_parser.quit()
-
-
 if __name__ == "__main__":
-    consumer = create_consumer(
-        topic="auction_links",
-        group_id="auction-group"
-    )
+    parser = AuctionDetailParser()
 
-    for msg in consumer:
-        logging.info(f"[KAFKA] message: {msg.value}")
+    for url_info in consumer:
+        # 받은 url 정보
+        logging.info("[auction-product-urls]: {}".format(url_info.value))
+        main_product_id = url_info.value['main_product_id']
+        urls = url_info.value['urls']
 
-        product_id = msg.value["id"]
-        urls = msg.value["urls"]
+        # 제품 상세 정보 파싱 실행
+        for url in urls:
+            product_details = parser.get_product_details(url)
+            product_details["main_product_id"] = main_product_id
+            product_details["platform"] = "auction"
+            product_details["sale_link"] = url
 
-        process_product(product_id, urls)
+            producer.send('product-details', product_details)
+            logging.info(f"[publish] product-details: {product_details}")
+
+    # # 테스트용
+    # urls = ["https://itempage3.auction.co.kr/DetailView.aspx?itemno=F301578522",
+    #         "https://itempage3.auction.co.kr/DetailView.aspx?itemno=F366343357"]
+    # for url in urls:
+    #     product_details = parser.get_product_details(url)
+    #     product_details["main_product_id"] = "main_product_id"
+    #     product_details["platform"] = "auction"
+    #     product_details["sale_link"] = url
+    #
+    #     logging.info(f"[publish] product-details: {product_details}")
+
+    parser.quit()

@@ -1,14 +1,18 @@
 package com.sparta.productservice.product.present.dto;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
 import com.sparta.productservice.product.app.dto.GetProductResult;
+import com.sparta.productservice.product.app.service.dto.ReviewInfo;
+import com.sparta.productservice.product.domain.vo.PlatformType;
 
 public record GetProductResponse(
 	MainProductDto mainProduct,
-	PriceComparisonDto priceComparison
+	PriceComparisonDto priceComparison,
+	List<ReviewDto> reviews
 ) {
 	public record MainProductDto(
 		UUID id,
@@ -65,11 +69,11 @@ public record GetProductResponse(
 		Boolean isLowest
 	) {}
 
-	// Result -> Response 변환
 	public static GetProductResponse from(GetProductResult result) {
 		return new GetProductResponse(
 			convertMainProduct(result.mainProduct()),
-			convertPriceComparison(result.priceComparison())
+			convertPriceComparison(result.priceComparison()),
+			result.reviews().stream().map(r -> convertReview(r)).toList()
 		);
 	}
 
@@ -96,6 +100,19 @@ public record GetProductResponse(
 				categoryDto.mediumId().toString(),
 				categoryDto.mediumName()
 			)
+		);
+	}
+
+	private static ReviewDto convertReview(GetProductResult.ReviewDto reviewDto) {
+		return new ReviewDto(
+			reviewDto.id(),
+			reviewDto.title(),
+			reviewDto.content(),
+			reviewDto.rating(),
+			reviewDto.platformType(),
+			reviewDto.images(),
+			reviewDto.authorName(),
+			reviewDto.createdAt()
 		);
 	}
 
@@ -146,5 +163,29 @@ public record GetProductResponse(
 		return fee.compareTo(BigDecimal.ZERO) == 0
 			? "무료배송"
 			: String.format("%,d원", fee.intValue());
+	}
+
+	public record ReviewDto(
+		UUID id,
+		String title,
+		String content,
+		BigDecimal rating,
+		PlatformType platformType,
+		List<String> images,
+		String authorName,
+		LocalDateTime createdAt
+	) {
+		public static GetProductResult.ReviewDto from(ReviewInfo reviewInfo) {
+			return new GetProductResult.ReviewDto(
+				reviewInfo.reviewId(),
+				reviewInfo.title(),
+				reviewInfo.content(),
+				reviewInfo.rating(),
+				reviewInfo.platformType(),
+				reviewInfo.images(),
+				reviewInfo.authorName(),
+				reviewInfo.createdAt()
+			);
+		}
 	}
 }

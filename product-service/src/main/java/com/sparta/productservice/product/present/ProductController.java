@@ -1,6 +1,5 @@
 package com.sparta.productservice.product.present;
 
-import java.util.List;
 import java.util.UUID;
 
 import org.springframework.http.ResponseEntity;
@@ -10,9 +9,6 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.sparta.productservice.category.app.CategoryService;
-import com.sparta.productservice.category.app.dto.CategoryLargeResult;
-import com.sparta.productservice.category.present.dto.ListCategoryResponse;
 import com.sparta.productservice.common.dto.ApiResponse;
 import com.sparta.productservice.product.app.ProductService;
 import com.sparta.productservice.product.app.dto.GetProductResult;

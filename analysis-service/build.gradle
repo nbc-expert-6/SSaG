@@ -24,13 +24,9 @@ repositories {
 dependencies {
     // Spring Boot
     implementation 'org.springframework.boot:spring-boot-starter'
+
+    // Web
     implementation 'org.springframework.boot:spring-boot-starter-web'
-
-    // Thymeleaf
-    implementation 'org.springframework.boot:spring-boot-starter-thymeleaf'
-
-    // Jpa
-    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
 
     // Elasticsearch
     implementation 'org.springframework.boot:spring-boot-starter-data-elasticsearch'
@@ -38,6 +34,9 @@ dependencies {
     // Kafka
     implementation 'org.springframework.kafka:spring-kafka'
     testImplementation 'org.springframework.kafka:spring-kafka-test'
+
+    // Thymeleaf
+    implementation 'org.springframework.boot:spring-boot-starter-thymeleaf'
 
     // Lombok
     implementation 'org.projectlombok:lombok'

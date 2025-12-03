@@ -47,8 +47,9 @@ public class KafkaPublisher {
 	}
 
 	// Fallback Method
-	public void fallbackPublishEmbeddingUpdated(UUID productId, Throwable e) {
-		log.error("Kafka embedding.updated publish failed : {}", productId, e);
+	public void fallbackPublishEmbeddingUpdated(List<UUID> productIds, Throwable e) {
+		log.error("Kafka embedding.updated publish failed -> size={}, error={}",
+			productIds != null ? productIds.size() : 0, e.getMessage(), e);
 		// 알림, 모니터링, 재시도 큐 적재
 	}
 

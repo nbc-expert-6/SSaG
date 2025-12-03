@@ -1,0 +1,8 @@
+repos:
+  - repo: https://github.com/pycqa/isort
+    rev: 5.13.2
+    hooks:
+      - id: isort
+        name: isort (detail-parser, url-parser)
+        # 두 파이썬 프로젝트만 대상으로 제한
+        files: ^(detail-parser|url-parser)

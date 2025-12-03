@@ -1,12 +1,15 @@
+import time
+from typing import List
+
 import undetected_chromedriver as uc
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
-from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
-import time
-from typing import List
-from ..url_parser import UrlParser
-from ...common.config import *
+from selenium.webdriver.support.ui import WebDriverWait
+
+from common.config import *
+from crawler.url_parser import UrlParser
+
 
 class AuctionUrlParser(UrlParser):
     def __init__(self, url=TARGET_AUCTION_URL, max_links=MAX_LINKS):

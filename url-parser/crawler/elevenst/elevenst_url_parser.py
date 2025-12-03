@@ -5,8 +5,8 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 import time
 from typing import List
-from ..url_parser import UrlParser
-from ...common.config import *
+from crawler.url_parser import UrlParser
+from common.config import *
 
 class ElevenStUrlParser(UrlParser):
     def __init__(self, url=TARGET_11ST_URL, max_links=MAX_LINKS):

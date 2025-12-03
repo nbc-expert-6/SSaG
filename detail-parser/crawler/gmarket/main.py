@@ -6,7 +6,7 @@ import logging
 
 # Kafka Consumer 설정
 consumer = create_consumer(
-    topic='gmarket_links',
+    topic='gmarket-product-urls',
     group_id='gmarket-detail-group'
 )
 

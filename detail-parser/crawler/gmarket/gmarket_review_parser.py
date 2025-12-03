@@ -8,13 +8,17 @@ from selenium.webdriver.support import expected_conditions as EC
 from common.platform import Platform
 
 
-# 지마켓 리뷰 크롤러
-# 상품평이 없으면 종료
-# 프리미엄 상품평 먼저, 일반 상품평은 그 이후 파싱
-# 페이지 버튼이 아닌 드롭다운 메뉴로 페이지를 1씩 증가시켜가며 파싱
+"""
+지마켓 리뷰 크롤러
+상품평이 없으면 종료
+프리미엄 상품평 먼저, 일반 상품평은 그 이후 파싱
+페이지 버튼이 아닌 드롭다운 메뉴로 페이지를 1씩 증가시켜가며 파싱
+"""
 class GmarketReviewParser:
 
-    # 브라우저 세팅
+    """
+    브라우저 세팅
+    """
     def __init__(self, image_save_dir: str = "review_images"):
         options = uc.ChromeOptions()
         options.add_argument("--disable-gpu")
@@ -28,7 +32,9 @@ class GmarketReviewParser:
         self.driver.get(url)
         time.sleep(1)
 
-    # 프리미엄 상품평이 비어있는지 확인 (비어있으면 스킵)
+    """
+    프리미엄 상품평이 비어있는지 확인 (비어있으면 스킵)
+    """
     def _has_premium_reviews(self) -> bool:
         try:
             empty = self.driver.find_elements(
@@ -38,8 +44,9 @@ class GmarketReviewParser:
             return len(empty) == 0
         except:
             return True
-
-    # 일반 상품평이 비어있는지 확인 (비어있으면 스킵)
+    """
+    일반 상품평이 비어있는지 확인 (비어있으면 스킵)
+    """
     def _has_normal_reviews(self) -> bool:
         try:
             empty = self.driver.find_elements(
@@ -50,7 +57,9 @@ class GmarketReviewParser:
         except:
             return True
 
-    # 리뷰 탭으로 이동, 이동 전에 리뷰 숫자 확인 후 0이면 파싱 종료
+    """
+    리뷰 탭으로 이동, 이동 전에 리뷰 숫자 확인 후 0이면 파싱 종료
+    """
     def move_to_review(self) -> bool:
         try:
             # 리뷰 개수 먼저 확인
@@ -74,10 +83,12 @@ class GmarketReviewParser:
             print("[WARN] 리뷰 탭 이동 실패:", e)
             return False
 
-    # 프리미엄 상품평과 일반 상품평의 드롭다운 박스를 구별할 수 있는 셀렉터를 인자로 넘겨줌
-    # 드롭다운 박스에는 전체 페이지가 li로 들어있는데 이 숫자를 세서 전체 페이지 정보를 넘겨주는 유틸 함수
+    """
+    프리미엄 상품평과 일반 상품평의 드롭다운 박스를 구별할 수 있는 셀렉터를 인자로 넘겨줌
+    드롭다운 박스에는 전체 페이지가 li로 들어있는데 이 숫자를 세서 전체 페이지 정보를 넘겨주는 유틸 함수
+    """
     def _get_page_numbers_from_dropdown(self, dropdown_btn_selector: str) -> List[int]:
-        """ 리뷰 페이지 드롭다운 버튼 클릭 후 페이지 번호 리스트 추출 """
+        # 리뷰 페이지 드롭다운 버튼 클릭 후 페이지 번호 리스트 추출
         try:
             btns = self.driver.find_elements(By.CSS_SELECTOR, dropdown_btn_selector)
             if not btns:
@@ -103,10 +114,12 @@ class GmarketReviewParser:
             print("[WARN] 페이지 목록 찾기 실패:", e)
             return []
 
-    # 지마켓은 개별 리뷰의 평점은 없고 전체 평점만 계산해서 표시
-    # 개별 리뷰의 평점을 전체 평점으로 세팅하기 위해 전체 평점 파싱
+    """
+    지마켓은 개별 리뷰의 평점은 없고 전체 평점만 계산해서 표시
+    개별 리뷰의 평점을 전체 평점으로 세팅하기 위해 전체 평점 파싱
+    """
     def _get_product_rating(self) -> Optional[float]:
-        """상품 전체 평점 추출"""
+        # 상품 전체 평점 추출
         try:
             rating_elem = self.driver.find_element(
                 By.CSS_SELECTOR, "div.box__score-awards span.text__score"
@@ -121,7 +134,9 @@ class GmarketReviewParser:
             print(f"[WARN] 평점 추출 실패: {e}")
             return None
 
-    # 현재 페이지의 프리미엄 상품평을 파싱
+    """
+    현재 페이지의 프리미엄 상품평을 파싱
+    """
     def _parse_premium_table(self, rating: Optional[float] = None) -> List[dict]:
         results = []
         rows = self.driver.find_elements(By.CSS_SELECTOR, "table.tb_comment.tb_premium tbody tr")
@@ -177,7 +192,9 @@ class GmarketReviewParser:
                 continue
         return results
 
-    # 현재 페이지의 일반 상품평을 파싱
+    """
+    현재 페이지의 일반 상품평을 파싱
+    """
     def _parse_normal_table(self, rating: Optional[float] = None) -> List[dict]:
         results = []
         rows = self.driver.find_elements(By.CSS_SELECTOR, "table.tb_comment.tb_comment_common tbody tr")
@@ -223,8 +240,10 @@ class GmarketReviewParser:
                 continue
         return results
 
-    # 프리미엄 상품평 파싱 유즈케이스
-    # 페이지를 순회하면서 해당 페이지의 상품평을 파싱
+    """
+    프리미엄 상품평 파싱 유즈케이스
+    페이지를 순회하면서 해당 페이지의 상품평을 파싱
+    """
     def crawl_premium_reviews(self, rating: Optional[float] = None) -> List[dict]:
         # 프리미엄 테이블 비어있으면 바로 종료
         if not self._has_premium_reviews():
@@ -266,8 +285,10 @@ class GmarketReviewParser:
 
         return results
 
-    # 일반 상품평 파싱 유즈케이스
-    # 페이지를 순회하면서 해당 페이지의 상품평을 파싱
+    """
+    일반 상품평 파싱 유즈케이스
+    페이지를 순회하면서 해당 페이지의 상품평을 파싱
+    """
     def crawl_normal_reviews(self, rating: Optional[float] = None) -> List[dict]:
         if not self._has_normal_reviews():
             print("[INFO] 일반 리뷰가 존재하지 않음")
@@ -323,9 +344,11 @@ class GmarketReviewParser:
 
         return results
 
-    # 전체 유즈케이스
-    # 외부 호출용
-    # 프리미엄 상품평과 일반 상품평을 따로 파싱후 하나로 합쳐 응답
+    """
+    전체 유즈케이스
+    외부 호출용
+    프리미엄 상품평과 일반 상품평을 따로 파싱후 하나로 합쳐 응답
+    """
     def get_reviews(self, url: str) -> List[dict]:
         self.open_product_detail_page(url)
         if not self.move_to_review():

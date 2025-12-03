@@ -1,16 +1,12 @@
-import os
+import common.platform
 import time
-import requests
 import undetected_chromedriver as uc
 from crawler.detail_parser import DetailParser
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 
 class CoupangDetailParser(DetailParser):
-    def __init__(self, image_save_dir="images"):
-        """
-        :param image_save_dir: 이미지 저장 경로
-        """
+    def __init__(self):
         # 드라이버 옵션
         options = uc.ChromeOptions()
         options.add_argument("--disable-gpu")
@@ -21,10 +17,6 @@ class CoupangDetailParser(DetailParser):
         self.driver = uc.Chrome(options=options)
         self.wait = WebDriverWait(self.driver, 10)
 
-        # 이미지 저장 디렉토리
-        self.image_save_dir = image_save_dir
-        os.makedirs(image_save_dir, exist_ok=True)
-
     def open_product_detail_page(self, url: str):
         print(f"[INFO] 상품 페이지 오픈: {url}")
         self.driver.get(url)
@@ -33,11 +25,13 @@ class CoupangDetailParser(DetailParser):
     def get_product_info(self) -> dict:
         info = {}
 
+        # 판매링크와 플랫폼 세팅
+        info["sale_link"] = self.driver.current_url
+        info["platform"] = common.platform.Platform.COUPANG.value
         # 브랜드
         try:
             brand_elem = self.driver.find_element(By.CSS_SELECTOR, "div.twc-text-sm.twc-text-blue-600")
             info["brand"] = brand_elem.text.strip()
-            print(f"[INFO] 브랜드: {info['brand']}")
         except:
             info["brand"] = None
             print("[WARN] 브랜드 정보를 찾을 수 없음")
@@ -46,7 +40,6 @@ class CoupangDetailParser(DetailParser):
         try:
             title_elem = self.driver.find_element(By.CSS_SELECTOR, "h1.product-title span")
             info["name"] = title_elem.text.strip()
-            print(f"[INFO] 상품명: {info['name']}")
         except:
             info["name"] = None
             print("[WARN] 상품명을 찾을 수 없음")
@@ -64,7 +57,6 @@ class CoupangDetailParser(DetailParser):
             numeric_price = int(re.sub(r"[^0-9]", "", raw_price))
 
             info["price"] = numeric_price
-            print(f"[INFO] 가격: {info['price']}")
         except Exception as e:
             info["price"] = None
             print(f"[WARN] 가격 정보를 찾을 수 없음: {e}")
@@ -79,8 +71,7 @@ class CoupangDetailParser(DetailParser):
                 "span.extreme-prominence-shipping-fee-txt"
             )
             if free_shipping:
-                info["delivery_fee"] = 0
-                print(f"[INFO] 배송비: {info['delivery_fee']}")
+                info["shipping_fee"] = 0
             else:
                 # 배송비 금액
                 fee_elem = self.driver.find_elements(
@@ -91,13 +82,12 @@ class CoupangDetailParser(DetailParser):
                     raw_fee = fee_elem[0].text.strip()  # e.g. "15,000원"
                     # 숫자만 추출
                     numeric_fee = int(re.sub(r"[^0-9]", "", raw_fee))
-                    info["delivery_fee"] = numeric_fee
-                    print(f"[INFO] 배송비: {info['delivery_fee']}")
+                    info["shipping_fee"] = numeric_fee
                 else:
-                    info["delivery_fee"] = None
+                    info["shipping_fee"] = None
                     print("[WARN] 배송비 정보를 찾을 수 없음")
         except Exception as e:
-            info["delivery_fee"] = None
+            info["shipping_fee"] = None
             print(f"[WARN] 배송비 파싱 중 오류 발생: {e}")
 
         # 판매자 이름
@@ -114,7 +104,6 @@ class CoupangDetailParser(DetailParser):
             )
 
             info['seller'] = seller_name
-            print(f"[INFO] 판매자: {info['seller']}")
         except Exception as e:
             info["seller"] = None
             print(f"[WARN] 판매자 정보를 찾을 수 없음: {e}")
@@ -123,29 +112,16 @@ class CoupangDetailParser(DetailParser):
         try:
             img_elem = self.driver.find_element(By.CSS_SELECTOR, "div.twc-relative img")
             img_url = img_elem.get_attribute("src")
-            info["image_url"] = img_url
-            print(f"[INFO] 이미지 URL: {img_url}")
 
-            # 이미지 다운로드
             if img_url.startswith("//"):
                 img_url = "https:" + img_url
-            img_name = img_url.split("/")[-1]
-            img_path = os.path.join(self.image_save_dir, img_name)
-            r = requests.get(img_url, stream=True)
-            if r.status_code == 200:
-                with open(img_path, "wb") as f:
-                    for chunk in r.iter_content(1024):
-                        f.write(chunk)
-                info["image_file"] = img_path
-                print(f"[INFO] 이미지 다운로드 완료: {img_path}")
-            else:
-                info["image_file"] = None
-                print("[WARN] 이미지 다운로드 실패")
+
+            info["image_url"] = img_url
         except:
             info["image_url"] = None
-            info["image_file"] = None
             print("[WARN] 이미지 정보를 찾을 수 없음")
 
+        print(info)
         return info
 
     def get_product_details(self, url: str) -> dict:

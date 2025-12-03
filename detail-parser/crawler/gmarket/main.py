@@ -1,15 +1,15 @@
 from common.kafka_utils import create_consumer
 from common.logging_utils import setup_logger
 import logging
+from crawler.gmarket.gmarket_detail_parser import GmarketDetailParser
+from crawler.gmarket.gmarket_review_parser import GmarketReviewParser
 
-from crawler.coupang.coupang_detail_parser import CoupangDetailParser
-from crawler.coupang.coupang_review_parser import CoupangReviewParser
 
 setup_logger()
 
 def process_product(product_id: str, urls: list):
-    detail_parser = CoupangDetailParser()
-    review_parser = CoupangReviewParser()
+    detail_parser = GmarketDetailParser()
+    review_parser = GmarketReviewParser()
 
     for url in urls:
         detail_info = detail_parser.get_product_details(url)
@@ -23,14 +23,14 @@ def process_product(product_id: str, urls: list):
 
 if __name__ == "__main__":
     consumer = create_consumer(
-        topic="coupang_product_urls",
-        group_id="coupang-group"
+        topic="gmarket-product-urls",
+        group_id="gmarket-group"
     )
 
     for msg in consumer:
         logging.info(f"[KAFKA] message: {msg.value}")
 
-        product_id = msg.value["id"]
+        product_id = msg.value["main_product_id"]
         urls = msg.value["urls"]
 
         process_product(product_id, urls)

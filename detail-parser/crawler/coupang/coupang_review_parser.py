@@ -4,12 +4,16 @@ import undetected_chromedriver as uc
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
+
+import common.platform
 from crawler.review_parser import ReviewParser
 
 
-# 쿠팡 리뷰 크롤러
-# 제품 상세 링크 전달 시 자동으로 페이지 끝까지 리뷰 파싱
-# list[dict] 형태로 리뷰 목록을 응답
+"""
+쿠팡 리뷰 크롤러
+제품 상세 링크 전달 시 자동으로 페이지 끝까지 리뷰 파싱
+list[dict] 형태로 리뷰 목록을 응답
+"""
 class CoupangReviewParser(ReviewParser):
 
     # 생성자
@@ -25,13 +29,17 @@ class CoupangReviewParser(ReviewParser):
         self.image_save_dir = image_save_dir
         os.makedirs(image_save_dir, exist_ok=True)
 
-    # 상품상세 페이지를 받아 브라우저로 오픈
+    """
+    상품상세 페이지를 받아 브라우저로 오픈
+    """
     def open_product_detail_page(self, url: str):
         self.driver.get(url)
         time.sleep(3)
 
-    # 상세정보 페이지의 리뷰 탭으로 이동 (요소 클릭 기반)
-    # 리뷰가 0개면 탐색 종료
+    """
+    상세정보 페이지의 리뷰 탭으로 이동 (요소 클릭 기반)
+    리뷰가 0개면 탐색 종료
+    """
     def move_to_review(self):
         try:
             review_tab = self.driver.find_element(By.XPATH, "//a[contains(text(),'상품평')]")
@@ -49,8 +57,10 @@ class CoupangReviewParser(ReviewParser):
             self.has_review = False
             print(f"[WARN] 리뷰 탭을 찾을 수 없음: {e}")
 
-    # 현재 리뷰 페이징블록 정보를 로드 (시작 페이지, 끝 페이지, 햔재 페이지)
-    # 현재 페이지가 페이징블록(10단위) 끝에 도달할 때 까지 다음 페이지 버튼 클릭
+    """
+    현재 리뷰 페이징블록 정보를 로드 (시작 페이지, 끝 페이지, 햔재 페이지)
+    현재 페이지가 페이징블록(10단위) 끝에 도달할 때 까지 다음 페이지 버튼 클릭
+    """
     def click_next_page(self):
         try:
             paging_div = self.driver.find_element(By.XPATH, "//div[@data-page][@data-start][@data-end]")
@@ -71,8 +81,10 @@ class CoupangReviewParser(ReviewParser):
             print(f"[WARN] 다음 페이지 이동 실패: {e}")
             return False
 
-    # 현재 페이지가 블록의 끝에 도달하면 다음 페이징 블록으로 이동
-    # 그냥 클릭하면 현재 페이지 + 10으로 동작하기 때문에 클릭 전에 현재 페이지의 첫 페이지로 이동 후 클릭
+    """
+    현재 페이지가 블록의 끝에 도달하면 다음 페이징 블록으로 이동
+    그냥 클릭하면 현재 페이지 + 10으로 동작하기 때문에 클릭 전에 현재 페이지의 첫 페이지로 이동 후 클릭
+    """
     def click_next_block(self):
         try:
             # 페이징 블록 가져오기
@@ -118,9 +130,11 @@ class CoupangReviewParser(ReviewParser):
             print(f"[WARN] 다음 블록 이동 중 오류 발생: {e}")
             return False
 
-    # 리뷰에서 제목, 내용, 생성일, 평점, 이미지를 파싱
-    # 현재 페이지에 존재하는 모든 리뷰를 파싱
-    # 페이지가 바뀔 때마다 동작
+    """
+    리뷰에서 제목, 내용, 생성일, 평점, 이미지를 파싱
+    현재 페이지에 존재하는 모든 리뷰를 파싱
+    페이지가 바뀔 때마다 동작
+    """
     def get_review_info(self):
         if not getattr(self, "has_review", False):
             return []
@@ -140,6 +154,7 @@ class CoupangReviewParser(ReviewParser):
             self.driver.execute_script("arguments[0].scrollIntoView({block: 'center'});", article)
 
             review_data = {}
+            review_data["platform"] = common.platform.Platform.COUPANG.value
 
             # 제목 파싱
             try:
@@ -148,6 +163,16 @@ class CoupangReviewParser(ReviewParser):
                 ).text.strip()
             except:
                 review_data["title"] = None
+
+            # 작성자명 파싱
+            try:
+                author_elem = article.find_element(
+                    By.XPATH,
+                    ".//div[contains(@class,'twc-flex twc-items-center')]//span[@data-member-id]"
+                )
+                review_data["author_name"] = author_elem.text.strip()
+            except:
+                review_data["author_name"] = None
 
             # 내용 파싱
             try:
@@ -159,12 +184,12 @@ class CoupangReviewParser(ReviewParser):
 
             # 생성일 파싱
             try:
-                review_data["createdAt"] = article.find_element(
+                review_data["created_at"] = article.find_element(
                     By.XPATH,
                     ".//div[contains(@class,'twc-items-center')]//div[contains(@class,'twc-text-bluegray-700')]"
                 ).text.strip()
             except:
-                review_data["createdAt"] = None
+                review_data["created_at"] = None
 
             # 평점 파싱
             try:
@@ -185,17 +210,19 @@ class CoupangReviewParser(ReviewParser):
                         img_url = "https:" + img_url
                     if img_url:
                         img_urls.append(img_url)
-                review_data["images"] = img_urls
+                review_data["image_urls"] = img_urls
             except:
-                review_data["images"] = []
+                review_data["image_urls"] = []
 
             reviews.append(review_data)
 
         return reviews
 
 
-    # 전체 페이지를 순회하며 해당 페이지에 있는 리뷰를 전부 파싱
-    # 1차 유즈케이스 조합
+    """
+    전체 페이지를 순회하며 해당 페이지에 있는 리뷰를 전부 파싱
+    1차 유즈케이스 조합
+    """
     def crawl_all_review_pages(self):
         all_reviews = []
 
@@ -215,7 +242,9 @@ class CoupangReviewParser(ReviewParser):
         print(f"[INFO] 전체 리뷰 총 {len(all_reviews)}개")
         return all_reviews
 
-    # 전체 유즈케이스 조합
+    """
+    전체 유즈케이스 조합
+    """
     def get_reviews(self, link):
         print(f"[INFO] 리뷰 수집 시작: {link}")
 

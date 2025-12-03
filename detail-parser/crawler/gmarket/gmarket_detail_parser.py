@@ -30,6 +30,7 @@ class GmarketDetailParser(DetailParser):
     def get_product_info(self) -> dict:
         info = {}
 
+
         # 브랜드
         try:
             brand_elem = self.wait.until(EC.presence_of_element_located(

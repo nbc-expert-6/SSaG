@@ -5,12 +5,4 @@ repos:
       - id: isort
         name: isort (detail-parser, url-parser)
         # 두 파이썬 프로젝트만 대상으로 제한
-        files: ^(detail-parser|url-parser)/
-        args:
-          [
-            "--profile=black",
-            "--known-first-party=crawler",
-            "--known-first-party=common",
-            "--force-sort-within-sections",
-            "--force-alphabetical-sort"
-          ]
+        files: ^(detail-parser|url-parser)

@@ -21,7 +21,7 @@ if __name__ == "__main__":
 
     for url_info in consumer:
         # 받은 url 정보
-        logging.info("[auction-product-urls]: {}".format(url_info.value))
+        logging.info("[coupang-product-urls]: {}".format(url_info.value))
         main_product_id = url_info.value['main_product_id']
         urls = url_info.value['urls']
 

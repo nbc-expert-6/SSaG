@@ -76,4 +76,8 @@ public class Product extends BaseEntity {
 	public boolean isFreeShipping() {
 		return productPrice.isFreeShipping();
 	}
+
+	protected void updateMainProduct(MainProduct mainProduct) {
+		this.mainProduct = mainProduct;
+	}
 }

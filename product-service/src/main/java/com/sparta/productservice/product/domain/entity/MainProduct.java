@@ -3,20 +3,16 @@ package com.sparta.productservice.product.domain.entity;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.NoSuchElementException;
 import java.util.UUID;
 
 import org.hibernate.annotations.SQLRestriction;
 import org.hibernate.annotations.UuidGenerator;
 
 import com.sparta.productservice.common.entity.BaseEntity;
-import com.sparta.productservice.product.domain.vo.PlatformType;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
@@ -62,5 +58,10 @@ public class MainProduct extends BaseEntity {
 		this.lowestPrice = lowestPrice;
 		this.imageUrl = imageUrl;
 		this.brand = brand;
+	}
+
+	public void addProduct(Product product) {
+		this.products.add(product);
+		product.updateMainProduct(this);
 	}
 }

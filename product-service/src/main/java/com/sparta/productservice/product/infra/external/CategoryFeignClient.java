@@ -7,7 +7,6 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 
 import com.sparta.productservice.common.dto.ApiResponse;
-import com.sparta.productservice.product.app.service.dto.CategoryInfo;
 import com.sparta.productservice.product.infra.external.dto.FeignGetCategoryResponse;
 
 @FeignClient(

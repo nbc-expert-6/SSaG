@@ -1,0 +1,36 @@
+spring:
+  config:
+    activate:
+      on-profile: test
+  kafka:
+    consumer:
+      bootstrap-servers: localhost:9092
+      group-id: product
+      auto-offset-reset: earliest
+      enable-auto-commit: false
+      properties:
+        spring.json.trusted.packages: "com.sparta.productservice.product.*"
+        spring.json.use.type.headers: false
+
+    listener:
+      ack-mode: manual
+      concurrency: 3
+---
+
+spring:
+  config:
+    activate:
+      on-profile: local
+  kafka:
+    consumer:
+      bootstrap-servers: localhost:9092
+      group-id: product
+      auto-offset-reset: earliest
+      properties:
+        spring.json.trusted.packages: "*"
+        spring.json.use.type.headers: false
+      enable-auto-commit: false
+
+    listener:
+      ack-mode: manual
+      concurrency: 3

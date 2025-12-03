@@ -1,6 +1,7 @@
 package com.sparta.productservice.product.app.dto;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
@@ -9,15 +10,17 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import com.sparta.productservice.product.app.service.dto.CategoryInfo;
+import com.sparta.productservice.product.app.service.dto.ReviewInfo;
 import com.sparta.productservice.product.domain.entity.MainProduct;
 import com.sparta.productservice.product.domain.entity.Product;
 import com.sparta.productservice.product.domain.vo.PlatformType;
 
 public record GetProductResult(
 	MainProductDto mainProduct,
-	PriceComparisonDto priceComparison
+	PriceComparisonDto priceComparison,
+	List<ReviewDto> reviews
 ) {
-	public static GetProductResult from(MainProduct mainProduct, CategoryInfo categoryInfo) {
+	public static GetProductResult from(MainProduct mainProduct, CategoryInfo categoryInfo, List<ReviewInfo> reviewInfos) {
 		BigDecimal lowestPrice = mainProduct.getLowestPrice();
 
 		Map<PlatformType, Product> platformLowestMap = mainProduct.getProducts().stream()
@@ -29,7 +32,8 @@ public record GetProductResult(
 
 		return new GetProductResult(
 			MainProductDto.from(mainProduct, categoryInfo),
-			PriceComparisonDto.from(mainProduct.getProducts(), platformLowestMap, lowestPrice)
+			PriceComparisonDto.from(mainProduct.getProducts(), platformLowestMap, lowestPrice),
+			reviewInfos.stream().map(r -> ReviewDto.from(r)).toList()
 		);
 	}
 
@@ -126,6 +130,30 @@ public record GetProductResult(
 				product.getPrice(),
 				product.getLink(),
 				product.getPrice().compareTo(globalLowestPrice) == 0
+			);
+		}
+	}
+
+	public record ReviewDto(
+		UUID id,
+		String title,
+		String content,
+		BigDecimal rating,
+		PlatformType platformType,
+		List<String> images,
+		String authorName,
+		LocalDateTime createdAt
+	) {
+		public static ReviewDto from(ReviewInfo reviewInfo) {
+			return new ReviewDto(
+				reviewInfo.reviewId(),
+				reviewInfo.title(),
+				reviewInfo.content(),
+				reviewInfo.rating(),
+				reviewInfo.platformType(),
+				reviewInfo.images(),
+				reviewInfo.authorName(),
+				reviewInfo.createdAt()
 			);
 		}
 	}

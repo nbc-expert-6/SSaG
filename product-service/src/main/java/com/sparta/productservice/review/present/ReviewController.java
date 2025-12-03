@@ -28,7 +28,7 @@ public class ReviewController {
 	private final ReviewService reviewService;
 
 	@GetMapping
-	public ResponseEntity<ApiResponse<ListReviewResponse>> getAllCategories(
+	public ResponseEntity<ApiResponse<ListReviewResponse>> getReviewsByMainProductId(
 		@RequestParam @NotNull UUID mainProductId,
 		@ModelAttribute PageRequest pageRequest
 	) {

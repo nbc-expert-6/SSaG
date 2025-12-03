@@ -183,7 +183,7 @@ class GmarketReviewParser:
                     "title": title,
                     "content": content,
                     "rating": rating,
-                    "platform": Platform.GMARKET
+                    "platform": Platform.GMARKET.value
                 }
                 print(review)
                 results.append(review)
@@ -359,3 +359,6 @@ class GmarketReviewParser:
         premium = self.crawl_premium_reviews(rating=product_rating)
         normal = self.crawl_normal_reviews(rating=product_rating)
         return premium + normal
+
+    def quit(self):
+        self.driver.quit()

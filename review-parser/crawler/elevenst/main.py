@@ -1,7 +1,7 @@
-from .elevenst_review_parser import ElevenStReviewParser
-from ...common.kafka_utils import create_consumer
-from ...common.kafka_utils import create_producer
-from ...common.logging_utils import setup_logger
+from crawler.elevenst.elevenst_review_parser import ElevenStReviewParser
+from common.kafka_utils import create_consumer
+from common.kafka_utils import create_producer
+from common.logging_utils import setup_logger
 import logging
 
 # Kafka Consumer 설정

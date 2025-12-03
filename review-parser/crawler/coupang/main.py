@@ -1,12 +1,12 @@
 from crawler.coupang.coupang_review_parser import CoupangReviewParser
-from ...common.kafka_utils import create_consumer
-from ...common.kafka_utils import create_producer
-from ...common.logging_utils import setup_logger
+from common.kafka_utils import create_consumer
+from common.kafka_utils import create_producer
+from common.logging_utils import setup_logger
 import logging
 
 # Kafka Consumer 설정
 consumer = create_consumer(
-    topic='coupang_links',
+    topic='coupang-product-urls',
     group_id='coupang-review-group'
 )
 

@@ -8,8 +8,8 @@ from selenium.common import NoSuchElementException
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as ec
-from ...common.logging_utils import setup_logger
-from ..review_parser import ReviewParser
+from common.logging_utils import setup_logger
+from crawler.review_parser import ReviewParser
 
 setup_logger()
 

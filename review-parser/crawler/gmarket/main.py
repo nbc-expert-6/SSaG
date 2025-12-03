@@ -1,13 +1,13 @@
 from crawler.gmarket.gmarket_review_parser import GmarketReviewParser
-from ...common.kafka_utils import create_consumer
-from ...common.kafka_utils import create_producer
-from ...common.logging_utils import setup_logger
+from common.kafka_utils import create_consumer
+from common.kafka_utils import create_producer
+from common.logging_utils import setup_logger
 import logging
 
 # Kafka Consumer 설정
 consumer = create_consumer(
-    topic='coupang_links',
-    group_id='coupang-review-group'
+    topic='gmarket-product-urls',
+    group_id='gmarket-review-group'
 )
 
 # Kafka Producer 설정
@@ -31,23 +31,11 @@ if __name__ == "__main__":
             product_reviews = {}
             reviews = parser.get_reviews(url)
             product_reviews["main_product_id"] = main_product_id
-            product_reviews["platform"] = "auction"
             product_reviews["reviews"] = reviews
 
             producer.send('product-reviews', product_reviews)
             logging.info(f"[publish] product-reviews: {product_reviews}")
 
-
-    # # 테스트용
-    # urls = ["https://itempage3.auction.co.kr/DetailView.aspx?itemno=F301578522",
-    #         "https://itempage3.auction.co.kr/detailview.aspx?ItemNo=A564284718"]
-    # for url in urls:
-    #     product_reviews = {}
-    #     reviews = parser.get_reviews(url)
-    #     product_reviews["main_product_id"] = "main_product_id"
-    #     product_reviews["platform"] = "auction"
-    #     product_reviews["reviews"] = reviews
-    #
-    #     logging.info(f"[publish] product-reviews: {product_reviews}")
-
     parser.quit()
+
+

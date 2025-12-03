@@ -6,7 +6,7 @@ import logging
 
 # Kafka Consumer 설정
 consumer = create_consumer(
-    topic='auction_links',
+    topic='auction-product-urls',
     group_id='auction-review-group'
 )
 

@@ -1,7 +1,7 @@
 from crawler.coupang.coupang_detail_parser import CoupangDetailParser
-from ...common.kafka_utils import create_consumer
-from ...common.kafka_utils import create_producer
-from ...common.logging_utils import setup_logger
+from common.kafka_utils import create_consumer
+from common.kafka_utils import create_producer
+from common.logging_utils import setup_logger
 import logging
 
 # Kafka Consumer 설정

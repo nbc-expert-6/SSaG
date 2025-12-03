@@ -1,7 +1,7 @@
-from .auction_detail_parser import AuctionDetailParser
-from ...common.kafka_utils import create_consumer
-from ...common.kafka_utils import create_producer
-from ...common.logging_utils import setup_logger
+from crawler.auction.auction_detail_parser import AuctionDetailParser
+from common.kafka_utils import create_consumer
+from common.kafka_utils import create_producer
+from common.logging_utils import setup_logger
 import logging
 
 # Kafka Consumer 설정

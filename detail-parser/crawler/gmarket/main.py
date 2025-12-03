@@ -1,7 +1,7 @@
 from crawler.gmarket.gmarket_detail_parser import GmarketDetailParser
-from ...common.kafka_utils import create_consumer
-from ...common.kafka_utils import create_producer
-from ...common.logging_utils import setup_logger
+from common.kafka_utils import create_consumer
+from common.kafka_utils import create_producer
+from common.logging_utils import setup_logger
 import logging
 
 # Kafka Consumer 설정

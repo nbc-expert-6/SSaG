@@ -5,8 +5,8 @@ import undetected_chromedriver as uc
 
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
-from ..detail_parser import DetailParser
-from ...common.logging_utils import setup_logger
+from crawler.detail_parser import DetailParser
+from common.logging_utils import setup_logger
 
 # Logging 설정
 setup_logger()

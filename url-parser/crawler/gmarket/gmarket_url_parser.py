@@ -1,5 +1,7 @@
 import time
 import undetected_chromedriver as uc
+
+from common.config import TARGET_GMARKET_URL, MAX_LINKS
 from crawler import UrlParser
 from typing import List
 from selenium.webdriver.common.by import By
@@ -10,7 +12,7 @@ from selenium.webdriver.support import expected_conditions as EC
 class GmarketUrlParser(UrlParser):
 
     # 생성자 (브라우저, 메인페이지, 상품 파싱 수량 세팅)
-    def __init__(self, url, max_links):
+    def __init__(self, url=TARGET_GMARKET_URL, max_links=MAX_LINKS):
         super().__init__(url, max_links)
 
         options = uc.ChromeOptions()

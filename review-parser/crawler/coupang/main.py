@@ -1,13 +1,13 @@
-from .auction_review_parser import AuctionReviewParser
-from ...common.kafka_utils import create_consumer
-from ...common.kafka_utils import create_producer
-from ...common.logging_utils import setup_logger
+from crawler.coupang.coupang_review_parser import CoupangReviewParser
+from common.kafka_utils import create_consumer
+from common.kafka_utils import create_producer
+from common.logging_utils import setup_logger
 import logging
 
 # Kafka Consumer 설정
 consumer = create_consumer(
-    topic='auction_links',
-    group_id='auction-review-group'
+    topic='coupang-product-urls',
+    group_id='coupang-review-group'
 )
 
 # Kafka Producer 설정
@@ -18,11 +18,11 @@ setup_logger()
 
 if __name__ == "__main__":
     # 임시로 6개 페이지 파싱 설정
-    parser = AuctionReviewParser(max_pages=6)
+    parser = CoupangReviewParser()
 
     for url_info in consumer:
         # 받은 url 정보
-        logging.info("[auction-product-urls]: {}".format(url_info.value))
+        logging.info("[coupang-product-urls]: {}".format(url_info.value))
         main_product_id = url_info.value['main_product_id']
         urls = url_info.value['urls']
 

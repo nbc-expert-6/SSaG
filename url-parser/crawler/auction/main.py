@@ -1,10 +1,10 @@
-from distutils.command.install import main_key
+# from distutils.command.install import main_key
 
-from ...common.database_utils import Database
-from ...common.logging_utils import setup_logger
-from ...common.kafka_utils import create_producer
-from .auction_url_parser import AuctionUrlParser
-from ...common.config import *
+from common.database_utils import Database
+from common.logging_utils import setup_logger
+from common.kafka_utils import create_producer
+from crawler.auction.auction_url_parser import AuctionUrlParser
+from common.config import *
 import logging
 
 # Logging 설정

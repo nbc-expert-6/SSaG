@@ -1,5 +1,7 @@
 import time
 import undetected_chromedriver as uc
+
+from common.config import TARGET_CUPANG_URL, MAX_LINKS
 from crawler import UrlParser
 from typing import List
 from selenium.webdriver.common.by import By
@@ -10,7 +12,7 @@ from selenium.webdriver.support import expected_conditions as EC
 
 class CoupangUrlParser(UrlParser):
 
-    def __init__(self, url, max_links):
+    def __init__(self, url=TARGET_CUPANG_URL, max_links=MAX_LINKS):
         super().__init__(url, max_links)
 
         options = uc.ChromeOptions()
@@ -51,3 +53,6 @@ class CoupangUrlParser(UrlParser):
             a_tag = li.find_element(By.TAG_NAME, "a")
             links.append(a_tag.get_attribute("href"))
         return links
+
+    def quit(self):
+        self.driver.quit()

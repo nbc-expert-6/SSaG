@@ -1,36 +1,47 @@
+from crawler.coupang.coupang_detail_parser import CoupangDetailParser
 from common.kafka_utils import create_consumer
+from common.kafka_utils import create_producer
 from common.logging_utils import setup_logger
 import logging
 
-from crawler.coupang.coupang_detail_parser import CoupangDetailParser
-from crawler.coupang.coupang_review_parser import CoupangReviewParser
+# Kafka Consumer 설정
+consumer = create_consumer(
+    topic='coupang-product-urls',
+    group_id='coupang-detail-group'
+)
 
+# Kafka Producer 설정
+producer = create_producer()
+
+# Logging 설정
 setup_logger()
 
-def process_product(product_id: str, urls: list):
-    detail_parser = CoupangDetailParser()
-    review_parser = CoupangReviewParser()
-
-    for url in urls:
-        detail_info = detail_parser.get_product_details(url)
-        logging.info(f"[DETAIL] {product_id} | {detail_info}")
-
-        reviews = review_parser.get_reviews(url)
-        logging.info(f"[REVIEW] {product_id} | {len(reviews)} reviews")
-
-    detail_parser.quit()
-    review_parser.quit()
-
 if __name__ == "__main__":
-    consumer = create_consumer(
-        topic="coupang_product_urls",
-        group_id="coupang-group"
-    )
+    parser = CoupangDetailParser()
 
-    for msg in consumer:
-        logging.info(f"[KAFKA] message: {msg.value}")
+    for url_info in consumer:
+        # 받은 url 정보
+        logging.info("[coupang-product-urls]: {}".format(url_info.value))
+        main_product_id = url_info.value['main_product_id']
+        urls = url_info.value['urls']
 
-        product_id = msg.value["id"]
-        urls = msg.value["urls"]
+        # 제품 상세 정보 파싱 실행
+        for url in urls:
+            product_details = parser.get_product_details(url)
+            product_details["main_product_id"] = main_product_id
 
-        process_product(product_id, urls)
+            producer.send('product-details', product_details)
+            logging.info(f"[publish] product-details: {product_details}")
+
+    # # 테스트용
+    # urls = ["https://itempage3.auction.co.kr/DetailView.aspx?itemno=F301578522",
+    #         "https://itempage3.auction.co.kr/DetailView.aspx?itemno=F366343357"]
+    # for url in urls:
+    #     product_details = parser.get_product_details(url)
+    #     product_details["main_product_id"] = "main_product_id"
+    #     product_details["platform"] = "auction"
+    #     product_details["sale_link"] = url
+    #
+    #     logging.info(f"[publish] product-details: {product_details}")
+
+    parser.quit()

@@ -8,3 +8,7 @@ psycopg2-binary
 
 # 메시지 큐 / 스트리밍
 kafka-python
+
+# 개발 도구 (개발 환경 전용)
+isort
+pre-commit

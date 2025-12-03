@@ -1,28 +1,35 @@
+from common.database_utils import Database
+from common.logging_utils import setup_logger
+from common.kafka_utils import create_producer
 from crawler.coupang.coupang_url_parser import CoupangUrlParser
+from common.config import *
+import logging
 
-def main():
-    # 테스트할 검색 키워드 리스트
-    keywords = [
-        "나이키 에어포스 cw2288-111",
-        "나이키 에어포스 cw2288-001",
-        "나이키 에어포스 cw2288-002"
-    ]
-
-    # 쿠팡 URL Parser 객체 생성
-    parser = CoupangUrlParser("https://www.coupang.co.kr", 5)
-
-    parser.open_main_page()
-    try:
-        for keyword in keywords:
-            print(f"=== {keyword} 검색 시작 ===")
-            parser.search(keyword)
-            parser.sort_by_low_price()
-            parser.remove_add()
-            links = parser.get_product_links()
-            print(links)
-    finally:
-        # 드라이버 종료
-        parser.driver.quit()
+# Logging 설정
+setup_logger()
 
 if __name__ == "__main__":
-    main()
+
+    # DB
+    db = Database(DATABASE_URL)
+    p_main_product = db.load_table("p_main_product", schema="product_service_db")
+    # 데이터 조회
+    with db.connect() as conn:
+        rows = conn.execute(p_main_product.select()).mappings().all()
+
+    # Kafka Producer
+    producer = create_producer()
+
+    # 검색 수행 후 링크 publish
+    parser = CoupangUrlParser()
+    for row in rows:
+        main_product_id = str(row['id'])
+        keyword = row['name']
+        urls = parser.get_product_urls(keyword)
+        logging.info(f"{keyword} 검색 완료: {len(urls)}개 링크")
+        logging.info(urls)
+        producer.send('coupang-product-urls', {'main_product_id': main_product_id, 'urls': urls})
+
+    parser.quit()
+    producer.flush()
+    producer.close()

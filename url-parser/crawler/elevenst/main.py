@@ -1,12 +1,12 @@
-from ...common.database_utils import Database
-from ...common.logging_utils import setup_logger
-from ...common.kafka_utils import create_producer
-from .elevenst_url_parser import ElevenStUrlParser
-from ...common.config import *
+from common.database_utils import Database
+from common.logging_utils import setup_logger
+from common.kafka_utils import create_producer
+from crawler.elevenst.elevenst_url_parser import ElevenStUrlParser
+from common.config import *
 import logging
 
 # Logging 설정
-setup_logger()
+setup_logger() 
 
 if __name__ == "__main__":
 

@@ -5,8 +5,13 @@ import java.util.UUID;
 
 import com.sparta.productservice.product.app.command.CreateMainProductCommand;
 
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+
 public record CreateMainProductRequest(
+	@NotNull
 	UUID categoryMediumId,
+	@NotBlank
 	String name,
 	BigDecimal lowestPrice,
 	String imageUrl,

@@ -2,6 +2,7 @@ package com.sparta.productservice.product.present;
 
 import java.util.UUID;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -19,17 +20,18 @@ import com.sparta.productservice.product.present.dto.CreateMainProductRequest;
 import com.sparta.productservice.product.present.dto.CreateMainProductResponse;
 import com.sparta.productservice.product.present.dto.GetProductResponse;
 
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
 @RestController
-@RequestMapping("/api/v1/products")
+@RequestMapping("/api/v1/main-products")
 @RequiredArgsConstructor
 @Validated
-public class ProductController {
+public class MainProductController {
 	private final ProductService productService;
 
 	@GetMapping("/{mainProductId}")
-	public ResponseEntity<ApiResponse<GetProductResponse>> getAllCategories(
+	public ResponseEntity<ApiResponse<GetProductResponse>> getMainProductWithProducts(
 		@PathVariable UUID mainProductId
 	) {
 		GetProductResult productResult = productService.getProductDetailById(mainProductId);
@@ -40,9 +42,16 @@ public class ProductController {
 	}
 
 	// Main 상품 등록
-	@PostMapping("/main")
-	public ApiResponse<CreateMainProductResponse> createMainProduct(@RequestBody CreateMainProductRequest request) {
+	@PostMapping
+	public ResponseEntity<ApiResponse<CreateMainProductResponse>> createMainProduct(
+		@RequestBody @Valid CreateMainProductRequest request) {
 		CreateMainProductResult result = productService.createMainProduct(request.toCommand());
-		return ApiResponse.success(CreateMainProductResponse.from(result), "메인 상품 생성 성공");
+		return ResponseEntity.status(HttpStatus.CREATED)
+			.body(
+				ApiResponse.success(
+					CreateMainProductResponse.from(result),
+					"메인 상품 생성 성공"
+				)
+			);
 	}
 }

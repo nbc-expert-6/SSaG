@@ -7,7 +7,8 @@ from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
 
-from common.config import MAX_LINKS, TARGET_GMARKET_URL
+from common.config import (CHROME_BINARY, CHROMEDRIVER_PATH, MAX_LINKS,
+                           TARGET_GMARKET_URL)
 from crawler.url_parser import UrlParser
 
 
@@ -29,29 +30,24 @@ class GmarketUrlParser(UrlParser):
         options.add_argument("--ignore-certificate-errors")
         options.add_argument("--window-size=1920,1080")
 
-        # Chrome 바이너리 경로 명시 (Debian 계열)
-        options.binary_location = "/usr/bin/chromium"
+        chrome_binary = CHROME_BINARY
+        driver_path = CHROMEDRIVER_PATH
 
-        # ChromeDriver 경로 명시
-        driver_executable_path = "/usr/bin/chromedriver"
+        # 환경변수가 있으면 경로 지정, 없으면 uc가 자동 탐지
+        kwargs = {}
+        if chrome_binary:
+            kwargs["options"] = options
+            kwargs["version_main"] = None
+            kwargs["driver_executable_path"] = driver_path
+            kwargs["options"].binary_location = chrome_binary
+            kwargs["use_subprocess"] = True
+        else:
+            # 자동 탐지용
+            kwargs["options"] = options
+            kwargs["use_subprocess"] = True
+            kwargs["version_main"] = None
 
-        try:
-            self.driver = uc.Chrome(
-                options=options,
-                use_subprocess=True,
-                driver_executable_path=driver_executable_path,
-                version_main=None  # 자동 버전 감지 비활성화
-            )
-        except Exception as e:
-            print(f"Chrome 초기화 실패 (재시도): {e}")
-            # 재시도: use_subprocess=False로 시도
-            self.driver = uc.Chrome(
-                options=options,
-                use_subprocess=False,
-                driver_executable_path=driver_executable_path,
-                version_main=None
-            )
-
+        self.driver = uc.Chrome(**kwargs)
         self.wait = WebDriverWait(self.driver, 10)
 
     def open_main_page(self):

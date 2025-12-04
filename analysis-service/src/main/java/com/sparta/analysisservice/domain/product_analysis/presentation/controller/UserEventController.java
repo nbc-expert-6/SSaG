@@ -6,8 +6,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.sparta.analysisservice.domain.product_analysis.application.service.ClickService;
-import com.sparta.analysisservice.domain.product_analysis.presentation.dto.ClickRequestDto;
+import com.sparta.analysisservice.domain.product_analysis.application.service.UserEventService;
+import com.sparta.analysisservice.domain.product_analysis.presentation.dto.UserEventRequestDto;
 
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
@@ -15,13 +15,13 @@ import lombok.RequiredArgsConstructor;
 @RestController
 @RequestMapping("/api/v1")
 @RequiredArgsConstructor
-public class ClickController {
+public class UserEventController {
 
-	private final ClickService clickService;
+	private final UserEventService userEventService;
 
-	@PostMapping("/track-click")
-	public ResponseEntity<Void> trackClick(@RequestBody ClickRequestDto req, HttpSession session) {
-		clickService.trackClick(session, req.getProductId());
+	@PostMapping("/user-event")
+	public ResponseEntity<Void> trackEvent(@RequestBody UserEventRequestDto req, HttpSession session) {
+		userEventService.trackEvent(session, req.getProductId(), req.getEventType(), req.getMeta());
 		return ResponseEntity.ok().build();
 	}
 

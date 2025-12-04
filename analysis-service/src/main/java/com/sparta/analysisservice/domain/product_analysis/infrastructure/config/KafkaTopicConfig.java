@@ -9,7 +9,7 @@ public class KafkaTopicConfig {
 
 	@Bean
 	public NewTopic clickEventTopic() {
-		return new NewTopic("click.event", 3, (short)1);
+		return new NewTopic("user.event", 3, (short)1);
 	}
 
 }

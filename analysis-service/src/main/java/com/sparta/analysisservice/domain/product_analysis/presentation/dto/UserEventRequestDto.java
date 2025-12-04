@@ -9,8 +9,10 @@ import lombok.NoArgsConstructor;
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
-public class ClickRequestDto {
+public class UserEventRequestDto {
 
 	private UUID productId;
-
+	private String eventType; // CLICK, PAGE_VIEW, SCROLL
+	private String meta; // URL, session info, browser data etc
 }
+

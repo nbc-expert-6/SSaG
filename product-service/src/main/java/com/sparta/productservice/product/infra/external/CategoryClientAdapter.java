@@ -5,8 +5,8 @@ import java.util.UUID;
 import org.springframework.stereotype.Component;
 
 import com.sparta.productservice.common.dto.ApiResponse;
-import com.sparta.productservice.product.app.service.CategoryClient;
-import com.sparta.productservice.product.app.service.dto.CategoryInfo;
+import com.sparta.productservice.product.app.port.out.CategoryClient;
+import com.sparta.productservice.product.app.port.out.dto.CategoryInfo;
 import com.sparta.productservice.product.infra.external.dto.FeignGetCategoryResponse;
 
 import lombok.RequiredArgsConstructor;

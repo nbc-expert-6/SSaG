@@ -2,7 +2,7 @@ package com.sparta.productservice.product.infra.external.dto;
 
 import java.util.UUID;
 
-import com.sparta.productservice.product.app.service.dto.CategoryInfo;
+import com.sparta.productservice.product.app.port.out.dto.CategoryInfo;
 
 public record FeignGetCategoryResponse(
 	UUID mediumId,

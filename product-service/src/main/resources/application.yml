@@ -10,3 +10,4 @@ spring:
       - datasource
       - elasticsearch
       - serviceurl
+      - kafka

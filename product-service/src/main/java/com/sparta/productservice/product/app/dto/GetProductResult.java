@@ -9,8 +9,8 @@ import java.util.UUID;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import com.sparta.productservice.product.app.service.dto.CategoryInfo;
-import com.sparta.productservice.product.app.service.dto.ReviewInfo;
+import com.sparta.productservice.product.app.port.out.dto.CategoryInfo;
+import com.sparta.productservice.product.app.port.out.dto.ReviewInfo;
 import com.sparta.productservice.product.domain.entity.MainProduct;
 import com.sparta.productservice.product.domain.entity.Product;
 import com.sparta.productservice.product.domain.vo.PlatformType;

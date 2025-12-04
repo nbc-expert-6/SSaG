@@ -6,7 +6,7 @@ import java.util.List;
 import java.util.UUID;
 
 import com.sparta.productservice.product.app.dto.GetProductResult;
-import com.sparta.productservice.product.app.service.dto.ReviewInfo;
+import com.sparta.productservice.product.app.port.out.dto.ReviewInfo;
 import com.sparta.productservice.product.domain.vo.PlatformType;
 
 public record GetProductResponse(

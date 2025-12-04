@@ -8,13 +8,13 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
 
 from common.config import (CHROME_BINARY, CHROMEDRIVER_PATH, MAX_LINKS,
-                           TARGET_CUPANG_URL)
+                           TARGET_COUPANG_URL)
 from crawler.url_parser import UrlParser
 
 
 class CoupangUrlParser(UrlParser):
 
-    def __init__(self, url=TARGET_CUPANG_URL, max_links=MAX_LINKS):
+    def __init__(self, url=TARGET_COUPANG_URL, max_links=MAX_LINKS):
         super().__init__(url, max_links)
 
         options = uc.ChromeOptions()

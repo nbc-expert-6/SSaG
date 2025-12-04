@@ -12,7 +12,7 @@ CHROMEDRIVER_PATH = os.getenv("CHROMEDRIVER_PATH")
 
 MAX_LINKS = 5
 
-TARGET_CUPANG_URL = "https://www.coupang.com/"
+TARGET_COUPANG_URL = "https://www.coupang.com/"
 TARGET_NAVER_STORE_URL = "https://shopping.naver.com/ns/home"
 TARGET_AUCTION_URL="https://www.auction.co.kr"
 TARGET_11ST_URL="https://search.11st.co.kr"

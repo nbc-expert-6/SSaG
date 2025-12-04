@@ -19,7 +19,7 @@ services:
 
   elevenst-url-parser:
     image: elevenst-url-parser:latest
-    container_name: elevenst--url-parser
+    container_name: elevenst-url-parser
     environment:
       DATABASE_URL: "postgresql+psycopg2://postgres:qwer1234!@postgres:5432/product_service_db"
       KAFKA_BOOTSTRAP: "kafka:9092"
@@ -28,7 +28,7 @@ services:
 
   gmarket-url-parser:
     image: gmarket-url-parser:latest
-    container_name: gmarket--url-parser
+    container_name: gmarket-url-parser
     environment:
       DATABASE_URL: "postgresql+psycopg2://postgres:qwer1234!@postgres:5432/product_service_db"
       KAFKA_BOOTSTRAP: "kafka:9092"

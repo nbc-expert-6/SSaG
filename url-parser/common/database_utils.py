@@ -1,5 +1,6 @@
-from sqlalchemy import create_engine, MetaData, Table
+from sqlalchemy import MetaData, Table, create_engine
 from sqlalchemy.orm import Session
+
 
 # Database 연결 설정
 class Database:
@@ -7,11 +8,10 @@ class Database:
         self.engine = create_engine(url)
         self.metadata = MetaData()
 
-    def load_table(self, table_name, schema=None):
+    def load_table(self, table_name):
         return Table(
             table_name,
             self.metadata,
-            schema=schema,
             autoload_with=self.engine
         )
 

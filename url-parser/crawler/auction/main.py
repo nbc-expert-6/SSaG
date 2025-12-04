@@ -1,11 +1,12 @@
 # from distutils.command.install import main_key
 
-from common.database_utils import Database
-from common.logging_utils import setup_logger
-from common.kafka_utils import create_producer
-from crawler.auction.auction_url_parser import AuctionUrlParser
-from common.config import *
 import logging
+
+from common.config import *
+from common.database_utils import Database
+from common.kafka_utils import create_producer
+from common.logging_utils import setup_logger
+from crawler.auction.auction_url_parser import AuctionUrlParser
 
 # Logging 설정
 setup_logger()
@@ -14,7 +15,7 @@ if __name__ == "__main__":
 
     # DB
     db = Database(DATABASE_URL)
-    p_main_product = db.load_table("p_main_product", schema="product_service_db")
+    p_main_product = db.load_table("p_main_product")
     # 데이터 조회
     with db.connect() as conn:
         rows = conn.execute(p_main_product.select()).mappings().all()

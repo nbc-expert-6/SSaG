@@ -6,5 +6,6 @@ spring:
     include:
       - kafka
       - elasticsearch
+      - redis
 server:
   port: 8082

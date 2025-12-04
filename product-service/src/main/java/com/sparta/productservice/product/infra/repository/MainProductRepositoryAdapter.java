@@ -19,4 +19,9 @@ public class MainProductRepositoryAdapter implements MainProductRepository {
 	public Optional<MainProduct> getById(UUID mainProductId) {
 		return jpaMainProductRepository.findById(mainProductId);
 	}
+
+	@Override
+	public MainProduct save(MainProduct mainProduct) {
+		return jpaMainProductRepository.save(mainProduct);
+	}
 }

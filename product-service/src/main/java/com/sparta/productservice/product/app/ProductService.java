@@ -8,7 +8,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.sparta.productservice.common.dto.PageSizeType;
+import com.sparta.productservice.product.app.command.CreateMainProductCommand;
 import com.sparta.productservice.product.app.command.CreateProductCommand;
+import com.sparta.productservice.product.app.dto.CreateMainProductResult;
 import com.sparta.productservice.product.app.dto.GetProductResult;
 import com.sparta.productservice.product.app.port.in.CreateProductUseCase;
 import com.sparta.productservice.product.app.port.out.CategoryClient;
@@ -48,5 +50,14 @@ public class ProductService implements CreateProductUseCase {
 			.orElseThrow(() -> new NoSuchElementException("메인상품이 등록되어있지 않습니다."));
 
 		mainProduct.addProduct(command.toProduct());
+	}
+
+	// MainProduct 등록
+	@Transactional
+	public CreateMainProductResult createMainProduct(CreateMainProductCommand command) {
+		MainProduct mainProduct = command.toMainProduct();
+		MainProduct saved = mainProductRepository.save(mainProduct);
+
+		return CreateMainProductResult.from(saved);
 	}
 }

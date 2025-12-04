@@ -1,20 +1,51 @@
-import common.platform
 import time
+
 import undetected_chromedriver as uc
-from crawler.detail_parser import DetailParser
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 
+import common.platform
+from crawler.detail_parser import DetailParser
+
+
 class CoupangDetailParser(DetailParser):
     def __init__(self):
-        # 드라이버 옵션
+
         options = uc.ChromeOptions()
-        options.add_argument("--disable-gpu")
         options.add_argument("--no-sandbox")
         options.add_argument("--disable-dev-shm-usage")
+        options.add_argument("--disable-gpu")
+        options.add_argument("--disable-software-rasterizer")
+        options.add_argument("--disable-blink-features=AutomationControlled")
+        options.add_argument("--disable-extensions")
+        options.add_argument("--disable-logging")
+        options.add_argument("--disable-web-security")
+        options.add_argument("--ignore-certificate-errors")
+        options.add_argument("--window-size=1920,1080")
 
-        # 드라이버 생성
-        self.driver = uc.Chrome(options=options)
+        # Chrome 바이너리 경로 명시 (Debian 계열)
+        options.binary_location = "/usr/bin/chromium"
+
+        # ChromeDriver 경로 명시
+        driver_executable_path = "/usr/bin/chromedriver"
+
+        try:
+            self.driver = uc.Chrome(
+                options=options,
+                use_subprocess=True,
+                driver_executable_path=driver_executable_path,
+                version_main=None  # 자동 버전 감지 비활성화
+            )
+        except Exception as e:
+            print(f"Chrome 초기화 실패 (재시도): {e}")
+            # 재시도: use_subprocess=False로 시도
+            self.driver = uc.Chrome(
+                options=options,
+                use_subprocess=False,
+                driver_executable_path=driver_executable_path,
+                version_main=None
+            )
+
         self.wait = WebDriverWait(self.driver, 10)
 
     def open_product_detail_page(self, url: str):

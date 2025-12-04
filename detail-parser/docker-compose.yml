@@ -1,0 +1,40 @@
+services:
+  auction-detail-parser:
+    image: auction-detail-parser:latest
+    container_name: auction-detail-parser
+    environment:
+      DATABASE_URL: "postgresql+psycopg2://postgres:qwer1234!@postgres:5432/product_service_db"
+      KAFKA_BOOTSTRAP: "kafka:9092"
+    networks:
+      - infra
+
+  coupang-detail-parser:
+    image: coupang-detail-parser:latest
+    container_name: coupang-detail-parser
+    environment:
+      DATABASE_URL: "postgresql+psycopg2://postgres:qwer1234!@postgres:5432/product_service_db"
+      KAFKA_BOOTSTRAP: "kafka:9092"
+    networks:
+      - infra
+
+  elevenst-detail-parser:
+    image: elevenst-detail-parser:latest
+    container_name: elevenst-detail-parser
+    environment:
+      DATABASE_URL: "postgresql+psycopg2://postgres:qwer1234!@postgres:5432/product_service_db"
+      KAFKA_BOOTSTRAP: "kafka:9092"
+    networks:
+      - infra
+
+  gmarket-detail-parser:
+    image: gmarket-detail-parser:latest
+    container_name: gmarket-detail-parser
+    environment:
+      DATABASE_URL: "postgresql+psycopg2://postgres:qwer1234!@postgres:5432/product_service_db"
+      KAFKA_BOOTSTRAP: "kafka:9092"
+    networks:
+      - infra
+
+networks:
+  infra:
+    external: true

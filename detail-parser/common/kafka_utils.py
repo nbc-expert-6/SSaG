@@ -1,15 +1,19 @@
-from kafka import KafkaProducer, KafkaConsumer
 import json
 
+from kafka import KafkaConsumer, KafkaProducer
+
+from common.config import KAFKA_BOOTSTRAP
+
+
 # Kafka Producer 설정
-def create_producer(servers='localhost:9092'):
+def create_producer(servers=KAFKA_BOOTSTRAP):
     return KafkaProducer(
         bootstrap_servers=servers,
         value_serializer=lambda v: json.dumps(v).encode('utf-8')
     )
 
 # Kafka Consumer 설정
-def create_consumer(topic, servers='localhost:9092', group_id=None):
+def create_consumer(topic, servers=KAFKA_BOOTSTRAP, group_id=None):
     return KafkaConsumer(
         topic,
         bootstrap_servers=servers,

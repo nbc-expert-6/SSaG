@@ -1,8 +1,5 @@
-# from distutils.command.install import main_key
-
 import logging
 
-from common.config import *
 from common.database_utils import Database
 from common.kafka_utils import create_producer
 from common.logging_utils import setup_logger
@@ -14,7 +11,7 @@ setup_logger()
 if __name__ == "__main__":
 
     # DB
-    db = Database(DATABASE_URL)
+    db = Database()
     p_main_product = db.load_table("p_main_product")
     # 데이터 조회
     with db.connect() as conn:

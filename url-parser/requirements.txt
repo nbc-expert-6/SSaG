@@ -8,3 +8,6 @@ psycopg2-binary
 
 # 메시지 큐 / 스트리밍
 kafka-python
+
+# 환경변수 주입
+python-dotenv

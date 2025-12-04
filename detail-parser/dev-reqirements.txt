@@ -12,3 +12,4 @@ kafka-python
 # 개발 도구 (개발 환경 전용)
 isort
 pre-commit
+python-dotenv

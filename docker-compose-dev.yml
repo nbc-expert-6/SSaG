@@ -11,7 +11,9 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
       - ./init-db.sql:/docker-entrypoint-initdb.d/init-db.sql
-  
+    networks:
+      - infra
+
   kafka:
     image: apache/kafka:3.8.0
     container_name: kafka
@@ -31,6 +33,8 @@ services:
       KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
       KAFKA_NUM_PARTITIONS: 3
       KAFKA_DELETE_TOPIC_ENABLE: "true"
+    networks:
+      - infra
 
   elasticsearch:
     build:
@@ -47,6 +51,8 @@ services:
       - elasticsearch_data:/usr/share/elasticsearch/data
     ports:
       - "9200:9200"
+    networks:
+      - infra
 
   redis:
     image: redis
@@ -57,7 +63,15 @@ services:
       test: [ "CMD", "redis-cli", "ping" ]
       interval: 5s
       retries: 10
+    networks:
+      - infra
 
 volumes:
   postgres_data:
   elasticsearch_data:
+
+networks:
+  infra:
+    name: infra
+    driver: bridge
+    external: true

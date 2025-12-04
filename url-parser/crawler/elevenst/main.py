@@ -1,9 +1,9 @@
-from common.database_utils import Database
-from common.logging_utils import setup_logger
-from common.kafka_utils import create_producer
-from crawler.elevenst.elevenst_url_parser import ElevenStUrlParser
-from common.config import *
 import logging
+
+from common.database_utils import Database
+from common.kafka_utils import create_producer
+from common.logging_utils import setup_logger
+from crawler.elevenst.elevenst_url_parser import ElevenStUrlParser
 
 # Logging 설정
 setup_logger() 
@@ -11,8 +11,8 @@ setup_logger()
 if __name__ == "__main__":
 
     # DB
-    db = Database(DATABASE_URL)
-    p_main_product = db.load_table("p_main_product", schema="product_service_db")
+    db = Database()
+    p_main_product = db.load_table("p_main_product")
     # 데이터 조회
     with db.connect() as conn:
         rows = conn.execute(p_main_product.select()).mappings().all()

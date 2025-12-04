@@ -5,6 +5,7 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 
+from common.config import CHROME_BINARY, CHROMEDRIVER_PATH
 import common.platform
 from crawler.review_parser import ReviewParser
 
@@ -19,15 +20,38 @@ class CoupangReviewParser(ReviewParser):
     # 생성자
     # 브라우저 옵션 설정 및 이미지 저장 경로 세팅
     def __init__(self, image_save_dir="review_images"):
+
         options = uc.ChromeOptions()
-        options.add_argument("--disable-gpu")
         options.add_argument("--no-sandbox")
         options.add_argument("--disable-dev-shm-usage")
+        options.add_argument("--disable-gpu")
+        options.add_argument("--disable-software-rasterizer")
+        options.add_argument("--disable-blink-features=AutomationControlled")
+        options.add_argument("--disable-extensions")
+        options.add_argument("--disable-logging")
+        options.add_argument("--disable-web-security")
+        options.add_argument("--ignore-certificate-errors")
+        options.add_argument("--window-size=1920,1080")
 
-        self.driver = uc.Chrome(options=options)
+        chrome_binary = CHROME_BINARY
+        driver_path = CHROMEDRIVER_PATH
+
+        # 환경변수가 있으면 경로 지정, 없으면 uc가 자동 탐지
+        kwargs = {}
+        if chrome_binary:
+            kwargs["options"] = options
+            kwargs["version_main"] = None
+            kwargs["driver_executable_path"] = driver_path
+            kwargs["options"].binary_location = chrome_binary
+            kwargs["use_subprocess"] = True
+        else:
+            # 자동 탐지용
+            kwargs["options"] = options
+            kwargs["use_subprocess"] = True
+            kwargs["version_main"] = None
+
+        self.driver = uc.Chrome(**kwargs)
         self.wait = WebDriverWait(self.driver, 10)
-        self.image_save_dir = image_save_dir
-        os.makedirs(image_save_dir, exist_ok=True)
 
     """
     상품상세 페이지를 받아 브라우저로 오픈

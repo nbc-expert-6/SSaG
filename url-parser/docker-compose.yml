@@ -1,0 +1,36 @@
+services:
+  auction-url-parser:
+    image: auction-url-parser:latest
+    container_name: auction-url-parser
+    env_file:
+      - .env
+    networks:
+      - infra
+
+  coupang-url-parser:
+    image: coupang-url-parser:latest
+    container_name: coupang-url-parser
+    env_file:
+      - .env
+    networks:
+      - infra
+
+  elevenst-url-parser:
+    image: elevenst-url-parser:latest
+    container_name: elevenst-url-parser
+    env_file:
+      - .env
+    networks:
+      - infra
+
+  gmarket-url-parser:
+    image: gmarket-url-parser:latest
+    container_name: gmarket-url-parser
+    env_file:
+      - .env
+    networks:
+      - infra
+
+networks:
+  infra:
+    external: true

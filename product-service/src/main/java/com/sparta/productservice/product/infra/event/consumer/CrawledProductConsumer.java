@@ -1,11 +1,11 @@
-package com.sparta.productservice.product.infra.messaging.consumer;
+package com.sparta.productservice.product.infra.event.consumer;
 
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.support.Acknowledgment;
 import org.springframework.stereotype.Component;
 
-import com.sparta.productservice.product.infra.messaging.handler.CrawledProductHandler;
-import com.sparta.productservice.product.infra.messaging.message.CrawledProductMessage;
+import com.sparta.productservice.product.infra.event.handler.CrawledProductHandler;
+import com.sparta.productservice.product.infra.event.message.CrawledProductMessage;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

@@ -1,4 +1,4 @@
-package com.sparta.productservice.product.infra.messaging;
+package com.sparta.productservice.product.infra.event;
 
 import static org.awaitility.Awaitility.*;
 import static org.mockito.ArgumentMatchers.*;
@@ -17,8 +17,8 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
-import com.sparta.productservice.product.infra.messaging.handler.CrawledProductHandler;
-import com.sparta.productservice.product.infra.messaging.message.CrawledProductMessage;
+import com.sparta.productservice.product.infra.event.handler.CrawledProductHandler;
+import com.sparta.productservice.product.infra.event.message.CrawledProductMessage;
 
 @SpringBootTest
 @ActiveProfiles("test")

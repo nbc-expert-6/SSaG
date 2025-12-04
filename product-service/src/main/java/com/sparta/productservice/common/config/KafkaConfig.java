@@ -44,7 +44,7 @@ public class KafkaConfig {
 		config.put(ErrorHandlingDeserializer.VALUE_DESERIALIZER_CLASS, JsonDeserializer.class.getName());
 
 		config.put(JsonDeserializer.VALUE_DEFAULT_TYPE,
-			"com.sparta.productservice.product.infra.messaging.message.CrawledProductMessage");
+			"com.sparta.productservice.product.infra.event.message.CrawledProductMessage");
 
 		return new DefaultKafkaConsumerFactory<>(config);
 	}
@@ -84,9 +84,6 @@ public class KafkaConfig {
 
 		config.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG,
 			org.springframework.kafka.support.serializer.JsonSerializer.class);
-
-		// config.put(JsonDeserializer.VALUE_DEFAULT_TYPE,
-		// 	"com.sparta.productservice.product.infra.messaging.message.CrawledProductMessage");
 
 		return new DefaultKafkaProducerFactory<>(config);
 	}

@@ -1,5 +1,6 @@
 package com.sparta.productservice.product.infra.repository;
 
+import java.math.BigDecimal;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -24,4 +25,15 @@ public class MainProductRepositoryAdapter implements MainProductRepository {
 	public MainProduct save(MainProduct mainProduct) {
 		return jpaMainProductRepository.save(mainProduct);
 	}
+
+	@Override
+	public void increaseReviewStat(UUID mainProduct, BigDecimal rating) {
+		jpaMainProductRepository.increaseReviewStat(mainProduct, rating);
+	}
+
+	@Override
+	public void increaseClick(UUID mainProduct) {
+		jpaMainProductRepository.increaseClick(mainProduct);
+	}
+
 }

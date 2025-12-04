@@ -2,6 +2,7 @@ package com.sparta.productservice.product.present;
 
 import java.util.UUID;
 
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
@@ -16,9 +17,12 @@ import com.sparta.productservice.common.dto.ApiResponse;
 import com.sparta.productservice.product.app.ProductService;
 import com.sparta.productservice.product.app.dto.CreateMainProductResult;
 import com.sparta.productservice.product.app.dto.GetProductResult;
+import com.sparta.productservice.product.domain.repository.dto.MainProductSearchResult;
 import com.sparta.productservice.product.present.dto.CreateMainProductRequest;
 import com.sparta.productservice.product.present.dto.CreateMainProductResponse;
 import com.sparta.productservice.product.present.dto.GetProductResponse;
+import com.sparta.productservice.product.present.dto.SearchMainProductRequest;
+import com.sparta.productservice.product.present.dto.SearchMainProductResponse;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -41,7 +45,6 @@ public class MainProductController {
 		return ResponseEntity.ok(ApiResponse.success(response));
 	}
 
-	// Main 상품 등록
 	@PostMapping
 	public ResponseEntity<ApiResponse<CreateMainProductResponse>> createMainProduct(
 		@RequestBody @Valid CreateMainProductRequest request) {
@@ -53,5 +56,14 @@ public class MainProductController {
 					"메인 상품 생성 성공"
 				)
 			);
+	}
+
+	@PostMapping("/search")
+	public ResponseEntity<ApiResponse<SearchMainProductResponse>> searchMainProduct(
+		@RequestBody @Valid SearchMainProductRequest request
+	) {
+		Page<MainProductSearchResult> result = productService.searchMainProduct(request.toCommand());
+		SearchMainProductResponse response = SearchMainProductResponse.from(result);
+		return ResponseEntity.ok(ApiResponse.success(response));
 	}
 }

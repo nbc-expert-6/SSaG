@@ -74,3 +74,4 @@ networks:
   infra:
     name: infra
     driver: bridge
+    external: true

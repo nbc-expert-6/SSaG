@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 import json
 import psycopg2  # Python에서 PostgreSQL 데이터베이스 접속
-import uuid
 from datetime import datetime
 from gensim.models import Word2Vec  # 벡터 임베딩
 from itertools import groupby  # 연속된 동일 값들을 그룹화할때

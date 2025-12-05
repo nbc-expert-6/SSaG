@@ -48,7 +48,7 @@ def fetch_recent_events(batch_size=1000):
         events.append(msg)
 
         # 새로 가져온 메시지 출력
-        print(f"[NEW MESSAGE] sessionId={msg['sessionId']}, productId={msg['productId']}, clickedAt={msg['clickedAt']}")
+        print(f"[NEW MESSAGE] sessionId={msg['sessionId']}, productId={msg['productId']}, timestamp={msg['timestamp']}")
 
         # batch_size가 되면 yield
         if len(events) >= batch_size:
@@ -71,7 +71,7 @@ def fetch_recent_events(batch_size=1000):
 def build_sequences(logs):
     print("Sorting logs...")
 
-    logs_sorted = sorted(logs, key=itemgetter("sessionId", "clickedAt"))
+    logs_sorted = sorted(logs, key=itemgetter("sessionId", "timestamp"))
 
     sequences = []
     for session_id, items in groupby(logs_sorted, key=itemgetter("sessionId")):

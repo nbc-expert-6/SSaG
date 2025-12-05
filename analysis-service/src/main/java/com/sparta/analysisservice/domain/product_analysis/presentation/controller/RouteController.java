@@ -8,7 +8,7 @@ public class RouteController {
 
 	@GetMapping("/test")
 	public String test() {
-		return "click";
+		return "sample";
 	}
 
 }

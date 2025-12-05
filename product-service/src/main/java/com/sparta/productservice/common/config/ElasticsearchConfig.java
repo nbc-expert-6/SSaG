@@ -28,7 +28,6 @@ public class ElasticsearchConfig extends ElasticsearchConfiguration {
 		ClientConfiguration.MaybeSecureClientConfigurationBuilder builder = ClientConfiguration.builder()
 			.connectedTo(parseUri(elasticsearchUri));
 
-		// 인증 정보가 있으면 추가
 		if (username != null && !username.isEmpty()) {
 			builder.withBasicAuth(username, password);
 		}

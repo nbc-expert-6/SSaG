@@ -1,13 +1,14 @@
+import logging
 import re
 import time
-import logging
-import undetected_chromedriver as uc
-
 from typing import List
+
+import undetected_chromedriver as uc
 from selenium.common import NoSuchElementException
 from selenium.webdriver.common.by import By
-from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as ec
+from selenium.webdriver.support.ui import WebDriverWait
+
 from common.config import CHROME_BINARY, CHROMEDRIVER_PATH
 from common.logging_utils import setup_logger
 from crawler.review_parser import ReviewParser
@@ -17,6 +18,7 @@ setup_logger()
 
 class AuctionReviewParser(ReviewParser):
     def __init__(self, max_pages: int = None):
+        self.max_pages = max_pages
 
         options = uc.ChromeOptions()
         options.add_argument("--no-sandbox")

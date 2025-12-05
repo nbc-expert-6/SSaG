@@ -5,11 +5,9 @@ import java.util.NoSuchElementException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindException;
-import org.springframework.web.ErrorResponse;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
-import org.springframework.web.server.ResponseStatusException;
 
 import com.sparta.productservice.common.dto.ApiResponse;
 
@@ -31,7 +29,7 @@ import lombok.extern.slf4j.Slf4j;
 public class GlobalExceptionHandler {
 	/**
 	 * 비즈니스 규칙 위반 예외 처리
-	 * IllegalStateException, IllegalArgumentException 등
+	 * IllegalStateException, IllegalArgumentException
 	 */
 	@ExceptionHandler({IllegalStateException.class, IllegalArgumentException.class})
 	public ResponseEntity<ApiResponse<ErrorResponse>> handleBusinessException(Exception e) {

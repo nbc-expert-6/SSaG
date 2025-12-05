@@ -29,7 +29,6 @@ public class MainProductSortMapper {
 			case RECENT ->
 				Sort.by(Sort.Order.desc("createdAt"));
 
-			// ✅ 혹시 enum이 나중에 추가돼도 안전하게 RECENT로 fallback
 			default ->
 				Sort.by(Sort.Order.desc("clickCount"));
 		};

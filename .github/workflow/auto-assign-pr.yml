@@ -1,0 +1,97 @@
+name: Auto Setup PR
+
+on:
+  pull_request:
+    types: [opened, reopened]
+
+jobs:
+  setup-and-add-to-project:
+    name: Setup PR & Add to Project
+    runs-on: ubuntu-latest
+    steps:
+      # Milestone, Labels, Assignee 설정
+      - name: Setup metadata
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const pr = context.payload.pull_request;
+            const owner = context.repo.owner;
+            const repo = context.repo.repo;
+            const prNumber = pr.number;
+            const prAuthor = pr.user.login;
+            
+            console.log(`🚀 Setting up PR #${prNumber} by @${prAuthor}`);
+            
+            // Milestone
+            try {
+              const milestones = await github.rest.issues.listMilestones({
+                owner,
+                repo,
+                state: 'open'
+              });
+            
+              if (milestones.data.length > 0) {
+                await github.rest.issues.update({
+                  owner,
+                  repo,
+                  issue_number: prNumber,
+                  milestone: milestones.data[0].number
+                });
+                console.log(`✅ Milestone: ${milestones.data[0].title}`);
+              } else {
+                console.log('⚠️ No open milestones found');
+              }
+            } catch (error) {
+              console.error('❌ Milestone error:', error.message);
+            }
+            
+            // Labels (브랜치 규칙에 맞게)
+            try {
+              const branchName = pr.head.ref;
+              const labels = ['awaiting-review'];
+            
+              if (branchName.startsWith('feat/')) {
+                labels.push('feature');
+              } else if (branchName.startsWith('fix/')) {
+                labels.push('bug');
+              } else if (branchName.startsWith('refactor/')) {
+                labels.push('refactoring');
+              } else if (branchName.startsWith('chore/')) {
+                labels.push('chore');
+              } else if (branchName.startsWith('docs/')) {
+                labels.push('documentation');
+              }
+            
+              await github.rest.issues.addLabels({
+                owner,
+                repo,
+                issue_number: prNumber,
+                labels
+              });
+              console.log(`✅ Labels: ${labels.join(', ')}`);
+            } catch (error) {
+              console.error('❌ Labels error:', error.message);
+            }
+            
+            // Assignee
+            try {
+              await github.rest.issues.addAssignees({
+                owner,
+                repo,
+                issue_number: prNumber,
+                assignees: [prAuthor]
+              });
+              console.log(`✅ Assignee: @${prAuthor}`);
+            } catch (error) {
+              console.error('❌ Assignee error:', error.message);
+            }
+            
+            console.log('🎉 Metadata setup completed!');
+
+      # Project에 추가
+      - name: Add to Project
+        uses: actions/add-to-project@v0.5.0
+        with:
+          project-url: https://github.com/orgs/YOUR_ORG/projects/2  # 프로젝트 URL
+          github-token: ${{ secrets.SSAG_PR_TEMP_TOKEN }}

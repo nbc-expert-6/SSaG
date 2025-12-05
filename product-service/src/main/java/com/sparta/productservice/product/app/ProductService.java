@@ -49,7 +49,7 @@ public class ProductService implements CreateProductUseCase {
 	}
 
 	/**
-	 * 현재는 등록된 메인상품이 있어야 하위상품을 등록 할 수 있습니다.
+	 * 현재는 등록된 메인상품이 있어야 하위상품을 등록 할 수 있습니다
 	 * @param command
 	 */
 	@Override

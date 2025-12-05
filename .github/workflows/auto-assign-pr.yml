@@ -49,7 +49,7 @@ jobs:
             // Labels (브랜치 규칙에 맞게)
             try {
               const branchName = pr.head.ref;
-              const labels = ['awaiting-review'];
+              const labels = [];
             
               if (branchName.startsWith('feat/')) {
                 labels.push('feat');

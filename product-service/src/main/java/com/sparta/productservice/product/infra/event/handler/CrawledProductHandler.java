@@ -1,10 +1,10 @@
-package com.sparta.productservice.product.infra.messaging.handler;
+package com.sparta.productservice.product.infra.event.handler;
 
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.sparta.productservice.product.app.port.in.CreateProductUseCase;
-import com.sparta.productservice.product.infra.messaging.message.CrawledProductMessage;
+import com.sparta.productservice.product.infra.event.message.CrawledProductMessage;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

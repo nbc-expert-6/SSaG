@@ -47,6 +47,15 @@ public class MainProduct extends BaseEntity {
 	@Column(name = "brand")
 	private String brand;
 
+	@Column(name = "click_count")
+	private Long clickCount;
+
+	@Column(name = "review_count")
+	private Long reviewCount;
+
+	@Column(name = "review_rating_avg")
+	private BigDecimal reviewRatingAvg;
+
 	@OneToMany(mappedBy = "mainProduct", cascade = CascadeType.ALL, orphanRemoval = true)
 	private List<Product> products = new ArrayList<>();
 
@@ -58,10 +67,17 @@ public class MainProduct extends BaseEntity {
 		this.lowestPrice = lowestPrice;
 		this.imageUrl = imageUrl;
 		this.brand = brand;
+		this.clickCount = 0L;
+		this.reviewCount = 0L;
+		this.reviewRatingAvg = BigDecimal.ZERO;
 	}
 
 	public void addProduct(Product product) {
 		this.products.add(product);
 		product.updateMainProduct(this);
+	}
+
+	public Integer getProductCount() {
+		return products.size();
 	}
 }

@@ -1,4 +1,4 @@
-package com.sparta.productservice.product.infra.messaging.message;
+package com.sparta.productservice.product.infra.event.message;
 
 import java.math.BigDecimal;
 import java.util.UUID;

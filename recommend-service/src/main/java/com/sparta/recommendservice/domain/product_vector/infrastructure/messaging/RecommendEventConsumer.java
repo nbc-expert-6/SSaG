@@ -5,6 +5,8 @@ import java.util.NoSuchElementException;
 import java.util.UUID;
 
 import org.springframework.kafka.annotation.KafkaListener;
+import org.springframework.kafka.annotation.RetryableTopic;
+import org.springframework.retry.annotation.Backoff;
 import org.springframework.stereotype.Service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -30,6 +32,12 @@ public class RecommendEventConsumer {
 	private final RecommendCacheService recommendCacheService;
 	private final ObjectMapper objectMapper;
 
+	@RetryableTopic(
+		attempts = "3",
+		backoff = @Backoff(delay = 2000, multiplier = 2),
+		autoCreateTopics = "true",
+		dltTopicSuffix = ".dlq"
+	)
 	@KafkaListener(topics = "embedding.updated")
 	public void handleEmbeddingUpdated(String message) {
 		EmbeddingUpdatedEvent event;
@@ -38,7 +46,7 @@ public class RecommendEventConsumer {
 			event = objectMapper.readValue(message, EmbeddingUpdatedEvent.class);
 		} catch (JsonProcessingException e) {
 			log.error("[KafkaListener] 메시지 변환 실패 -> message={}", message, e);
-			return; // 변환 실패 시 건너뜀
+			return;
 		}
 
 		List<UUID> productIds = event.productIds();
@@ -46,11 +54,10 @@ public class RecommendEventConsumer {
 
 		for (UUID productId : productIds) {
 			try {
-				// CircuitBreaker 적용
 				processRecommendation(productId);
 			} catch (Exception e) {
 				log.error("[KafkaListener] 추천 처리 실패 -> productId={}", productId, e);
-				// fallback 큐 적재나 알림 처리 가능
+				throw new RuntimeException("추천 처리 실패", e);
 			}
 		}
 	}
@@ -70,10 +77,19 @@ public class RecommendEventConsumer {
 		log.info("[Kafka] recommend.completed 이벤트 발행 -> productId={}, recommended={}", productId, recommended);
 	}
 
-	public void fallbackEmbeddingUpdated(EmbeddingUpdatedEvent event, Throwable e) {
-		List<UUID> productIds = event.productIds();
-		log.error("[Fallback] 추천 계산 또는 Redis 저장 실패, productIds={}, exception={}", productIds, e);
-		// 재시도 큐 적재, 모니터링, 알림 등
+	public void fallbackRecommendation(UUID productId, Throwable e) {
+		log.error("[Fallback] 추천 처리 실패 -> productId={}, exception={}", productId, e);
+
+		List<UUID> defaultRecommended = List.of();
+		recommendCacheService.saveRecommend(productId, defaultRecommended);
+		log.info("[Fallback] 디폴트 추천 결과 저장 -> productId={}, value={}", productId, defaultRecommended);
+
+		try {
+			String dlqMessage = objectMapper.writeValueAsString(new EmbeddingUpdatedEvent(List.of(productId)));
+			kafkaPublisher.publishToDlq("embedding.updated.dlq", dlqMessage);
+		} catch (JsonProcessingException ex) {
+			log.error("[Fallback] DLQ 직렬화 실패 -> productId={}", productId, ex);
+		}
 	}
 
 }

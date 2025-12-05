@@ -34,6 +34,32 @@ public class KafkaPublisher {
 		}
 	}
 
+	public void fallbackPublishEmbeddingUpdated(List<UUID> productIds, Throwable e) {
+		log.error("Kafka embedding.updated publish failed -> size={}, error={}",
+			productIds != null ? productIds.size() : 0, e.getMessage(), e);
+
+		List<UUID> defaultIds = List.of();
+
+		try {
+			String defaultMessage = objectMapper.writeValueAsString(new EmbeddingUpdatedEvent(defaultIds));
+			kafkaTemplate.send("embedding.updated", defaultMessage);
+			log.info("Fallback: 디폴트 Kafka 메시지 전송 완료 -> size={}", defaultIds.size());
+		} catch (JsonProcessingException ex) {
+			log.error("Fallback Kafka 직렬화 실패", ex);
+		}
+
+		try {
+			String dlqMessage = objectMapper.writeValueAsString(new EmbeddingUpdatedEvent(productIds));
+			publishToDlq("embedding.updated.dlq", dlqMessage);
+
+		} catch (JsonProcessingException ex) {
+			log.error("DLQ Kafka 직렬화 실패 -> size={}, error={}",
+				productIds != null ? productIds.size() : 0, ex.getMessage(), ex);
+		}
+	}
+
+	// ======================================================================================
+
 	@CircuitBreaker(name = "kafkaPublishCB", fallbackMethod = "fallbackPublishRecommendCompleted")
 	public void publishRecommendCompleted(UUID productId, List<UUID> recommendedIds) {
 		try {
@@ -46,15 +72,25 @@ public class KafkaPublisher {
 		}
 	}
 
-	// Fallback Method
-	public void fallbackPublishEmbeddingUpdated(List<UUID> productIds, Throwable e) {
-		log.error("Kafka embedding.updated publish failed -> size={}, error={}",
-			productIds != null ? productIds.size() : 0, e.getMessage(), e);
-		// 알림, 모니터링, 재시도 큐 적재
-	}
-
 	public void fallbackPublishRecommendCompleted(UUID productId, List<UUID> recommendedIds, Throwable e) {
 		log.error("Kafka recommend.completed publish failed : {}", productId, e);
+
+		try {
+			String dlqMessage = objectMapper.writeValueAsString(new RecommendCompletedEvent(productId, recommendedIds));
+			publishToDlq("recommend.completed.dlq", dlqMessage);
+
+		} catch (JsonProcessingException ex) {
+			log.error("DLQ Kafka 직렬화 실패 -> productId={}, error={}", productId, ex.getMessage(), ex);
+		}
+	}
+
+	public void publishToDlq(String topic, String message) {
+		try {
+			kafkaTemplate.send(topic, message);
+			log.info("DLQ 메시지 전송 완료 -> topic={}, message={}", topic, message);
+		} catch (Exception e) {
+			log.error("DLQ 메시지 전송 실패 -> topic={}, message={}", topic, message, e);
+		}
 	}
 
 }

@@ -63,6 +63,7 @@ jobs:
                 labels.push('docs');
               } else if (branchName.startsWith('test/')) {
                 labels.push('test');
+              }
             
               await github.rest.issues.addLabels({
                 owner,

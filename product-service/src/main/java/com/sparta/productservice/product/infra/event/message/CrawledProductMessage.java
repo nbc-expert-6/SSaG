@@ -21,7 +21,7 @@ public record CrawledProductMessage(
 		return new CreateProductCommand(
 			UUID.fromString(this.mainProductId),
 			this.name,
-			PlatformType.valueOf(this.platform.toUpperCase()),  // 대소문자 안전 처리
+			PlatformType.valueOf(this.platform.toUpperCase()),
 			this.saleLink,
 			this.price,
 			this.shippingFee

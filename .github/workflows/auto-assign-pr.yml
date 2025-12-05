@@ -52,16 +52,17 @@ jobs:
               const labels = ['awaiting-review'];
             
               if (branchName.startsWith('feat/')) {
-                labels.push('feature');
+                labels.push('feat');
               } else if (branchName.startsWith('fix/')) {
-                labels.push('bug');
+                labels.push('fix');
               } else if (branchName.startsWith('refactor/')) {
-                labels.push('refactoring');
+                labels.push('refactor');
               } else if (branchName.startsWith('chore/')) {
                 labels.push('chore');
               } else if (branchName.startsWith('docs/')) {
-                labels.push('documentation');
-              }
+                labels.push('docs');
+              } else if (branchName.startsWith('test/')) {
+                labels.push('test');
             
               await github.rest.issues.addLabels({
                 owner,
@@ -93,5 +94,5 @@ jobs:
       - name: Add to Project
         uses: actions/add-to-project@v0.5.0
         with:
-          project-url: https://github.com/orgs/SSaG/projects/2  # 프로젝트 URL
+          project-url: https://github.com/orgs/nbc-expert-6/projects/2  # 프로젝트 URL
           github-token: ${{ secrets.SSAG_PR_TEMP_TOKEN }}

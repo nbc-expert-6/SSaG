@@ -93,5 +93,5 @@ jobs:
       - name: Add to Project
         uses: actions/add-to-project@v0.5.0
         with:
-          project-url: https://github.com/orgs/SSaG/projects/2  # 프로젝트 URL
+          project-url: https://github.com/orgs/nbc-expert-6/projects/2  # 프로젝트 URL
           github-token: ${{ secrets.SSAG_PR_TEMP_TOKEN }}

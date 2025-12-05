@@ -33,15 +33,4 @@ if __name__ == "__main__":
             producer.send('product-details', product_details)
             logging.info(f"[publish] product-details: {product_details}")
 
-    # # 테스트용
-    # urls = ["https://itempage3.auction.co.kr/DetailView.aspx?itemno=F301578522",
-    #         "https://itempage3.auction.co.kr/DetailView.aspx?itemno=F366343357"]
-    # for url in urls:
-    #     product_details = parser.get_product_details(url)
-    #     product_details["main_product_id"] = "main_product_id"
-    #     product_details["platform"] = "auction"
-    #     product_details["sale_link"] = url
-    #
-    #     logging.info(f"[publish] product-details: {product_details}")
-
     parser.quit()

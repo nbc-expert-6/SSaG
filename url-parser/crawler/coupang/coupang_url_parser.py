@@ -61,6 +61,18 @@ class CoupangUrlParser(UrlParser):
         search_box.send_keys(Keys.ENTER)
         time.sleep(2)
 
+    """
+    검색 결과가 있으면 True, 없으면 False
+    """
+    def has_result(self) -> bool:
+
+        try:
+            # 쿠팡 no-result 요소 탐지
+            no_result = self.driver.find_elements(By.CSS_SELECTOR, "[class*='no-result_magnifier']")
+            return len(no_result) == 0
+        except Exception:
+            return False
+
     def sort_by_low_price(self):
         low_price_btn = self.wait.until(
             EC.element_to_be_clickable((By.CSS_SELECTOR, "label[for='sorter-LOW_PRICE']"))
@@ -79,6 +91,20 @@ class CoupangUrlParser(UrlParser):
             a_tag = li.find_element(By.TAG_NAME, "a")
             links.append(a_tag.get_attribute("href"))
         return links
+
+    def get_product_urls(self, keyword: str) -> List[str]:
+        """
+        전체 플로우
+        :return: List[str]
+        """
+        self.open_main_page()
+        self.search(keyword)
+        if not self.has_result():
+            return []
+        self.sort_by_low_price()
+        self.remove_add()
+        links = self.get_product_links()
+        return links[:self.max_links]
 
     def quit(self):
         self.driver.quit()

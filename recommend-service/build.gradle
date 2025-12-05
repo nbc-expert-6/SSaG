@@ -46,6 +46,9 @@ dependencies {
     // Circuitbreaker-Resilience4j
     implementation 'org.springframework.cloud:spring-cloud-starter-circuitbreaker-resilience4j'
 
+    // Actuator
+    implementation 'org.springframework.boot:spring-boot-starter-actuator'
+
     // Feign Client
     implementation 'org.springframework.cloud:spring-cloud-starter-openfeign'
 
@@ -57,6 +60,9 @@ dependencies {
 
     // PGVector 타입
     implementation group: 'com.pgvector', name: 'pgvector', version: '0.1.6'
+
+    // Prometheus
+    runtimeOnly 'io.micrometer:micrometer-registry-prometheus'
 
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
     testImplementation 'org.springframework.boot:spring-boot-starter-test'

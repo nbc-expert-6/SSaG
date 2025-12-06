@@ -1,0 +1,15 @@
+# Selenium 기반 크롤링
+selenium
+undetected-chromedriver
+
+# 데이터베이스
+sqlalchemy
+psycopg2-binary
+
+# 메시지 큐 / 스트리밍
+kafka-python
+
+# 개발 도구 (개발 환경 전용)
+isort
+pre-commit
+python-dotenv

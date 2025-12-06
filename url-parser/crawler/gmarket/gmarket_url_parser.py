@@ -62,6 +62,14 @@ class GmarketUrlParser(UrlParser):
         search_box.send_keys(Keys.ENTER)
         time.sleep(2)
 
+    def has_result(self) -> bool:
+        try:
+            no_result = self.driver.find_elements(By.CLASS_NAME, "box__component-no-result")
+            return len(no_result) == 0
+        except Exception:
+            return True
+
+
     def sort_by_low_price(self):
 
         # 정렬 열기 버튼 클릭
@@ -102,4 +110,18 @@ class GmarketUrlParser(UrlParser):
         links = list(dict.fromkeys(links))
 
         # max_links 만큼 잘라서 반환
+        return links[:self.max_links]
+
+    def get_product_urls(self, keyword: str) -> List[str]:
+        """
+        전체 플로우
+        :return: List[str]
+        """
+        self.open_main_page()
+        self.search(keyword)
+        if not self.has_result():
+            return []
+        self.sort_by_low_price()
+        self.remove_add()
+        links = self.get_product_links()
         return links[:self.max_links]

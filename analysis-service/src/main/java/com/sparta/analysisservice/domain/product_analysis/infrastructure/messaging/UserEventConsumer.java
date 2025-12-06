@@ -10,8 +10,12 @@ import java.util.UUID;
 
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.kafka.annotation.KafkaListener;
+import org.springframework.kafka.annotation.RetryableTopic;
+import org.springframework.retry.annotation.Backoff;
 import org.springframework.stereotype.Service;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sparta.analysisservice.domain.product_analysis.application.service.ClickEventExtractor;
 import com.sparta.analysisservice.domain.product_analysis.domain.entity.UserEventDocument;
 import com.sparta.analysisservice.domain.product_analysis.domain.repository.UserEventRepository;
@@ -29,22 +33,41 @@ public class UserEventConsumer {
 	private final KafkaPublisher kafkaPublisher;
 	private final RedisTemplate<String, String> redisTemplate;
 	private final ClickEventExtractor clickEventExtractor;
+	private final ObjectMapper objectMapper;
 
 	private static final String SESSION_KEY_PREFIX = "user:session:";
 	private static final Duration SESSION_TTL = Duration.ofMinutes(10);
 
+	@RetryableTopic(
+		attempts = "3",
+		backoff = @Backoff(delay = 2000, multiplier = 2),
+		autoCreateTopics = "true",
+		dltTopicSuffix = ".dlq"
+	)
 	@KafkaListener(topics = "user.event", groupId = "user-group")
-	public void consume(UserActivityEvent event) {
-		logEventReceived(event);
+	public void consume(String payload) {
+		UserActivityEvent event;
 
-		if (!isSessionActive(event.sessionId())) {
-			startNewSession(event.sessionId());
-		} else {
-			refreshSessionTTL(event.sessionId());
+		try {
+			event = objectMapper.readValue(payload, UserActivityEvent.class);
+			logEventReceived(event);
+
+			if (!isSessionActive(event.sessionId())) {
+				startNewSession(event.sessionId());
+			} else {
+				refreshSessionTTL(event.sessionId());
+			}
+
+			saveEventToElasticsearch(event);
+			publishClickEvents();
+
+		} catch (JsonProcessingException e) {
+			log.error("Kafka 메시지 파싱 실패", e);
+			throw new RuntimeException("Kafka 메시지 처리 실패", e);
+		} catch (Exception e) {
+			log.error("Kafka 메시지 처리 중 예외 발생", e);
+			throw e;
 		}
-
-		saveEventToElasticsearch(event);
-		publishClickEvents();
 	}
 
 	// 로그

@@ -7,6 +7,8 @@ spring:
       - kafka
       - elasticsearch
       - redis
+      - actuator
+
     active: test
 server:
   port: 8082

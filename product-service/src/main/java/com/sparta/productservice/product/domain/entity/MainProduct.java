@@ -75,9 +75,21 @@ public class MainProduct extends BaseEntity {
 	public void addProduct(Product product) {
 		this.products.add(product);
 		product.updateMainProduct(this);
+
+		updateLowestPrice(product.getPrice());
 	}
 
 	public Integer getProductCount() {
 		return products.size();
+	}
+
+	private void updateLowestPrice(BigDecimal productPrice) {
+		if (productPrice == null) {
+			return;
+		}
+
+		if (this.lowestPrice == null || productPrice.compareTo(this.lowestPrice) < 0) {
+			this.lowestPrice = productPrice;
+		}
 	}
 }

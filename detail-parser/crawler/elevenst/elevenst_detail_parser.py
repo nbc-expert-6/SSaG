@@ -19,6 +19,8 @@ setup_logger()
 class ElevenStDetailParser(DetailParser):
     def __init__(self):
 
+        self.main_product_id = None
+
         options = uc.ChromeOptions()
         options.add_argument("--no-sandbox")
         options.add_argument("--disable-dev-shm-usage")
@@ -173,16 +175,19 @@ class ElevenStDetailParser(DetailParser):
             shipping_fee = None
 
         return {
+            "main_product_id": self.main_product_id,
             "brand": brand,
             "name": name,
             "seller": seller,
             "price": price,
             "shipping_fee": shipping_fee,
             "image_url": image_url,
-            "platform": Platform.ELEVENTH_ST.value
+            "platform": Platform.ELEVENTH_ST.value,
+            "sale_link": self.driver.current_url
         }
 
-    def get_product_details(self, url: str) -> dict:
+    def get_product_details(self, url, main_product_id):
+        self.main_product_id = main_product_id
         self.open_product_detail_page(url)
         return self.get_product_info()
 

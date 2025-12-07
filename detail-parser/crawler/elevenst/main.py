@@ -27,10 +27,7 @@ if __name__ == "__main__":
 
         # 제품 상세 정보 파싱 실행
         for url in urls:
-            product_details = parser.get_product_details(url)
-            product_details["main_product_id"] = main_product_id
-            product_details["sale_link"] = url
-
+            product_details = parser.get_product_details(url, main_product_id)
             producer.send('product-details', product_details)
             logging.info(f"[publish] product-details: {product_details}")
 

@@ -1,8 +1,8 @@
-from crawler.auction.auction_detail_parser import AuctionDetailParser
-from common.kafka_utils import create_consumer
-from common.kafka_utils import create_producer
-from common.logging_utils import setup_logger
 import logging
+
+from common.kafka_utils import create_consumer, create_producer
+from common.logging_utils import setup_logger
+from crawler.auction.auction_detail_parser import AuctionDetailParser
 
 # Kafka Consumer 설정
 consumer = create_consumer(
@@ -29,7 +29,6 @@ if __name__ == "__main__":
         for url in urls:
             product_details = parser.get_product_details(url)
             product_details["main_product_id"] = main_product_id
-            product_details["platform"] = "auction"
             product_details["sale_link"] = url
 
             producer.send('product-details', product_details)

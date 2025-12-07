@@ -159,20 +159,19 @@ class AuctionReviewParser(ReviewParser):
     def _parse_review(self, review) -> dict:
 
         # 초기값 설정
-        author_name = ""
+        author_name = None
         rating = None
-        content = ""
+        content = None
         image_urls = []
-        created_at = ""
+        created_at = None
 
         # 작성자
         try:
             author_name = review.find_element(By.CSS_SELECTOR, "p.text__writer").text
         except NoSuchElementException:
-            author_name = ""
+            logging.exception("[_parse_review] 리뷰 작성자 파싱 실패")
         except Exception as e:
-            logging.exception("리뷰 작성자 파싱 오류:", e)
-            raise
+            logging.exception(f"[_parse_review] 리뷰 작성자 파싱 예외 발생: {e}")
 
         # 평점
         try:
@@ -183,21 +182,19 @@ class AuctionReviewParser(ReviewParser):
                 percent = int(m.group(1))
                 rating = percent // 20
             else:
-                rating = None
+                rating = 0
         except NoSuchElementException:
-            rating = None
+            logging.exception("[_parse_review] 평점 파싱 실패")
         except Exception as e:
-            logging.exception("리뷰 평점 파싱 오류:", e)
-            raise
+            logging.exception(f"[_parse_review] 평점 파싱 예외 발생: {e}")
 
         # 내용
         try:
             content = review.find_element(By.CSS_SELECTOR, ".box__review-text p.text").text.strip()
         except NoSuchElementException:
-            content = ""
+            logging.exception("[_parse_review] 리뷰 내용 파싱 실패")
         except Exception as e:
-            logging.exception("리뷰 내용 파싱 오류:", e)
-            raise
+            logging.exception(f"[_parse_review] 리뷰 내용 파싱 예외 발생: {e}")
 
         # 이미지
         try:
@@ -208,18 +205,20 @@ class AuctionReviewParser(ReviewParser):
                 m = re.search(r'url\(["\']?(.*?)["\']?\)', style)
                 if m:
                     image_urls.append(m.group(1))
+        except NoSuchElementException:
+            logging.exception("[_parse_review] 리뷰 이미지 파싱 실패")
+            image_urls = None
         except Exception as e:
-            logging.exception("리뷰 이미지 파싱 오류:", e)
-            raise
+            logging.exception(f"[_parse_review] 리뷰 이미지 파싱 예외 발생: {e}")
+            image_urls = None
 
         # 작성 날짜
         try:
             created_at = review.find_element(By.CSS_SELECTOR, "p.text__date").text
         except NoSuchElementException:
-            created_at = ""
+            logging.exception("[_parse_review] 리뷰 작성 날짜 파싱 실패")
         except Exception as e:
-            logging.exception("리뷰 작성 날짜 파싱 오류:", e)
-            raise
+            logging.exception(f"[_parse_review] 리뷰 작성 날짜 파싱 예외 발생: {e}")
 
         return {
             "main_product_id": self.main_product_id,

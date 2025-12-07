@@ -80,7 +80,7 @@ class ElevenStDetailParser(DetailParser):
                     "//table[contains(@class,'prdc_detail_table')]//th[contains(text(),'브랜드')]/following-sibling::td")
             brand = brand_el.text.strip()
         except NoSuchElementException:
-            logging.info(f"[get_product_info] 브랜드 파싱 실패")
+            logging.exception(f"[get_product_info] 브랜드 파싱 실패")
             brand = None
         except Exception as e:
             logging.exception(f"[get_product_info] 브랜드 파싱 예외 발생: {e}")
@@ -90,7 +90,7 @@ class ElevenStDetailParser(DetailParser):
         try:
             image_url = driver.find_element(By.CSS_SELECTOR, "div.img_full img").get_attribute('src')
         except NoSuchElementException:
-            logging.info(f"[get_product_info] 이미지 파싱 실패")
+            logging.exception(f"[get_product_info] 이미지 파싱 실패")
             image_url = None
         except Exception as e:
             logging.exception(f"[get_product_info] 이미지 파싱 예외 발생: {e}")
@@ -100,7 +100,7 @@ class ElevenStDetailParser(DetailParser):
         try:
             seller = driver.find_element(By.CSS_SELECTOR, "div.c_product_store_cont h1.c_product_store_title a").text
         except NoSuchElementException:
-            logging.info(f"[get_product_info] 판매자 정보 파싱 실패")
+            logging.exception(f"[get_product_info] 판매자 정보 파싱 실패")
             seller = None
         except Exception as e:
             logging.exception(f"[get_product_info] 판매자 정보 파싱 예외 발생: {e}")
@@ -110,7 +110,7 @@ class ElevenStDetailParser(DetailParser):
         try:
             name = driver.find_element(By.CSS_SELECTOR, "div.c_product_info_title h1.title").text
         except NoSuchElementException:
-            logging.info(f"[get_product_info] 제품명 파싱 실패")
+            logging.exception(f"[get_product_info] 제품명 파싱 실패")
             name = None
         except Exception as e:
             logging.exception(f"[get_product_info] 제품명 파싱 예외 발생: {e}")
@@ -121,7 +121,7 @@ class ElevenStDetailParser(DetailParser):
             price_txt = driver.find_element(By.CSS_SELECTOR, "#finalDscPrcArea dd.price .value").text.strip()
             price = int(price_txt.replace(",", ""))
         except NoSuchElementException:
-            logging.info(f"[get_product_info] 가격 파싱 실패")
+            logging.exception(f"[get_product_info] 가격 파싱 실패")
             price = None
         except Exception as e:
             logging.exception(f"[get_product_info] 가격 파싱 예외 발생: {e}")
@@ -168,7 +168,7 @@ class ElevenStDetailParser(DetailParser):
                     shipping_fee = None
 
         except NoSuchElementException:
-            logging.info("[get_product_info] 배송비 파싱 실패")
+            logging.exception("[get_product_info] 배송비 파싱 실패")
             shipping_fee = None
         except Exception as e:
             logging.exception(f"[get_product_info] 배송비 파싱 예외 발생: {e}")

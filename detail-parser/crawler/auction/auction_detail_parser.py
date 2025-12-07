@@ -66,7 +66,7 @@ class AuctionDetailParser(DetailParser):
         try:
             image_url = driver.find_element(By.CSS_SELECTOR, "ul.viewer li.on img").get_attribute('src')
         except NoSuchElementException:
-            logging.info(f"[get_product_info] 이미지 파싱 실패")
+            logging.exception(f"[get_product_info] 이미지 파싱 실패")
             image_url = None
         except Exception as e:
             logging.exception(f"[get_product_info] 이미지 파싱 예외 발생: {e}")
@@ -80,7 +80,7 @@ class AuctionDetailParser(DetailParser):
         try:
             seller = driver.find_element(By.CSS_SELECTOR, "div.box__official-store span.text__seller a.link__seller").text
         except NoSuchElementException:
-            logging.info(f"[get_product_info] 판매자 정보 파싱 실패")
+            logging.exception(f"[get_product_info] 판매자 정보 파싱 실패")
             seller = None
         except Exception as e:
             logging.exception(f"[get_product_info] 판매자 정보 파싱 예외 발생: {e}")
@@ -90,7 +90,7 @@ class AuctionDetailParser(DetailParser):
         try:
             name = driver.find_element(By.CSS_SELECTOR, "h1.itemtit").text
         except NoSuchElementException:
-            logging.info(f"[get_product_info] 제품명 파싱 실패")
+            logging.exception(f"[get_product_info] 제품명 파싱 실패")
             name = None
         except Exception as e:
             logging.exception(f"[get_product_info] 제품명 파싱 예외 발생: {e}")
@@ -101,7 +101,7 @@ class AuctionDetailParser(DetailParser):
             price_txt = driver.find_element(By.CSS_SELECTOR, "div.price strong.price_real").text.replace("판매가", "").replace("원", "").strip()
             price = int(price_txt.replace(",", ""))
         except NoSuchElementException:
-            logging.info(f"[get_product_info] 가격 파싱 실패")
+            logging.exception(f"[get_product_info] 가격 파싱 실패")
             price = None
         except Exception as e:
             logging.exception(f"[get_product_info] 가격 파싱 예외 발생: {e}")
@@ -122,7 +122,7 @@ class AuctionDetailParser(DetailParser):
                 else:
                     shipping_fee = None
         except NoSuchElementException:
-            logging.info(f"[get_product_info] 배송비 파싱 실패")
+            logging.exception(f"[get_product_info] 배송비 파싱 실패")
         except Exception as e:
             logging.exception(f"[get_product_info] 배송비 파싱 예외 발생: {e}")
 

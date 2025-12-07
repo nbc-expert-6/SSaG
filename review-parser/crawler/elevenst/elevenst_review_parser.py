@@ -101,44 +101,53 @@ class ElevenStReviewParser(ReviewParser):
             try:
                 self.wait.until(ec.presence_of_element_located((By.CSS_SELECTOR, "li.review_list_element")))
             except Exception as e:
-                logging.exception("리뷰 요소 로딩 실패:", e)
+                logging.exception(f"[get_review_info] 리뷰 요소 로딩 실패: {e}")
+
                 break
 
             review_items = self.driver.find_elements(By.CSS_SELECTOR, "li.review_list_element")
 
             for item in review_items[loaded_count:]:
+                # 초기값 설정
+                author_name = None
+                rating = None
+                content = None
+                image_urls = []
+                created_at = None
+
                 # 작성자
                 try:
                     author_name = item.find_element(By.CSS_SELECTOR, ".c_product_reviewer .name").text.strip()
+                except NoSuchElementException:
+                    logging.exception("[get_review_info] 리뷰 작성자 파싱 실패")
                 except Exception as e:
-                    logging.exception("리뷰 작성자 파싱 오류:", e)
-                    author_name = ""
+                    logging.exception(f"[get_review_info] 리뷰 작성자 파싱 예외 발생: {e}")
 
                 # 평점
                 try:
                     rating = int(item.find_element(By.CSS_SELECTOR, ".grade em").text)
+                except NoSuchElementException:
+                    logging.exception("[get_review_info] 평점 파싱 실패")
                 except Exception as e:
-                    logging.exception("리뷰 평점 파싱 오류:", e)
-                    rating = None
+                    logging.exception(f"[get_review_info] 평점 파싱 예외 발생: {e}")
 
                 # 내용
                 try:
                     content = item.find_element(By.CSS_SELECTOR, ".cont_text_wrap p").get_attribute("innerText").strip()
                 except NoSuchElementException:
-                    content = ""
+                    logging.exception("[get_review_info] 리뷰 내용 파싱 실패")
                 except Exception as e:
-                    logging.exception("리뷰 내용 파싱 오류:", e)
-                    content = ""
+                    logging.exception(f"[get_review_info] 리뷰 내용 파싱 예외 발생: {e}")
 
                 # 작성 날짜
                 try:
                     created_at = item.find_element(By.CSS_SELECTOR, ".side .date").text.strip()
+                except NoSuchElementException:
+                    logging.exception("[get_review_info] 리뷰 작성 날짜 파싱 실패")
                 except Exception as e:
-                    logging.exception("리뷰 작성 날짜 파싱 오류:", e)
-                    created_at = ""
+                    logging.exception(f"[get_review_info] 리뷰 작성 날짜 파싱 예외 발생: {e}")
 
                 # 이미지
-                image_urls = []
                 try:
                     thumbs = item.find_elements(By.CSS_SELECTOR, ".c_product_review_thumbnail2 ul.list li button")
                     for btn in thumbs:
@@ -149,8 +158,12 @@ class ElevenStReviewParser(ReviewParser):
                         m = re.search(r"url\(['\"]?(.*?)['\"]?\)", style)
                         if m:
                             image_urls.append(m.group(1))
+                except NoSuchElementException:
+                    logging.exception("[get_review_info] 리뷰 이미지 파싱 실패")
+                    image_urls = None
                 except Exception as e:
-                    logging.exception("리뷰 이미지 파싱 오류:", e)
+                    logging.exception(f"[get_review_info] 리뷰 이미지 파싱 예외 발생: {e}")
+                    image_urls = None
 
                 results.append({
                     "main_product_id": self.main_product_id,

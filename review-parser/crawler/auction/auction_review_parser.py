@@ -227,7 +227,7 @@ class AuctionReviewParser(ReviewParser):
             "created_at": created_at,
             "content": content,
             "image_urls": image_urls,
-            "platform": Platform.AUCTION.value,
+            "platform": Platform.AUCTION.value
         }
 
     def quit(self):

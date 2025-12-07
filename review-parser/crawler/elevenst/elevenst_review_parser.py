@@ -158,7 +158,7 @@ class ElevenStReviewParser(ReviewParser):
                     "created_at": created_at,
                     "content": content,
                     "image_urls": image_urls,
-                    "platform": Platform.ELEVENTH_ST.value,
+                    "platform": Platform.ELEVENTH_ST.value
                 })
 
             loaded_count = len(results)

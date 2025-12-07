@@ -29,15 +29,13 @@ if __name__ == "__main__":
         # 제품 리뷰 정보 파싱 실행
         for url in urls:
             product_reviews = {}
-            reviews = parser.get_reviews(url)
+            reviews = parser.get_reviews(url, main_product_id)
 
             if len(reviews) < 1:
                 logging.info(f"[리뷰 없음]: {url}")
                 continue
 
-            product_reviews["main_product_id"] = main_product_id
             product_reviews["reviews"] = reviews
-
             producer.send('product-reviews', product_reviews)
             logging.info(f"[publish] product-reviews: {product_reviews}")
 

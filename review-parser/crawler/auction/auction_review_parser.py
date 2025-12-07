@@ -19,6 +19,7 @@ setup_logger()
 
 class AuctionReviewParser(ReviewParser):
     def __init__(self, max_pages: int = None):
+        self.main_product_id = None
         self.max_pages = max_pages
 
         options = uc.ChromeOptions()
@@ -150,7 +151,7 @@ class AuctionReviewParser(ReviewParser):
         btn = page_buttons[0]
         self.driver.execute_script("arguments[0].scrollIntoView(true);", btn)
         self.driver.execute_script("arguments[0].click();", btn)
-        time.sleep(1.3)
+        time.sleep(1)
 
         return True
 
@@ -221,6 +222,7 @@ class AuctionReviewParser(ReviewParser):
             raise
 
         return {
+            "main_product_id": self.main_product_id,
             "author_name": author_name,
             "title": "",
             "rating": rating,
@@ -229,6 +231,13 @@ class AuctionReviewParser(ReviewParser):
             "image_urls": image_urls,
             "platform": Platform.AUCTION.value
         }
+
+    def get_reviews(self, url: str, main_product_id) -> List[dict]:
+        self.main_product_id = main_product_id
+        self.open_product_detail_page(url)
+        self.move_to_review()
+        reviews = self.get_review_info()
+        return reviews
 
     def quit(self):
         self.driver.quit()

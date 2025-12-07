@@ -18,6 +18,7 @@ setup_logger()
 
 class ElevenStReviewParser(ReviewParser):
     def __init__(self):
+        self.main_product_id = None
         self.no_review = None
 
         options = uc.ChromeOptions()
@@ -152,6 +153,7 @@ class ElevenStReviewParser(ReviewParser):
                     logging.exception("리뷰 이미지 파싱 오류:", e)
 
                 results.append({
+                    "main_product_id": self.main_product_id,
                     "author_name": author_name,
                     "title": "",
                     "rating": rating,
@@ -187,6 +189,13 @@ class ElevenStReviewParser(ReviewParser):
         # 메인 프레임으로 이동
         self.driver.switch_to.default_content()
         return results
+
+    def get_reviews(self, url: str, main_product_id) -> List[dict]:
+        self.main_product_id = main_product_id
+        self.open_product_detail_page(url)
+        self.move_to_review()
+        reviews = self.get_review_info()
+        return reviews
 
     def quit(self):
         self.driver.quit()

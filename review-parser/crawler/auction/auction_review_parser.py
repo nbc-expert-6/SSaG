@@ -11,6 +11,7 @@ from selenium.webdriver.support.ui import WebDriverWait
 
 from common.config import CHROME_BINARY, CHROMEDRIVER_PATH
 from common.logging_utils import setup_logger
+from common.platform import Platform
 from crawler.review_parser import ReviewParser
 
 # Logging 설정
@@ -226,6 +227,7 @@ class AuctionReviewParser(ReviewParser):
             "created_at": created_at,
             "content": content,
             "image_urls": image_urls,
+            "platform": Platform.AUCTION.value,
         }
 
     def quit(self):

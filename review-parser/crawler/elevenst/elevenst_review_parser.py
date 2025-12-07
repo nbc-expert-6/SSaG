@@ -1,15 +1,17 @@
+import logging
 import re
 import time
-import logging
-import undetected_chromedriver as uc
-
 from typing import List
+
+import undetected_chromedriver as uc
 from selenium.common import NoSuchElementException
 from selenium.webdriver.common.by import By
-from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as ec
+from selenium.webdriver.support.ui import WebDriverWait
+
 from common.config import CHROME_BINARY, CHROMEDRIVER_PATH
 from common.logging_utils import setup_logger
+from common.platform import Platform
 from crawler.review_parser import ReviewParser
 
 setup_logger()
@@ -155,7 +157,8 @@ class ElevenStReviewParser(ReviewParser):
                     "rating": rating,
                     "created_at": created_at,
                     "content": content,
-                    "image_urls": image_urls
+                    "image_urls": image_urls,
+                    "platform": Platform.ELEVENTH_ST.value,
                 })
 
             loaded_count = len(results)

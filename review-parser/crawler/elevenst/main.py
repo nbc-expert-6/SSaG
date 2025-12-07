@@ -35,7 +35,6 @@ if __name__ == "__main__":
                 continue
 
             product_reviews["main_product_id"] = main_product_id
-            product_reviews["platform"] = "11st"
             product_reviews["reviews"] = reviews
 
             producer.send('product-reviews', product_reviews)

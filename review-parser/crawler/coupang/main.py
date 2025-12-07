@@ -30,8 +30,10 @@ if __name__ == "__main__":
         for url in urls:
             product_reviews = {}
             reviews = parser.get_reviews(url)
+            if(len(reviews) < 1):
+                logging.warning(f"[no-review] 리뷰가 존재하지 않아 메시지를 발행하지 않습니다. ", {url})
+                continue
             product_reviews["main_product_id"] = main_product_id
-            product_reviews["platform"] = "auction"
             product_reviews["reviews"] = reviews
 
             producer.send('product-reviews', product_reviews)

@@ -8,6 +8,8 @@ spring:
       - redis
       - kafka
       - service
+      - actuator
+    active: test
 server:
   port: 8081
 

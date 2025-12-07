@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.sparta.recommendservice.domain.product_vector.application.service.KafkaInitializerService;
 import com.sparta.recommendservice.domain.product_vector.application.service.ProductVectorService;
 import com.sparta.recommendservice.domain.product_vector.presentation.common.dto.ApiResponse;
 import com.sparta.recommendservice.domain.product_vector.presentation.common.dto.RecommendationViewResponseDto;
@@ -22,6 +23,8 @@ import lombok.RequiredArgsConstructor;
 public class RecommendationController {
 
 	private final ProductVectorService service;
+
+	private final KafkaInitializerService initializerService;
 
 	@GetMapping("/{productId}")
 	public ResponseEntity<ApiResponse<List<RecommendationViewResponseDto>>> getRecommendations(
@@ -38,6 +41,14 @@ public class RecommendationController {
 	public String test() {
 		service.updateProductVectors();
 		return "Test success!";
+	}
+
+	// Kafka 토픽 1000개 넣어 실행 시간 확인용
+	// TODO : 배포할때는 지우기
+	@GetMapping("/test2")
+	public String test2() {
+		initializerService.sendBulkMessages();
+		return "Test2 success!!";
 	}
 
 }

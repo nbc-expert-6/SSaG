@@ -6,6 +6,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.sparta.analysisservice.domain.product_analysis.application.command.UserEventCommand;
 import com.sparta.analysisservice.domain.product_analysis.application.service.UserEventService;
 import com.sparta.analysisservice.domain.product_analysis.presentation.dto.UserEventRequestDto;
 
@@ -21,7 +22,8 @@ public class UserEventController {
 
 	@PostMapping("/user-event")
 	public ResponseEntity<Void> trackEvent(@RequestBody UserEventRequestDto req, HttpSession session) {
-		userEventService.trackEvent(session, req.getProductId(), req.getEventType(), req.getMeta());
+		UserEventCommand command = UserEventRequestDto.toCommand(req);
+		userEventService.trackEvent(session, command);
 		return ResponseEntity.ok().build();
 	}
 

@@ -26,8 +26,12 @@ if __name__ == "__main__":
         main_product_id = str(row['id'])
         keyword = row['name']
         urls = parser.get_product_urls(keyword)
+
+        if len(urls) < 1:
+            logging.info(f"{keyword} 검색 결과 없음")
+            continue
+
         logging.info(f"{keyword} 검색 완료: {len(urls)}개 링크")
-        logging.info(urls)
         producer.send('elevenst-product-urls', {'main_product_id': main_product_id, 'urls': urls})
 
     parser.quit()

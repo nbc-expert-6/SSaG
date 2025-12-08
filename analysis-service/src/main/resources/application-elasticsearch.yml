@@ -6,13 +6,14 @@ spring:
     elasticsearch:
       host: localhost
       port: 9200
-      
+
 ---
 spring:
   config:
     activate:
-      on-profile: local
-  data:
-    elasticsearch:
-      host: localhost
-      port: 9200
+      on-profile: docker
+  elasticsearch:
+    uris: http://elasticsearch:9200
+    username: elasticsearch
+    password: qwer1234!
+

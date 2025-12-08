@@ -9,6 +9,6 @@ spring:
       - redis
       - actuator
 
-    active: test
+    active: docker
 server:
   port: 8082

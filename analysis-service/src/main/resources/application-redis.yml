@@ -12,8 +12,8 @@ spring:
 spring:
   config:
     activate:
-      on-profile: local
+      on-profile: docker
   data:
     redis:
-      host: localhost
+      host: redis
       port: 6379

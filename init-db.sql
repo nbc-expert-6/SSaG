@@ -1,4 +1,4 @@
-@formatter:off
+-- @formatter:off
 
 -- 데이터베이스 생성
 CREATE DATABASE product_service_db;

@@ -12,9 +12,9 @@ public record ProductInfoDto(
 	BigDecimal price,
 	String name,
 	String imageUrl,
-	String platformType
+	Long reviewCount,
+	BigDecimal reviewRatingAvg
 ) {
-
 	public static ProductInfoDto from(ProductInfoFeignClientResponse dto) {
 		return new ProductInfoDto(
 			dto.productId(),
@@ -23,8 +23,10 @@ public record ProductInfoDto(
 			dto.price(),
 			dto.name(),
 			dto.imageUrl(),
-			dto.platformType()
+			dto.reviewCount(),
+			dto.reviewRatingAvg()
 		);
 	}
 }
+
 

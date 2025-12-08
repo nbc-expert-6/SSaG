@@ -14,8 +14,10 @@ spring:
     activate:
       on-profile: docker
   kafka:
+    bootstrap-servers: kafka:9092
     consumer:
       bootstrap-servers: kafka:9092
     producer:
       bootstrap-servers: kafka:9092
-
+    admin:
+      bootstrap-servers: kafka:9092

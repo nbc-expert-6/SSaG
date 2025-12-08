@@ -5,6 +5,8 @@ import java.util.Map;
 
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.producer.ProducerConfig;
+import org.apache.kafka.common.serialization.StringDeserializer;
+import org.apache.kafka.common.serialization.StringSerializer;
 import org.springframework.boot.autoconfigure.kafka.KafkaProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -16,6 +18,10 @@ import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.core.ProducerFactory;
 import org.springframework.kafka.support.serializer.ErrorHandlingDeserializer;
 import org.springframework.kafka.support.serializer.JsonDeserializer;
+import org.springframework.kafka.support.serializer.JsonSerializer;
+
+import com.sparta.productservice.product.infra.event.message.CrawledProductMessage;
+import com.sparta.productservice.review.infra.event.message.CrawledReviewMessage;
 
 import lombok.RequiredArgsConstructor;
 
@@ -25,47 +31,29 @@ public class KafkaConfig {
 
 	private final KafkaProperties kafkaProperties;
 
-	/**
-	 * Kafka Consumer Factory 생성
-	 *
-	 * application.yml의 설정을 기반으로 ConsumerFactory를 구성합니다.
-	 * Key와 Value 모두 JSON으로 역직렬화합니다.
-	 *
-	 * @return ConsumerFactory
-	 */
+	// ============================================================
+	// 범용 Consumer (기본)
+	// ============================================================
+
 	@Bean
 	public ConsumerFactory<Object, Object> consumerFactory() {
 		Map<String, Object> config = new HashMap<>(kafkaProperties.buildConsumerProperties());
 
 		config.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, ErrorHandlingDeserializer.class);
-		config.put(ErrorHandlingDeserializer.KEY_DESERIALIZER_CLASS,
-			org.apache.kafka.common.serialization.StringDeserializer.class.getName());
+		config.put(ErrorHandlingDeserializer.KEY_DESERIALIZER_CLASS, StringDeserializer.class.getName());
 
 		config.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, ErrorHandlingDeserializer.class);
 		config.put(ErrorHandlingDeserializer.VALUE_DESERIALIZER_CLASS, JsonDeserializer.class.getName());
 
 		config.put(JsonDeserializer.TRUSTED_PACKAGES, "*");
-
-		config.put(JsonDeserializer.USE_TYPE_INFO_HEADERS, true);
-		config.remove(JsonDeserializer.VALUE_DEFAULT_TYPE);
+		config.put(JsonDeserializer.USE_TYPE_INFO_HEADERS, false);
 
 		return new DefaultKafkaConsumerFactory<>(config);
 	}
 
-	/**
-	 * Kafka Listener Container Factory 설정
-	 *
-	 * application.yml의 listener 설정을 사용합니다:
-	 *
-	 *   ack-mode: manual
-	 *   concurrency: concurrency-thread
-	 *
-	 * @return ConcurrentKafkaListenerContainerFactory
-	 */
 	@Bean
 	public ConcurrentKafkaListenerContainerFactory<Object, Object>
 	kafkaListenerContainerFactory() {
-
 		ConcurrentKafkaListenerContainerFactory<Object, Object> factory =
 			new ConcurrentKafkaListenerContainerFactory<>();
 
@@ -78,15 +66,80 @@ public class KafkaConfig {
 		return factory;
 	}
 
+	// ============================================================
+	// CrawledProductMessage 전용
+	// ============================================================
+
+	@Bean
+	public ConsumerFactory<String, CrawledProductMessage> crawledProductConsumerFactory() {
+		Map<String, Object> config = new HashMap<>(kafkaProperties.buildConsumerProperties());
+
+		config.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
+		config.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, JsonDeserializer.class);
+		config.put(JsonDeserializer.VALUE_DEFAULT_TYPE, CrawledProductMessage.class.getName());
+		config.put(JsonDeserializer.TRUSTED_PACKAGES, "*");
+		config.put(JsonDeserializer.USE_TYPE_INFO_HEADERS, false);
+
+		return new DefaultKafkaConsumerFactory<>(config);
+	}
+
+	@Bean
+	public ConcurrentKafkaListenerContainerFactory<String, CrawledProductMessage>
+	crawledProductKafkaListenerContainerFactory() {
+		ConcurrentKafkaListenerContainerFactory<String, CrawledProductMessage> factory =
+			new ConcurrentKafkaListenerContainerFactory<>();
+
+		factory.setConsumerFactory(crawledProductConsumerFactory());
+
+		KafkaProperties.Listener listenerProperties = kafkaProperties.getListener();
+		factory.setConcurrency(listenerProperties.getConcurrency());
+		factory.getContainerProperties().setAckMode(listenerProperties.getAckMode());
+
+		return factory;
+	}
+
+	// ============================================================
+	// CrawledReviewMessage 전용
+	// ============================================================
+
+	@Bean
+	public ConsumerFactory<String, CrawledReviewMessage> crawledReviewConsumerFactory() {
+		Map<String, Object> config = new HashMap<>(kafkaProperties.buildConsumerProperties());
+
+		config.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
+		config.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, JsonDeserializer.class);
+		config.put(JsonDeserializer.VALUE_DEFAULT_TYPE, CrawledReviewMessage.class.getName());
+		config.put(JsonDeserializer.TRUSTED_PACKAGES, "*");
+		config.put(JsonDeserializer.USE_TYPE_INFO_HEADERS, false);
+
+		return new DefaultKafkaConsumerFactory<>(config);
+	}
+
+	@Bean
+	public ConcurrentKafkaListenerContainerFactory<String, CrawledReviewMessage>
+	crawledReviewKafkaListenerContainerFactory() {
+		ConcurrentKafkaListenerContainerFactory<String, CrawledReviewMessage> factory =
+			new ConcurrentKafkaListenerContainerFactory<>();
+
+		factory.setConsumerFactory(crawledReviewConsumerFactory());
+
+		KafkaProperties.Listener listenerProperties = kafkaProperties.getListener();
+		factory.setConcurrency(listenerProperties.getConcurrency());
+		factory.getContainerProperties().setAckMode(listenerProperties.getAckMode());
+
+		return factory;
+	}
+
+	// ============================================================
+	// Producer
+	// ============================================================
+
 	@Bean
 	public ProducerFactory<String, Object> producerFactory() {
 		Map<String, Object> config = new HashMap<>(kafkaProperties.buildProducerProperties());
 
-		config.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG,
-			org.apache.kafka.common.serialization.StringSerializer.class);
-
-		config.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG,
-			org.springframework.kafka.support.serializer.JsonSerializer.class);
+		config.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
+		config.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, JsonSerializer.class);
 
 		return new DefaultKafkaProducerFactory<>(config);
 	}

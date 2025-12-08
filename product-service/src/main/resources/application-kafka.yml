@@ -4,7 +4,7 @@ spring:
       on-profile: test
   kafka:
     consumer:
-      bootstrap-servers: localhost:9092
+      bootstrap-servers: ${SPRING_KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
       group-id: product
       auto-offset-reset: earliest
       enable-auto-commit: false
@@ -23,7 +23,7 @@ spring:
       on-profile: local
   kafka:
     consumer:
-      bootstrap-servers: localhost:9092
+      bootstrap-servers: ${SPRING_KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
       group-id: product
       auto-offset-reset: earliest
       properties:

@@ -1,0 +1,22 @@
+services:
+  recommend-service:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: recommend-service
+    ports:
+      - "8081:8081"
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+      KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+      TZ: "Asia/Seoul"
+    volumes:
+      - ./logs:/app/logs
+      - ./src/main/resources/vector:/app/vector
+    restart: unless-stopped
+    networks:
+      - infra
+
+networks:
+  infra:
+    external: true

@@ -12,8 +12,8 @@ from psycopg2.extras import execute_values  # Postgre에 대량 데이터를 효
 # 1) PostgreSQL 연결 설정
 # -----------------------------
 conn = psycopg2.connect(
-    host="localhost",
-    port=5433,
+    host="postgres",
+    port=5432,
     dbname="recommend_service_db",
     user="postgres",
     password="qwer1234!",
@@ -26,7 +26,7 @@ conn = psycopg2.connect(
 def fetch_recent_events(batch_size=1000):
     consumer = KafkaConsumer(
         "product.analysis",
-        bootstrap_servers="localhost:9092",
+        bootstrap_servers="kafka:9092",
         auto_offset_reset="earliest",
         group_id="my_consumer_group",
         enable_auto_commit=True,

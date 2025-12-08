@@ -11,7 +11,7 @@ product-service:
 spring:
   config:
     activate:
-      on-profile: local
+      on-profile: docker
 
 product-service:
-  url: http://localhost:8080
+  url: http://product-service:8080

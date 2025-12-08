@@ -62,7 +62,7 @@ public class ProductVectorService {
 	}
 
 	// 매일 자정에 벡터 업데이트 실행
-	@Scheduled(cron = "0 0 0 * * *")
+	@Scheduled(cron = "0 0 0 * * *", zone = "Asia/Seoul")
 	public void updateProductVectors() {
 		try {
 			log.info("PythonRunner.run() 호출 시작");

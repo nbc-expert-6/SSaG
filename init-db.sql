@@ -5,7 +5,7 @@ CREATE DATABASE product_service_db;
 CREATE DATABASE recommend_service_db;
 
 -- recommend_service_db에 연결
-\c recommend_service_db
+\connect recommend_service_db
 
 -- pgvector 확장 설치
 CREATE EXTENSION IF NOT EXISTS vector;

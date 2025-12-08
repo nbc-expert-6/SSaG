@@ -30,7 +30,7 @@ public class ProductClientAdapter implements ProductClient {
 
 		ProductInfoFeignClientResponse feignDto = response.data();
 
-		return ProductInfoDto.from(response.data());
+		return ProductInfoDto.from(feignDto);
 	}
 
 }

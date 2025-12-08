@@ -10,7 +10,8 @@ public record ProductInfoFeignClientResponse(
 	BigDecimal price,
 	String name,
 	String imageUrl,
-	String platformType
+	Long reviewCount,
+	BigDecimal reviewRatingAvg
 ) {
 
 }

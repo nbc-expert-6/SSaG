@@ -127,7 +127,6 @@ public class ProductVectorService {
 		return 1.0 - (dot / (Math.sqrt(normA) * Math.sqrt(normB)));
 	}
 
-	// Embedding + metadata weighted score hybrid Recommendation
 	public List<UUID> recommend(ProductVector target, int candidateSize, int finalTopK) throws JsonProcessingException {
 		double wEmbedding = W_EMBEDDING;
 		double wPrice = W_PRICE;
@@ -194,12 +193,13 @@ public class ProductVectorService {
 	private ProductInfoDto getDummyProductInfo(UUID productId) {
 		return new ProductInfoDto(
 			productId,
-			"dummyBrand",                     // brand
-			UUID.randomUUID(),                // categoryMediumId
-			BigDecimal.valueOf(1000),         // price
-			"dummyProductName",               // name
-			"https://dummyimage.com/200x200", // imageUrl
-			"dummyPlatform"                  // platformType
+			"dummyBrand",
+			UUID.randomUUID(),
+			BigDecimal.valueOf(1000),
+			"dummyProductName",
+			"https://dummyimage.com/200x200",
+			0L,
+			BigDecimal.valueOf(0)
 		);
 	}
 

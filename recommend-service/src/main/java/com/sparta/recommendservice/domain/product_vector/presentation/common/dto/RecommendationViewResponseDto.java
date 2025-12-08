@@ -18,15 +18,18 @@ public class RecommendationViewResponseDto {
 	private String name;
 	private BigDecimal price;
 	private String imageUrl;
-	private String platformType;
+	private Long reviewCount;
+	private BigDecimal reviewRatingAvg;
 
-	public static RecommendationViewResponseDto from(UUID productId, ProductInfoDto productInfo) {
+	public static RecommendationViewResponseDto from(UUID productId, ProductInfoDto dto) {
 		return new RecommendationViewResponseDto(
 			productId,
-			productInfo.name(),
-			productInfo.price(),
-			productInfo.imageUrl(),
-			productInfo.platformType()
+			dto.name(),
+			dto.price(),
+			dto.imageUrl(),
+			dto.reviewCount(),
+			dto.reviewRatingAvg()
 		);
 	}
 }
+

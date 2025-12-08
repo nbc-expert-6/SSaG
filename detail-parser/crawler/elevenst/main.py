@@ -1,8 +1,8 @@
-from crawler.elevenst.elevenst_detail_parser import ElevenStDetailParser
-from common.kafka_utils import create_consumer
-from common.kafka_utils import create_producer
-from common.logging_utils import setup_logger
 import logging
+
+from common.kafka_utils import create_consumer, create_producer
+from common.logging_utils import setup_logger
+from crawler.elevenst.elevenst_detail_parser import ElevenStDetailParser
 
 # Kafka Consumer 설정
 consumer = create_consumer(
@@ -27,11 +27,7 @@ if __name__ == "__main__":
 
         # 제품 상세 정보 파싱 실행
         for url in urls:
-            product_details = parser.get_product_details(url)
-            product_details["main_product_id"] = main_product_id
-            product_details["platform"] = "11st"
-            product_details["sale_link"] = url
-
+            product_details = parser.get_product_details(url, main_product_id)
             producer.send('product-details', product_details)
             logging.info(f"[publish] product-details: {product_details}")
 

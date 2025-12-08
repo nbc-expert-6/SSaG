@@ -3,12 +3,14 @@ import re
 import time
 
 import undetected_chromedriver as uc
+from selenium.common import NoSuchElementException
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as ec
 from selenium.webdriver.support.ui import WebDriverWait
 
 from common.config import CHROME_BINARY, CHROMEDRIVER_PATH
 from common.logging_utils import setup_logger
+from common.platform import Platform
 from crawler.detail_parser import DetailParser
 
 # Logging 설정
@@ -16,6 +18,8 @@ setup_logger()
 
 class ElevenStDetailParser(DetailParser):
     def __init__(self):
+
+        self.main_product_id = None
 
         options = uc.ChromeOptions()
         options.add_argument("--no-sandbox")
@@ -75,55 +79,115 @@ class ElevenStDetailParser(DetailParser):
             brand_el = driver.find_element(By.XPATH,
                     "//table[contains(@class,'prdc_detail_table')]//th[contains(text(),'브랜드')]/following-sibling::td")
             brand = brand_el.text.strip()
+        except NoSuchElementException:
+            logging.exception(f"[get_product_info] 브랜드 파싱 실패")
+            brand = None
         except Exception as e:
-            logging.exception(f"[get_product_info] 브랜드 파싱 실패: {e}")
-            brand = ""
+            logging.exception(f"[get_product_info] 브랜드 파싱 예외 발생: {e}")
+            brand = None
 
         # 이미지
-        image_url = driver.find_element(By.CSS_SELECTOR, "div.img_full img").get_attribute('src')
-        # 판매자 정보
-        seller = driver.find_element(By.CSS_SELECTOR, "div.c_product_store_cont h1.c_product_store_title a").text
-        # 제품명
-        name = driver.find_element(By.CSS_SELECTOR, "div.c_product_info_title h1.title").text
-        # 가격
-        price_txt = driver.find_element(By.CSS_SELECTOR, "#finalDscPrcArea dd.price .value").text.strip()
-        price = int(price_txt.replace(",", ""))
-        # 배송비
-        delivery_dt = driver.find_element(By.CSS_SELECTOR, "div.delivery dt")
-        # 텍스트 노드만 추출
-        shipping_fee_txt = driver.execute_script("""
-            const dt = arguments[0];
-            let text = '';
-            dt.childNodes.forEach(node => {
-                if (node.nodeType === Node.TEXT_NODE) {
-                    text += node.textContent;
-                }
-            });
-            return text.trim();
-        """, delivery_dt)
+        try:
+            image_url = driver.find_element(By.CSS_SELECTOR, "div.img_full img").get_attribute('src')
+        except NoSuchElementException:
+            logging.exception(f"[get_product_info] 이미지 파싱 실패")
+            image_url = None
+        except Exception as e:
+            logging.exception(f"[get_product_info] 이미지 파싱 예외 발생: {e}")
+            image_url = None
 
-        # 배송비 숫자 추출
-        if "(" in shipping_fee_txt:
-            shipping_fee_txt = shipping_fee_txt.split("(")[0].strip()
-        if "무료" in shipping_fee_txt:
-            shipping_fee = 0
-        else:
-            match = re.search(r'(\d{1,3}(?:,\d{3})*|\d+)원', shipping_fee_txt)
-            if match:
-                shipping_fee = int(match.group(1).replace(',', ''))
+        # 판매자 정보
+        try:
+            seller = driver.find_element(By.CSS_SELECTOR, "div.c_product_store_cont h1.c_product_store_title a").text
+        except NoSuchElementException:
+            logging.exception(f"[get_product_info] 판매자 정보 파싱 실패")
+            seller = None
+        except Exception as e:
+            logging.exception(f"[get_product_info] 판매자 정보 파싱 예외 발생: {e}")
+            seller = None
+
+        # 제품명
+        try:
+            name = driver.find_element(By.CSS_SELECTOR, "div.c_product_info_title h1.title").text
+        except NoSuchElementException:
+            logging.exception(f"[get_product_info] 제품명 파싱 실패")
+            name = None
+        except Exception as e:
+            logging.exception(f"[get_product_info] 제품명 파싱 예외 발생: {e}")
+            name = None
+
+        # 가격
+        try:
+            price_txt = driver.find_element(By.CSS_SELECTOR, "#finalDscPrcArea dd.price .value").text.strip()
+            price = int(price_txt.replace(",", ""))
+        except NoSuchElementException:
+            logging.exception(f"[get_product_info] 가격 파싱 실패")
+            price = None
+        except Exception as e:
+            logging.exception(f"[get_product_info] 가격 파싱 예외 발생: {e}")
+            price = None
+
+        # 배송비 파싱
+        try:
+            # delivery / delivery_abroad 중 하나 선택
+            delivery_dt = None
+            for selector in ["div.delivery dt", "div.delivery_abroad dt"]:
+                elements = driver.find_elements(By.CSS_SELECTOR, selector)
+                if elements:
+                    delivery_dt = elements[0]
+                    break
+
+            if not delivery_dt:
+                raise NoSuchElementException("배송 영역 dt 요소 없음")
+
+            # 텍스트 추출: 텍스트 노드 + 버튼/스팬 제거 후 텍스트만
+            shipping_fee_txt = driver.execute_script("""
+                const dt = arguments[0];
+                let output = '';
+                dt.childNodes.forEach(node => {
+                    if (node.nodeType === Node.TEXT_NODE) {
+                        output += node.textContent;
+                    }
+                });
+                return output.trim();
+            """, delivery_dt)
+
+            # 예: "무료배송  (조건부 무료)" → 괄호 제거
+            if "(" in shipping_fee_txt:
+                shipping_fee_txt = shipping_fee_txt.split("(")[0].strip()
+
+            # 무료배송 처리
+            if "무료" in shipping_fee_txt:
+                shipping_fee = 0
             else:
-                shipping_fee = None
+                # 숫자 패턴 탐색
+                match = re.search(r'(\d{1,3}(?:,\d{3})*|\d+)원', shipping_fee_txt)
+                if match:
+                    shipping_fee = int(match.group(1).replace(',', ''))
+                else:
+                    shipping_fee = None
+
+        except NoSuchElementException:
+            logging.exception("[get_product_info] 배송비 파싱 실패")
+            shipping_fee = None
+        except Exception as e:
+            logging.exception(f"[get_product_info] 배송비 파싱 예외 발생: {e}")
+            shipping_fee = None
 
         return {
+            "main_product_id": self.main_product_id,
             "brand": brand,
             "name": name,
             "seller": seller,
             "price": price,
             "shipping_fee": shipping_fee,
-            "image_url": image_url
+            "image_url": image_url,
+            "platform": Platform.ELEVENTH_ST.value,
+            "sale_link": self.driver.current_url
         }
 
-    def get_product_details(self, url: str) -> dict:
+    def get_product_details(self, url, main_product_id):
+        self.main_product_id = main_product_id
         self.open_product_detail_page(url)
         return self.get_product_info()
 

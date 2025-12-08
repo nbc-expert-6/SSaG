@@ -57,19 +57,19 @@ class AuctionUrlParser(UrlParser):
         search_box.clear()
         search_box.send_keys(keyword)
         search_box.send_keys(Keys.ENTER)
-        time.sleep(3)
+        time.sleep(2)
 
     def sort_by_low_price(self):
         try:
             sort_button = self.wait.until(EC.presence_of_element_located(
                 (By.CSS_SELECTOR, "button.button--toggle_sort_item_list")))
             self.driver.execute_script("arguments[0].click();", sort_button)
-            time.sleep(2)
+            time.sleep(1)
 
             low_price_link = self.wait.until(EC.presence_of_element_located(
                 (By.XPATH, "//ul[@class='list']/li[3]/a[@class='link']")))
             self.driver.execute_script("arguments[0].click();", low_price_link)
-            time.sleep(3)
+            time.sleep(1)
         except Exception as e:
             print(f"정렬 실패: {e}")
 
@@ -85,11 +85,28 @@ class AuctionUrlParser(UrlParser):
                 links.append(href)
         return links
 
+    def has_no_result(self) -> bool:
+        try:
+            # 검색 결과 없음 영역 존재 확인
+            self.wait.until(
+                EC.presence_of_element_located(
+                    (By.CSS_SELECTOR, "div.component.component--no_result")
+                )
+            )
+            return True
+        except:
+            return False
+
     def get_product_urls(self, keyword: str) -> List[str]:
         self.open_main_page()
         self.search(keyword)
+
+        if self.has_no_result():
+            return []
+
         self.sort_by_low_price()
         self.remove_add()
+
         links = self.get_product_links()
         return links[:self.max_links]
 

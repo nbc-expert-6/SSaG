@@ -1,15 +1,17 @@
+import logging
 import re
 import time
-import logging
-import undetected_chromedriver as uc
-
 from typing import List
+
+import undetected_chromedriver as uc
 from selenium.common import NoSuchElementException
 from selenium.webdriver.common.by import By
-from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as ec
+from selenium.webdriver.support.ui import WebDriverWait
+
 from common.config import CHROME_BINARY, CHROMEDRIVER_PATH
 from common.logging_utils import setup_logger
+from common.platform import Platform
 from crawler.review_parser import ReviewParser
 
 # Logging 설정
@@ -17,6 +19,8 @@ setup_logger()
 
 class AuctionReviewParser(ReviewParser):
     def __init__(self, max_pages: int = None):
+        self.main_product_id = None
+        self.max_pages = max_pages
 
         options = uc.ChromeOptions()
         options.add_argument("--no-sandbox")
@@ -147,7 +151,7 @@ class AuctionReviewParser(ReviewParser):
         btn = page_buttons[0]
         self.driver.execute_script("arguments[0].scrollIntoView(true);", btn)
         self.driver.execute_script("arguments[0].click();", btn)
-        time.sleep(1.3)
+        time.sleep(1)
 
         return True
 
@@ -155,20 +159,19 @@ class AuctionReviewParser(ReviewParser):
     def _parse_review(self, review) -> dict:
 
         # 초기값 설정
-        author_name = ""
+        author_name = None
         rating = None
-        content = ""
+        content = None
         image_urls = []
-        created_at = ""
+        created_at = None
 
         # 작성자
         try:
             author_name = review.find_element(By.CSS_SELECTOR, "p.text__writer").text
         except NoSuchElementException:
-            author_name = ""
+            logging.exception("[_parse_review] 리뷰 작성자 파싱 실패")
         except Exception as e:
-            logging.exception("리뷰 작성자 파싱 오류:", e)
-            raise
+            logging.exception(f"[_parse_review] 리뷰 작성자 파싱 예외 발생: {e}")
 
         # 평점
         try:
@@ -179,21 +182,19 @@ class AuctionReviewParser(ReviewParser):
                 percent = int(m.group(1))
                 rating = percent // 20
             else:
-                rating = None
+                rating = 0
         except NoSuchElementException:
-            rating = None
+            logging.exception("[_parse_review] 평점 파싱 실패")
         except Exception as e:
-            logging.exception("리뷰 평점 파싱 오류:", e)
-            raise
+            logging.exception(f"[_parse_review] 평점 파싱 예외 발생: {e}")
 
         # 내용
         try:
             content = review.find_element(By.CSS_SELECTOR, ".box__review-text p.text").text.strip()
         except NoSuchElementException:
-            content = ""
+            logging.exception("[_parse_review] 리뷰 내용 파싱 실패")
         except Exception as e:
-            logging.exception("리뷰 내용 파싱 오류:", e)
-            raise
+            logging.exception(f"[_parse_review] 리뷰 내용 파싱 예외 발생: {e}")
 
         # 이미지
         try:
@@ -204,27 +205,38 @@ class AuctionReviewParser(ReviewParser):
                 m = re.search(r'url\(["\']?(.*?)["\']?\)', style)
                 if m:
                     image_urls.append(m.group(1))
+        except NoSuchElementException:
+            logging.exception("[_parse_review] 리뷰 이미지 파싱 실패")
+            image_urls = None
         except Exception as e:
-            logging.exception("리뷰 이미지 파싱 오류:", e)
-            raise
+            logging.exception(f"[_parse_review] 리뷰 이미지 파싱 예외 발생: {e}")
+            image_urls = None
 
         # 작성 날짜
         try:
             created_at = review.find_element(By.CSS_SELECTOR, "p.text__date").text
         except NoSuchElementException:
-            created_at = ""
+            logging.exception("[_parse_review] 리뷰 작성 날짜 파싱 실패")
         except Exception as e:
-            logging.exception("리뷰 작성 날짜 파싱 오류:", e)
-            raise
+            logging.exception(f"[_parse_review] 리뷰 작성 날짜 파싱 예외 발생: {e}")
 
         return {
+            "main_product_id": self.main_product_id,
             "author_name": author_name,
             "title": "",
             "rating": rating,
             "created_at": created_at,
             "content": content,
             "image_urls": image_urls,
+            "platform": Platform.AUCTION.value
         }
+
+    def get_reviews(self, url: str, main_product_id) -> List[dict]:
+        self.main_product_id = main_product_id
+        self.open_product_detail_page(url)
+        self.move_to_review()
+        reviews = self.get_review_info()
+        return reviews
 
     def quit(self):
         self.driver.quit()

@@ -3,11 +3,13 @@ import re
 import time
 
 import undetected_chromedriver as uc
+from selenium.common import NoSuchElementException
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 
 from common.config import CHROME_BINARY, CHROMEDRIVER_PATH
 from common.logging_utils import setup_logger
+from common.platform import Platform
 from crawler.detail_parser import DetailParser
 
 # Logging 설정
@@ -15,6 +17,8 @@ setup_logger()
 
 class AuctionDetailParser(DetailParser):
     def __init__(self):
+
+        self.main_product_id = None
 
         options = uc.ChromeOptions()
         options.add_argument("--no-sandbox")
@@ -59,41 +63,83 @@ class AuctionDetailParser(DetailParser):
         driver = self.driver
 
         # 이미지
-        image_url = driver.find_element(By.CSS_SELECTOR, "ul.viewer li.on img").get_attribute('src')
+        try:
+            image_url = driver.find_element(By.CSS_SELECTOR, "ul.viewer li.on img").get_attribute('src')
+        except NoSuchElementException:
+            logging.exception(f"[get_product_info] 이미지 파싱 실패")
+            image_url = None
+        except Exception as e:
+            logging.exception(f"[get_product_info] 이미지 파싱 예외 발생: {e}")
+            image_url = None
+
         # 브랜드
         brand_element = driver.find_elements(By.CSS_SELECTOR, "div.box__official-store span.text__brand span.text")
         brand = brand_element[0].text if brand_element else ""
+
         # 판매자 정보
-        seller = driver.find_element(By.CSS_SELECTOR, "div.box__official-store span.text__seller a.link__seller").text
+        try:
+            seller = driver.find_element(By.CSS_SELECTOR, "div.box__official-store span.text__seller a.link__seller").text
+        except NoSuchElementException:
+            logging.exception(f"[get_product_info] 판매자 정보 파싱 실패")
+            seller = None
+        except Exception as e:
+            logging.exception(f"[get_product_info] 판매자 정보 파싱 예외 발생: {e}")
+            seller = None
+
         # 제품명
-        name = driver.find_element(By.CSS_SELECTOR, "h1.itemtit").text
+        try:
+            name = driver.find_element(By.CSS_SELECTOR, "h1.itemtit").text
+        except NoSuchElementException:
+            logging.exception(f"[get_product_info] 제품명 파싱 실패")
+            name = None
+        except Exception as e:
+            logging.exception(f"[get_product_info] 제품명 파싱 예외 발생: {e}")
+            name = None
+
         # 가격
-        price_txt = driver.find_element(By.CSS_SELECTOR, "div.price strong.price_real").text.replace("판매가", "").replace("원", "").strip()
-        price = int(price_txt.replace(",", ""))
+        try:
+            price_txt = driver.find_element(By.CSS_SELECTOR, "div.price strong.price_real").text.replace("판매가", "").replace("원", "").strip()
+            price = int(price_txt.replace(",", ""))
+        except NoSuchElementException:
+            logging.exception(f"[get_product_info] 가격 파싱 실패")
+            price = None
+        except Exception as e:
+            logging.exception(f"[get_product_info] 가격 파싱 예외 발생: {e}")
+            price = None
+
         # 배송비
-        shipping_box = driver.find_element(By.CSS_SELECTOR, "div.box__information-title")
-        shipping_texts = shipping_box.find_elements(By.CSS_SELECTOR, "div.box__txt-information > span.text__branch")
-        shipping_fee_txt = shipping_texts[0].text if shipping_texts else ""
-        if "무료" in shipping_fee_txt:
-            shipping_fee = 0
-        else:
-            match = re.search(r"\(([\d,]+)원\)", shipping_fee_txt)
-            if match:
-                amount = match.group(1)  # "3,000"
-                shipping_fee = int(amount.replace(",", ""))
+        try:
+            shipping_box = driver.find_element(By.CSS_SELECTOR, "div.box__information-title")
+            shipping_texts = shipping_box.find_elements(By.CSS_SELECTOR, "div.box__txt-information > span.text__branch")
+            shipping_fee_txt = shipping_texts[0].text if shipping_texts else ""
+            if "무료" in shipping_fee_txt:
+                shipping_fee = 0
             else:
-                shipping_fee = None
+                match = re.search(r"\(([\d,]+)원\)", shipping_fee_txt)
+                if match:
+                    amount = match.group(1)  # "3,000"
+                    shipping_fee = int(amount.replace(",", ""))
+                else:
+                    shipping_fee = None
+        except NoSuchElementException:
+            logging.exception(f"[get_product_info] 배송비 파싱 실패")
+        except Exception as e:
+            logging.exception(f"[get_product_info] 배송비 파싱 예외 발생: {e}")
 
         return {
+            "main_product_id": self.main_product_id,
             "brand": brand,
             "name": name,
             "seller": seller,
             "price": price,
             "shipping_fee": shipping_fee,
-            "image_url": image_url
+            "image_url": image_url,
+            "platform": Platform.AUCTION.value,
+            "sale_link": self.driver.current_url
         }
 
-    def get_product_details(self, url: str) -> dict:
+    def get_product_details(self, url, main_product_id):
+        self.main_product_id = main_product_id
         self.open_product_detail_page(url)
         return self.get_product_info()
 

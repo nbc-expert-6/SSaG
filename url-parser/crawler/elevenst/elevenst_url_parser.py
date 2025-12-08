@@ -69,7 +69,7 @@ class ElevenStUrlParser(UrlParser):
             # 낮은 가격순 정렬 산텍
             low_price_btn = self.wait.until(EC.element_to_be_clickable((By.CSS_SELECTOR, "button[data-log-body*='낮은 가격순']")))
             low_price_btn.click()
-            time.sleep(3)
+            time.sleep(1)
 
         except Exception as e:
             print(f"정렬 실패: {e}")
@@ -85,6 +85,26 @@ class ElevenStUrlParser(UrlParser):
             href = a_tag.get_attribute("href")
             links.append(href)
         return links
+
+    def has_no_result(self) -> bool:
+        try:
+            self.wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, "div.search_nodata")))
+            return True
+        except:
+            return False
+
+    def get_product_urls(self, keyword: str) -> List[str]:
+        self.open_main_page()
+        self.search(keyword)
+
+        if self.has_no_result():
+            return []
+
+        self.sort_by_low_price()
+        self.remove_add()
+
+        links = self.get_product_links()
+        return links[:self.max_links]
 
     def quit(self):
         self.driver.quit()

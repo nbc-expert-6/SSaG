@@ -10,7 +10,6 @@ from selenium.webdriver.support.ui import WebDriverWait
 
 from common.config import CHROME_BINARY, CHROMEDRIVER_PATH
 from common.logging_utils import setup_logger
-from common.platform import Platform
 from crawler.detail_parser import DetailParser
 
 # Logging 설정
@@ -18,8 +17,6 @@ setup_logger()
 
 class ElevenStDetailParser(DetailParser):
     def __init__(self):
-
-        self.main_product_id = None
 
         options = uc.ChromeOptions()
         options.add_argument("--no-sandbox")
@@ -171,19 +168,16 @@ class ElevenStDetailParser(DetailParser):
             shipping_fee = None
 
         return {
-            "main_product_id": self.main_product_id,
             "brand": brand,
             "name": name,
             "seller": seller,
             "price": price,
             "shipping_fee": shipping_fee,
             "image_url": image_url,
-            "platform": Platform.ELEVENTH_ST.value,
             "sale_link": self.driver.current_url
         }
 
-    def get_product_details(self, url, main_product_id):
-        self.main_product_id = main_product_id
+    def get_product_details(self, url):
         self.open_product_detail_page(url)
         return self.get_product_info()
 

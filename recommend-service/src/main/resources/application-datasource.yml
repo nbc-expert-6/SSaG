@@ -29,10 +29,10 @@ logging:
 spring:
   config:
     activate:
-      on-profile: local
+      on-profile: docker
 
   datasource:
-    url: jdbc:postgresql://localhost:5433/recommend_service_db
+    url: jdbc:postgresql://postgres:5432/recommend_service_db
     username: postgres
     password: qwer1234!
     driver-class-name: org.postgresql.Driver

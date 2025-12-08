@@ -32,6 +32,8 @@ public class PythonRunnerImpl implements PythonRunner {
 		tempFile.deleteOnExit(); // 자동으로 임시 파일 삭제
 		Files.copy(is, tempFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
 
+		tempFile.setExecutable(true);
+
 		// 2. python 명령어 선택
 		String pythonCmd = System.getProperty("os.name").toLowerCase().contains("win") ? "python" : "python3";
 

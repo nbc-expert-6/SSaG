@@ -23,7 +23,7 @@ public class KafkaInitializerService {
 		String sessionId = UUID.randomUUID().toString();
 		Instant baseTime = Instant.parse("2025-12-04T11:11:17.000Z");
 
-		for (int i = 0; i < 100000; i++) {
+		for (int i = 0; i < 10; i++) {
 			String productId = UUID.randomUUID().toString();
 			String timestamp = baseTime.plus(i, ChronoUnit.SECONDS).toString();
 

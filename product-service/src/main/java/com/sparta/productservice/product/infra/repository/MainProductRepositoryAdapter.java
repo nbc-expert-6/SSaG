@@ -27,13 +27,13 @@ public class MainProductRepositoryAdapter implements MainProductRepository {
 	}
 
 	@Override
-	public void increaseReviewStat(UUID mainProduct, BigDecimal rating) {
-		jpaMainProductRepository.increaseReviewStat(mainProduct, rating);
+	public void increaseReviewStatBatch(UUID id, Long count, BigDecimal totalRating) {
+		jpaMainProductRepository.increaseReviewStatBatch(id, count, totalRating);
 	}
 
 	@Override
-	public void increaseClick(UUID mainProduct) {
-		jpaMainProductRepository.increaseClick(mainProduct);
+	public void increaseClick(UUID mainProductId) {
+		jpaMainProductRepository.increaseClick(mainProductId);
 	}
 
 }

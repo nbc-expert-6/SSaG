@@ -11,7 +11,7 @@ public interface MainProductRepository {
 
 	MainProduct save(MainProduct mainProduct);
 
-	void increaseReviewStat(UUID id, BigDecimal rating);
+	void increaseReviewStatBatch(UUID id, Long count, BigDecimal totalRating);
 
 	void increaseClick(UUID id);
 }

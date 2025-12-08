@@ -47,13 +47,13 @@ public class MainProduct extends BaseEntity {
 	@Column(name = "brand")
 	private String brand;
 
-	@Column(name = "click_count")
+	@Column(name = "click_count", nullable = false)
 	private Long clickCount;
 
-	@Column(name = "review_count")
+	@Column(name = "review_count", nullable = false)
 	private Long reviewCount;
 
-	@Column(name = "review_rating_avg")
+	@Column(name = "review_rating_avg", nullable = false)
 	private BigDecimal reviewRatingAvg;
 
 	@OneToMany(mappedBy = "mainProduct", cascade = CascadeType.ALL, orphanRemoval = true)

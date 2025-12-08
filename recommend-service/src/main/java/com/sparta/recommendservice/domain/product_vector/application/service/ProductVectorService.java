@@ -139,8 +139,8 @@ public class ProductVectorService {
 
 		float[] targetVec = target.getEmbedding().toArray();
 
-		//ProductInfoDto targetInfo = productClient.getProductInfo(target.getProductId());
-		ProductInfoDto targetInfo = getDummyProductInfo(target.getProductId());
+		ProductInfoDto targetInfo = productClient.getProductInfo(target.getProductId());
+		//ProductInfoDto targetInfo = getDummyProductInfo(target.getProductId());
 
 		// 2. 후보 상품 각각에 점수를 계산하고 정렬 후 상위 N개 선정
 		List<ScoredProduct> scoredProducts = candidates.stream()
@@ -149,8 +149,8 @@ public class ProductVectorService {
 			// 각 상품에 대해 점수 계산
 			.map(p -> {
 
-				//ProductInfoDto candidateInfo = productClient.getProductInfo(p.getProductId());
-				ProductInfoDto candidateInfo = getDummyProductInfo(p.getProductId());
+				ProductInfoDto candidateInfo = productClient.getProductInfo(p.getProductId());
+				//ProductInfoDto candidateInfo = getDummyProductInfo(p.getProductId());
 
 				double score = 0.0;
 

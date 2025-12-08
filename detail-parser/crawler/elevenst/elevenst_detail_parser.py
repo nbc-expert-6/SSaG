@@ -118,16 +118,12 @@ class ElevenStDetailParser(DetailParser):
 
         # 가격
         try:
-            price_txt = driver.find_element(By.CSS_SELECTOR, "#finalDscPrcArea dd.price .value").text.strip()
-            price = int(price_txt.replace(",", ""))
-        except NoSuchElementException:
-            logging.exception(f"[get_product_info] 가격 파싱 실패")
-            price = None
+            price = self._parse_price()
         except Exception as e:
             logging.exception(f"[get_product_info] 가격 파싱 예외 발생: {e}")
             price = None
 
-        # 배송비 파싱
+        # 배송비
         try:
             # delivery / delivery_abroad 중 하나 선택
             delivery_dt = None
@@ -193,3 +189,41 @@ class ElevenStDetailParser(DetailParser):
 
     def quit(self):
         self.driver.quit()
+
+    # ------------------------ 내부 메서드 ------------------------
+
+    """
+    11번가 가격 파싱
+    1) finalDscPrcArea의 노출 가격
+    2) maxDiscountResult의 노출 가격
+    3) 숨겨진 textContent
+    """
+    def _parse_price(self):
+        # finalDscPrcArea
+        try:
+            elem = self.driver.find_element(By.CSS_SELECTOR, "#finalDscPrcArea dd.price .value")
+            visible_price = elem.text.strip()
+            if visible_price:
+                return int(visible_price.replace(",", ""))
+        except NoSuchElementException:
+            pass
+
+        # maxDiscountResult
+        try:
+            elem = self.driver.find_element(By.CSS_SELECTOR, "#maxDiscountResult dd.price .value")
+            visible_discount = elem.text.strip()
+            if visible_discount:
+                return int(visible_discount.replace(",", ""))
+        except NoSuchElementException:
+            pass
+
+        # finalDscPrcArea의 textContent
+        try:
+            elem = self.driver.find_element(By.CSS_SELECTOR, "#finalDscPrcArea dd.price .value")
+            hidden = elem.get_attribute("textContent").strip()
+            if hidden:
+                return int(hidden.replace(",", ""))
+        except NoSuchElementException:
+            pass
+
+        return None

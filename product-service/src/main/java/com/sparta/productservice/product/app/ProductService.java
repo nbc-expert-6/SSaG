@@ -1,5 +1,6 @@
 package com.sparta.productservice.product.app;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.UUID;
@@ -13,9 +14,11 @@ import com.sparta.productservice.common.dto.PageSizeType;
 import com.sparta.productservice.product.app.command.CreateMainProductCommand;
 import com.sparta.productservice.product.app.command.CreateProductCommand;
 import com.sparta.productservice.product.app.command.SearchMainProductCommand;
+import com.sparta.productservice.product.app.command.UpdateMainProductReviewStatsCommand;
 import com.sparta.productservice.product.app.dto.CreateMainProductResult;
 import com.sparta.productservice.product.app.dto.GetProductResult;
 import com.sparta.productservice.product.app.port.in.CreateProductUseCase;
+import com.sparta.productservice.product.app.port.in.UpdateMainProductReviewStatsUseCase;
 import com.sparta.productservice.product.app.port.out.CategoryClient;
 import com.sparta.productservice.product.app.port.out.ReviewClient;
 import com.sparta.productservice.product.app.port.out.dto.CategoryInfo;
@@ -25,12 +28,15 @@ import com.sparta.productservice.product.domain.event.ProductCreatedEvent;
 import com.sparta.productservice.product.domain.repository.MainProductRepository;
 import com.sparta.productservice.product.domain.repository.MainProductSearchRepository;
 import com.sparta.productservice.product.domain.repository.dto.MainProductSearchResult;
+import com.sparta.productservice.product.infra.search.document.MainProductDocument;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
-public class ProductService implements CreateProductUseCase {
+public class ProductService implements CreateProductUseCase, UpdateMainProductReviewStatsUseCase {
 	private final MainProductRepository mainProductRepository;
 	private final CategoryClient categoryClient;
 	private final ReviewClient reviewClient;
@@ -74,5 +80,35 @@ public class ProductService implements CreateProductUseCase {
 	@Transactional(readOnly = true)
 	public Page<MainProductSearchResult> searchMainProduct(SearchMainProductCommand command) {
 		return mainProductSearchRepository.search(command);
+	}
+
+	@Override
+	@Transactional
+	public void updateReviewStats(UpdateMainProductReviewStatsCommand command) {
+		getByMainProductId(command.mainProductId());
+
+		BigDecimal totalRating = command.newRatings().stream()
+			.reduce(BigDecimal.ZERO, BigDecimal::add);
+
+		mainProductRepository.increaseReviewStatBatch(
+			command.mainProductId(),
+			command.newRatings().stream().count(),
+			totalRating
+		);
+
+		MainProduct updatedProduct = getByMainProductId(command.mainProductId());
+		syncAfterReviewUpdate(updatedProduct);
+	}
+
+	public MainProduct getByMainProductId(UUID mainProductId) {
+		return mainProductRepository.getById(mainProductId)
+			.orElseThrow(() -> new NoSuchElementException("상품을 찾을 수 없습니다."));
+	}
+
+	private void syncAfterReviewUpdate(MainProduct mainProduct) {
+		MainProductDocument document = MainProductDocument.from(mainProduct);
+		mainProductSearchRepository.save(document);
+
+		log.info("Synced review stats to ES for main product: {}", mainProduct.getId());
 	}
 }

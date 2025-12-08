@@ -11,22 +11,26 @@ import org.springframework.data.repository.query.Param;
 import com.sparta.productservice.product.domain.entity.MainProduct;
 
 public interface JpaMainProductRepository extends JpaRepository<MainProduct, UUID> {
-	@Modifying
+	@Modifying(clearAutomatically = true, flushAutomatically = true)
 	@Query("""
 		    UPDATE MainProduct m
-		    SET m.reviewCount = m.reviewCount + 1,
-		        m.reviewRatingAvg =
-		            (m.reviewRatingAvg * m.reviewCount + :rating)
-		            / (m.reviewCount + 1)
+		    SET m.reviewCount = m.reviewCount + :count,
+		        m.reviewRatingAvg = 
+		            (m.reviewRatingAvg * m.reviewCount + :totalRating) 
+		            / CAST((m.reviewCount + :count) AS bigdecimal)
 		    WHERE m.id = :id
 		""")
-	void increaseReviewStat(@Param("id") UUID id, @Param("rating") BigDecimal rating);
+	void increaseReviewStatBatch(
+		@Param("id") UUID id,
+		@Param("count") long count,
+		@Param("totalRating") BigDecimal totalRating
+	);
 
 	@Modifying
 	@Query("""
-        UPDATE MainProduct m
-        SET m.clickCount = m.clickCount + 1
-        WHERE m.id = :id
-    """)
+		    UPDATE MainProduct m
+		    SET m.clickCount = m.clickCount + 1
+		    WHERE m.id = :id
+		""")
 	void increaseClick(@Param("id") UUID id);
 }

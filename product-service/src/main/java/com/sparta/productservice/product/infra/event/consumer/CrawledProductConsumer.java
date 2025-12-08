@@ -22,7 +22,8 @@ public class CrawledProductConsumer {
 		groupId = "${spring.kafka.consumer.group-id}"
 	)
 	public void consume(CrawledProductMessage message, Acknowledgment ack) {
-		log.info("Consumed: mainProductId={}", message.mainProductId());
+		log.info(message.toString());
+		log.info("Consumed Product: mainProductId={}", message.mainProductId());
 
 		try {
 			handler.handleCrawledProduct(message);

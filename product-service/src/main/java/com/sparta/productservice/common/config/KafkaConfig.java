@@ -38,13 +38,16 @@ public class KafkaConfig {
 		Map<String, Object> config = new HashMap<>(kafkaProperties.buildConsumerProperties());
 
 		config.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, ErrorHandlingDeserializer.class);
-		config.put(ErrorHandlingDeserializer.KEY_DESERIALIZER_CLASS, JsonDeserializer.class.getName());
+		config.put(ErrorHandlingDeserializer.KEY_DESERIALIZER_CLASS,
+			org.apache.kafka.common.serialization.StringDeserializer.class.getName());
 
 		config.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, ErrorHandlingDeserializer.class);
 		config.put(ErrorHandlingDeserializer.VALUE_DESERIALIZER_CLASS, JsonDeserializer.class.getName());
 
-		config.put(JsonDeserializer.VALUE_DEFAULT_TYPE,
-			"com.sparta.productservice.product.infra.event.message.CrawledProductMessage");
+		config.put(JsonDeserializer.TRUSTED_PACKAGES, "*");
+
+		config.put(JsonDeserializer.USE_TYPE_INFO_HEADERS, true);
+		config.remove(JsonDeserializer.VALUE_DEFAULT_TYPE);
 
 		return new DefaultKafkaConsumerFactory<>(config);
 	}

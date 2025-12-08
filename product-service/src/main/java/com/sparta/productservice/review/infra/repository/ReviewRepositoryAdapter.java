@@ -33,4 +33,9 @@ public class ReviewRepositoryAdapter implements ReviewRepository {
 	public List<RatingCountQuery> getReviewRatingCountByMainProductId(UUID mainProductId) {
 		return reviewQueryRepository.getRatingDistributionByMainProductId(mainProductId);
 	}
+
+	@Override
+	public List<Review> saveAll(List<Review> reviews) {
+		return jpaReviewRepository.saveAll(reviews);
+	}
 }

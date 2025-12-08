@@ -9,7 +9,7 @@ spring:
       auto-offset-reset: earliest
       enable-auto-commit: false
       properties:
-        spring.json.trusted.packages: "com.sparta.productservice.product.*"
+        spring.json.trusted.packages: "*"
         spring.json.use.type.headers: false
 
     listener:

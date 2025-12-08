@@ -78,4 +78,9 @@ public class Review extends BaseEntity {
 	public BigDecimal getRating() {
 		return rating.getValue();
 	}
+
+	public void addReviewImage(ReviewImage reviewImage) {
+		images.add(reviewImage);
+		reviewImage.updateReview(this);
+	}
 }

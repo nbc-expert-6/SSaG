@@ -43,4 +43,8 @@ public class ReviewImage extends BaseEntity {
 		this.review = review;
 		this.imageUrl = imageUrl;
 	}
+
+	protected void updateReview(Review review) {
+		this.review = review;
+	}
 }

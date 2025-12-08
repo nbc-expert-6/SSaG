@@ -8,6 +8,8 @@ import org.springframework.data.elasticsearch.annotations.Document;
 import org.springframework.data.elasticsearch.annotations.Field;
 import org.springframework.data.elasticsearch.annotations.FieldType;
 
+import com.sparta.productservice.product.domain.entity.MainProduct;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -56,4 +58,20 @@ public class MainProductDocument {
 
 	@Field(type = FieldType.Boolean)
 	private Boolean deleted;
+
+	public static MainProductDocument from(MainProduct mainProduct) {
+		return MainProductDocument.builder()
+			.id(mainProduct.getId().toString())
+			.name(mainProduct.getName())
+			.brand(mainProduct.getBrand())
+			.imageUrl(mainProduct.getImageUrl())
+			.lowestPrice(mainProduct.getLowestPrice())
+			.productCount(mainProduct.getProducts() != null ? mainProduct.getProducts().size() : 0)
+			.rating(mainProduct.getReviewRatingAvg())
+			.reviewCount(mainProduct.getReviewCount())
+			.clickCount(mainProduct.getClickCount())
+			.categoryId(mainProduct.getCategoryMediumId().toString())
+			.deleted(mainProduct.isDeleted())
+			.build();
+	}
 }

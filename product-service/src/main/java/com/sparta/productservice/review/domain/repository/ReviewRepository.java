@@ -15,4 +15,6 @@ public interface ReviewRepository {
 	Integer countImagesByMainProductId(UUID mainProductId);
 
 	List<RatingCountQuery> getReviewRatingCountByMainProductId(UUID mainProductId);
+
+	List<Review> saveAll(List<Review> review);
 }

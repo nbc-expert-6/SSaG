@@ -11,14 +11,12 @@ from selenium.webdriver.support.ui import WebDriverWait
 
 from common.config import CHROME_BINARY, CHROMEDRIVER_PATH
 from common.logging_utils import setup_logger
-from common.platform import Platform
 from crawler.review_parser import ReviewParser
 
 setup_logger()
 
 class ElevenStReviewParser(ReviewParser):
     def __init__(self):
-        self.main_product_id = None
         self.no_review = None
 
         options = uc.ChromeOptions()
@@ -166,14 +164,12 @@ class ElevenStReviewParser(ReviewParser):
                     image_urls = None
 
                 results.append({
-                    "main_product_id": self.main_product_id,
                     "author_name": author_name,
                     "title": "",
                     "rating": rating,
                     "created_at": created_at,
                     "content": content,
-                    "image_urls": image_urls,
-                    "platform": Platform.ELEVENTH_ST.value
+                    "image_urls": image_urls
                 })
 
             loaded_count = len(results)
@@ -203,8 +199,7 @@ class ElevenStReviewParser(ReviewParser):
         self.driver.switch_to.default_content()
         return results
 
-    def get_reviews(self, url: str, main_product_id) -> List[dict]:
-        self.main_product_id = main_product_id
+    def get_reviews(self, url: str) -> List[dict]:
         self.open_product_detail_page(url)
         self.move_to_review()
         reviews = self.get_review_info()

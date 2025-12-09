@@ -11,7 +11,6 @@ from selenium.webdriver.support.ui import WebDriverWait
 
 from common.config import CHROME_BINARY, CHROMEDRIVER_PATH
 from common.logging_utils import setup_logger
-from common.platform import Platform
 from crawler.review_parser import ReviewParser
 
 # Logging 설정
@@ -19,7 +18,6 @@ setup_logger()
 
 class AuctionReviewParser(ReviewParser):
     def __init__(self, max_pages: int = None):
-        self.main_product_id = None
         self.max_pages = max_pages
 
         options = uc.ChromeOptions()
@@ -221,18 +219,15 @@ class AuctionReviewParser(ReviewParser):
             logging.exception(f"[_parse_review] 리뷰 작성 날짜 파싱 예외 발생: {e}")
 
         return {
-            "main_product_id": self.main_product_id,
             "author_name": author_name,
             "title": "",
             "rating": rating,
             "created_at": created_at,
             "content": content,
-            "image_urls": image_urls,
-            "platform": Platform.AUCTION.value
+            "image_urls": image_urls
         }
 
-    def get_reviews(self, url: str, main_product_id) -> List[dict]:
-        self.main_product_id = main_product_id
+    def get_reviews(self, url: str) -> List[dict]:
         self.open_product_detail_page(url)
         self.move_to_review()
         reviews = self.get_review_info()

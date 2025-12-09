@@ -2,6 +2,7 @@ import logging
 
 from common.kafka_utils import create_consumer, create_producer
 from common.logging_utils import setup_logger
+from common.platform import Platform
 from crawler.auction.auction_review_parser import AuctionReviewParser
 
 # Kafka Consumer 설정
@@ -29,13 +30,16 @@ if __name__ == "__main__":
         # 제품 리뷰 정보 파싱 실행
         for url in urls:
             product_reviews = {}
-            reviews = parser.get_reviews(url, main_product_id)
+            reviews = parser.get_reviews(url)
 
             if len(reviews) < 1:
                 logging.info(f"[리뷰 없음]: {url}")
                 continue
 
+            product_reviews["main_product_id"] = main_product_id
+            product_reviews["platform"] = Platform.AUCTION.value
             product_reviews["reviews"] = reviews
+
             producer.send('product-reviews', product_reviews)
             logging.info(f"[publish] product-reviews: {product_reviews}")
 

@@ -59,11 +59,29 @@ services:
     image: redis
     container_name: redis
     ports:
-      - 6379:6379
+      - "6379:6379"
     healthcheck:
       test: [ "CMD", "redis-cli", "ping" ]
       interval: 5s
       retries: 10
+    networks:
+      - infra
+
+  prometheus:
+    image: prom/prometheus
+    container_name: prometheus
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+    ports:
+      - "9090:9090"
+    networks:
+      - infra
+
+  grafana:
+    image: grafana/grafana
+    container_name: grafana
+    ports:
+      - "3000:3000"
     networks:
       - infra
 
@@ -75,4 +93,3 @@ networks:
   infra:
     name: infra
     driver: bridge
-    external: true

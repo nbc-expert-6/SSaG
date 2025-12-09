@@ -33,9 +33,3 @@ KAFKA_PUBLISH_LATENCY = Histogram(
     "Kafka 메시지 전송에 소요된 시간(초)",
     buckets=[0.01, 0.05, 0.1, 0.3, 0.5, 1]
 )
-
-DB_QUERY_LATENCY = Histogram(
-    "db_query_latency_seconds",
-    "DB 쿼리 실행에 소요된 시간(초)",
-    buckets=[0.001, 0.005, 0.01, 0.05, 0.1]
-)

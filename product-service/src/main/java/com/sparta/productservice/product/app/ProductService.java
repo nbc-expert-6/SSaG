@@ -43,7 +43,7 @@ public class ProductService implements CreateProductUseCase, UpdateMainProductRe
 	private final MainProductSearchRepository mainProductSearchRepository;
 	private final ApplicationEventPublisher eventPublisher;
 
-	@Transactional(readOnly = true)
+	@Transactional
 	public GetProductResult getProductDetailById(UUID mainProductId) {
 		MainProduct mainProduct = mainProductRepository.getById(mainProductId)
 			.orElseThrow(() -> new NoSuchElementException("상품을 찾을 수 없습니다."));

@@ -13,3 +13,6 @@ kafka-python
 isort
 pre-commit
 python-dotenv
+
+# 모니터링
+prometheus-client

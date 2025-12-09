@@ -91,7 +91,12 @@ class GmarketReviewParser:
         try:
             # 리뷰 개수 먼저 확인
             review_count_elem = self.driver.find_element(By.ID, "txtReviewTotalCount")
-            review_count = int(review_count_elem.text.strip())
+            text = review_count_elem.text.strip()
+
+            # 숫자만 남기기 (,제거)
+            clean = text.replace(",", "")
+
+            review_count = int(clean)
             if review_count == 0:
                 print("[INFO] 리뷰가 존재하지 않음")
                 return False
@@ -209,8 +214,7 @@ class GmarketReviewParser:
                     "image_urls": image_url,
                     "title": title,
                     "content": content,
-                    "rating": rating,
-                    "platform": Platform.GMARKET.value
+                    "rating": rating
                 }
                 print(review)
                 results.append(review)
@@ -258,7 +262,6 @@ class GmarketReviewParser:
                     "title": title,
                     "content": content,
                     "rating": rating,
-                    "platform": Platform.GMARKET
                 }
                 results.append(review)
                 print(review)

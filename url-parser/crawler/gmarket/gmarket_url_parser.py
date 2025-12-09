@@ -125,3 +125,7 @@ class GmarketUrlParser(UrlParser):
         self.remove_add()
         links = self.get_product_links()
         return links[:self.max_links]
+
+
+    def quit(self):
+        self.driver.quit()

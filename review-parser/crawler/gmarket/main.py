@@ -1,3 +1,4 @@
+from common.platform import Platform
 from crawler.gmarket.gmarket_review_parser import GmarketReviewParser
 from common.kafka_utils import create_consumer
 from common.kafka_utils import create_producer
@@ -25,6 +26,7 @@ if __name__ == "__main__":
         logging.info("[gmarket-product-urls]: {}".format(url_info.value))
         main_product_id = url_info.value['main_product_id']
         urls = url_info.value['urls']
+        platform = Platform.GMARKET.value
 
         # 제품 리뷰 정보 파싱 실행
         for url in urls:
@@ -35,6 +37,7 @@ if __name__ == "__main__":
                 continue
 
             product_reviews["main_product_id"] = main_product_id
+            product_reviews["platform"] = platform
             product_reviews["reviews"] = reviews
 
             producer.send('product-reviews', product_reviews)

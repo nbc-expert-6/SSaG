@@ -102,7 +102,7 @@ class CoupangReviewParser(ReviewParser):
             return True
 
         except Exception as e:
-            print(f"[WARN] 다음 페이지 이동 실패: {e}")
+            print(f"[info] 다음 페이지 없음")
             return False
 
     """
@@ -151,7 +151,7 @@ class CoupangReviewParser(ReviewParser):
             return True
 
         except Exception as e:
-            print(f"[WARN] 다음 블록 이동 중 오류 발생: {e}")
+            print(f"[info] 다음 블록 없음")
             return False
 
     """
@@ -253,6 +253,7 @@ class CoupangReviewParser(ReviewParser):
         while True:
             reviews = self.get_review_info()
             all_reviews.extend(reviews)
+
 
             if self.click_next_page():
                 continue

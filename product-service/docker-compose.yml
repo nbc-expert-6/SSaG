@@ -1,0 +1,21 @@
+version: '3.8'
+
+services:
+  product-service:
+    image: ssag-product-service:latest
+    container_name: product-service
+    ports:
+      - "8080:8080"
+    environment:
+      SPRING_PROFILES_ACTIVE: local
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/product_service_db
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: qwer1234!
+      SPRING_ELASTICSEARCH_URIS: http://elasticsearch:9200
+    networks:
+      - infra
+
+networks:
+  infra:
+    external: true

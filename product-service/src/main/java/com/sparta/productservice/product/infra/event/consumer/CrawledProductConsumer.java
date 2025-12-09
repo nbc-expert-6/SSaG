@@ -19,7 +19,8 @@ public class CrawledProductConsumer {
 
 	@KafkaListener(
 		topics = "product-details",
-		groupId = "${spring.kafka.consumer.group-id}"
+		groupId = "${spring.kafka.consumer.group-id}",
+		containerFactory = "crawledProductKafkaListenerContainerFactory"
 	)
 	public void consume(CrawledProductMessage message, Acknowledgment ack) {
 		log.info(message.toString());

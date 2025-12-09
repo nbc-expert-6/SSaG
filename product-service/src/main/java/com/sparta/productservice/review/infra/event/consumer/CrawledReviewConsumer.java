@@ -19,7 +19,8 @@ public class CrawledReviewConsumer {
 
 	@KafkaListener(
 		topics = "product-reviews",
-		groupId = "${spring.kafka.consumer.group-id}"
+		groupId = "${spring.kafka.consumer.group-id}",
+		containerFactory = "crawledReviewKafkaListenerContainerFactory"
 	)
 	public void consume(CrawledReviewMessage message, Acknowledgment ack) {
 		log.info("Consumed Review: mainProductId={}", message.mainProductId());

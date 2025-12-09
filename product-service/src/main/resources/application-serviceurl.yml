@@ -17,3 +17,11 @@ product-service:
   url: http://localhost:8080
 
 ---
+
+spring:
+  config:
+    activate:
+      on-profile: dev
+
+product-service:
+  url: http://localhost:8080

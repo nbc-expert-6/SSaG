@@ -11,3 +11,5 @@ spring:
       - elasticsearch
       - serviceurl
       - kafka
+      - zipkin
+      - actuator

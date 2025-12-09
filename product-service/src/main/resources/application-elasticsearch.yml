@@ -34,3 +34,22 @@ spring:
 logging:
   level:
     org.springframework.data.elasticsearch: debug
+
+---
+spring:
+  config:
+    activate:
+      on-profile: dev
+  elasticsearch:
+    uris: http://localhost:9200
+    connection-timeout: 5s
+    socket-timeout: 60s
+  cloud:
+    config:
+      enabled: false
+    discovery:
+      enabled: false
+
+logging:
+  level:
+    org.springframework.data.elasticsearch: debug

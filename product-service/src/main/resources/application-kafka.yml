@@ -23,7 +23,27 @@ spring:
       on-profile: local
   kafka:
     consumer:
-      bootstrap-servers: ${SPRING_KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
+      bootstrap-servers: localhost:9092
+      group-id: product
+      auto-offset-reset: earliest
+      properties:
+        spring.json.trusted.packages: "*"
+        spring.json.use.type.headers: false
+      enable-auto-commit: false
+
+    listener:
+      ack-mode: manual
+      concurrency: 3
+
+---
+
+spring:
+  config:
+    activate:
+      on-profile: local
+  kafka:
+    consumer:
+      bootstrap-servers: ${SPRING_KAFKA_BOOTSTRAP_SERVERS:kafka:9092}
       group-id: product
       auto-offset-reset: earliest
       properties:

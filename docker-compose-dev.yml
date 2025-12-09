@@ -85,6 +85,15 @@ services:
     networks:
       - infra
 
+  zipkin:
+    image: openzipkin/zipkin
+    container_name: zipkin
+    ports:
+      - "9411:9411"
+    networks:
+      - infra
+
+
 volumes:
   postgres_data:
   elasticsearch_data:
@@ -92,4 +101,4 @@ volumes:
 networks:
   infra:
     name: infra
-    driver: bridge
+    external: true

@@ -131,7 +131,7 @@ public record GetProductResponse(
 	private static PlatformPriceDto convertToPlatformPrice(GetProductResult.ProductDto dto) {
 		return new PlatformPriceDto(
 			dto.platformType().name(),
-			dto.platformType().getDescription(),
+			dto.name(),
 			formatPrice(dto.price()),
 			formatShippingFee(dto.shippingFee()),
 			formatPrice(dto.totalPrice()),
@@ -145,7 +145,7 @@ public record GetProductResponse(
 		return new ProductPriceDto(
 			dto.id().toString(),
 			dto.platformType().name(),
-			dto.platformType().getDescription(),
+			dto.name(),
 			dto.platformType().getDescription() + " 상품",
 			formatPrice(dto.price()),
 			formatShippingFee(dto.shippingFee()),

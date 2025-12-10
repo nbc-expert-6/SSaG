@@ -59,39 +59,46 @@ class AuctionDetailParser(DetailParser):
     def get_product_info(self) -> dict:
         driver = self.driver
 
+        # 초기값
+        image_url = None
+        brand = None
+        seller = None
+        name = None
+        price = None
+        shipping_fee = None
+
         # 이미지
         try:
             image_url = driver.find_element(By.CSS_SELECTOR, "ul.viewer li.on img").get_attribute('src')
         except NoSuchElementException:
             logging.exception(f"[get_product_info] 이미지 파싱 실패")
-            image_url = None
         except Exception as e:
             logging.exception(f"[get_product_info] 이미지 파싱 예외 발생: {e}")
-            image_url = None
 
         # 브랜드
-        brand_element = driver.find_elements(By.CSS_SELECTOR, "div.box__official-store span.text__brand span.text")
-        brand = brand_element[0].text if brand_element else ""
+        try:
+            brand_element = driver.find_elements(By.CSS_SELECTOR, "div.box__official-store span.text__brand span.text")
+            brand = brand_element[0].text if brand_element else ""
+        except NoSuchElementException:
+            logging.exception(f"[get_product_info] 브랜드 파싱 실패")
+        except Exception as e:
+            logging.exception(f"[get_product_info] 브랜드 파싱 예외 발생: {e}")
 
         # 판매자 정보
         try:
             seller = driver.find_element(By.CSS_SELECTOR, "div.box__official-store span.text__seller a.link__seller").text
         except NoSuchElementException:
             logging.exception(f"[get_product_info] 판매자 정보 파싱 실패")
-            seller = None
         except Exception as e:
             logging.exception(f"[get_product_info] 판매자 정보 파싱 예외 발생: {e}")
-            seller = None
 
         # 제품명
         try:
             name = driver.find_element(By.CSS_SELECTOR, "h1.itemtit").text
         except NoSuchElementException:
             logging.exception(f"[get_product_info] 제품명 파싱 실패")
-            name = None
         except Exception as e:
             logging.exception(f"[get_product_info] 제품명 파싱 예외 발생: {e}")
-            name = None
 
         # 가격
         try:
@@ -99,10 +106,8 @@ class AuctionDetailParser(DetailParser):
             price = int(price_txt.replace(",", ""))
         except NoSuchElementException:
             logging.exception(f"[get_product_info] 가격 파싱 실패")
-            price = None
         except Exception as e:
             logging.exception(f"[get_product_info] 가격 파싱 예외 발생: {e}")
-            price = None
 
         # 배송비
         try:

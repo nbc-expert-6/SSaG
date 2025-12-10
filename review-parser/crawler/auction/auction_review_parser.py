@@ -205,10 +205,8 @@ class AuctionReviewParser(ReviewParser):
                     image_urls.append(m.group(1))
         except NoSuchElementException:
             logging.exception("[_parse_review] 리뷰 이미지 파싱 실패")
-            image_urls = None
         except Exception as e:
             logging.exception(f"[_parse_review] 리뷰 이미지 파싱 예외 발생: {e}")
-            image_urls = None
 
         # 작성 날짜
         try:

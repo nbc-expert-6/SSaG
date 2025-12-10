@@ -130,12 +130,18 @@ class ElevenStReviewParser(ReviewParser):
                     logging.warning(f"[get_review_info] 평점 파싱 예외 발생: {e}")
 
                 # 내용
-                try:
-                    content = item.find_element(By.CSS_SELECTOR, ".cont_text_wrap p").get_attribute("innerText").strip()
-                except NoSuchElementException:
-                    logging.warning("[get_review_info] 리뷰 내용 파싱 실패")
-                except Exception as e:
-                    logging.warning(f"[get_review_info] 리뷰 내용 파싱 예외 발생: {e}")
+                content_box = item.find_elements(By.CSS_SELECTOR, ".cont_text_wrap")
+                if content_box:
+                    try:
+                        p = content_box[0].find_element(By.CSS_SELECTOR, "p")
+                        content = p.get_attribute("innerText").strip()
+                    except NoSuchElementException:
+                        logging.warning("[get_review_info] 리뷰 내용 파싱 실패")
+                    except Exception as e:
+                        logging.warning(f"[get_review_info] 리뷰 내용 파싱 예외 발생: {e}")
+                else:
+                    logging.info("[get_review_info] 리뷰 내용 없음")
+                    content = ""
 
                 # 작성 날짜
                 try:

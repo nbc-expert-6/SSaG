@@ -66,8 +66,8 @@ class ElevenStReviewParser(ReviewParser):
             review_tab.click()
             time.sleep(1.2)
             logging.info("[move_to_review] 리뷰 탭 클릭 완료")
-        except Exception as e:
-            logging.error(f"[move_to_review] 실패: {e}")
+        except:
+            logging.exception(f"[move_to_review] 리뷰 탭 클릭 실패")
             self.no_review = True
 
     def get_review_info(self) -> List[dict]:
@@ -87,8 +87,8 @@ class ElevenStReviewParser(ReviewParser):
         try:
             self.wait.until(ec.frame_to_be_available_and_switch_to_it((By.ID, "ifrmReview")))
             logging.info("[get_review_info] iframe 전환 완료")
-        except Exception as e:
-            logging.exception(f"[get_review_info] iframe 실패: {e}")
+        except:
+            logging.exception(f"[get_review_info] iframe 전환 실패")
             return []
 
         results = []
@@ -99,7 +99,7 @@ class ElevenStReviewParser(ReviewParser):
             try:
                 self.wait.until(ec.presence_of_element_located((By.CSS_SELECTOR, "li.review_list_element")))
             except Exception as e:
-                logging.exception(f"[get_review_info] 리뷰 요소 로딩 실패: {e}")
+                logging.warning(f"[get_review_info] 리뷰 요소 로딩 실패")
 
                 break
 
@@ -117,33 +117,33 @@ class ElevenStReviewParser(ReviewParser):
                 try:
                     author_name = item.find_element(By.CSS_SELECTOR, ".c_product_reviewer .name").text.strip()
                 except NoSuchElementException:
-                    logging.exception("[get_review_info] 리뷰 작성자 파싱 실패")
+                    logging.warning("[get_review_info] 리뷰 작성자 파싱 실패")
                 except Exception as e:
-                    logging.exception(f"[get_review_info] 리뷰 작성자 파싱 예외 발생: {e}")
+                    logging.warning(f"[get_review_info] 리뷰 작성자 파싱 예외 발생: {e}")
 
                 # 평점
                 try:
                     rating = int(item.find_element(By.CSS_SELECTOR, ".grade em").text)
                 except NoSuchElementException:
-                    logging.exception("[get_review_info] 평점 파싱 실패")
+                    logging.warning("[get_review_info] 평점 파싱 실패")
                 except Exception as e:
-                    logging.exception(f"[get_review_info] 평점 파싱 예외 발생: {e}")
+                    logging.warning(f"[get_review_info] 평점 파싱 예외 발생: {e}")
 
                 # 내용
                 try:
                     content = item.find_element(By.CSS_SELECTOR, ".cont_text_wrap p").get_attribute("innerText").strip()
                 except NoSuchElementException:
-                    logging.exception("[get_review_info] 리뷰 내용 파싱 실패")
+                    logging.warning("[get_review_info] 리뷰 내용 파싱 실패")
                 except Exception as e:
-                    logging.exception(f"[get_review_info] 리뷰 내용 파싱 예외 발생: {e}")
+                    logging.warning(f"[get_review_info] 리뷰 내용 파싱 예외 발생: {e}")
 
                 # 작성 날짜
                 try:
                     created_at = item.find_element(By.CSS_SELECTOR, ".side .date").text.strip()
                 except NoSuchElementException:
-                    logging.exception("[get_review_info] 리뷰 작성 날짜 파싱 실패")
+                    logging.warning("[get_review_info] 리뷰 작성 날짜 파싱 실패")
                 except Exception as e:
-                    logging.exception(f"[get_review_info] 리뷰 작성 날짜 파싱 예외 발생: {e}")
+                    logging.warning(f"[get_review_info] 리뷰 작성 날짜 파싱 예외 발생: {e}")
 
                 # 이미지
                 try:
@@ -157,9 +157,9 @@ class ElevenStReviewParser(ReviewParser):
                         if m:
                             image_urls.append(m.group(1))
                 except NoSuchElementException:
-                    logging.exception("[get_review_info] 리뷰 이미지 파싱 실패")
+                    logging.warning("[get_review_info] 리뷰 이미지 파싱 실패")
                 except Exception as e:
-                    logging.exception(f"[get_review_info] 리뷰 이미지 파싱 예외 발생: {e}")
+                    logging.warning(f"[get_review_info] 리뷰 이미지 파싱 예외 발생: {e}")
 
                 results.append({
                     "author_name": author_name,
@@ -180,8 +180,8 @@ class ElevenStReviewParser(ReviewParser):
             except NoSuchElementException:
                 logging.info("리뷰 더보기 버튼 없음")
                 break
-            except Exception as e:
-                logging.exception("리뷰 더보기 버튼 찾기 실패:", e)
+            except:
+                logging.exceptioin("리뷰 더보기 버튼 찾기 실패")
                 break
 
             try:
@@ -189,8 +189,8 @@ class ElevenStReviewParser(ReviewParser):
                 time.sleep(0.3)
                 more_review_btn.click()
                 time.sleep(1.0)
-            except Exception as e:
-                logging.exception("리뷰 더보기 버튼 클릭 실패:", e)
+            except:
+                logging.exceptioin("리뷰 더보기 버튼 클릭 실패:")
                 break
 
         # 메인 프레임으로 이동

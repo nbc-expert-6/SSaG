@@ -188,12 +188,17 @@ class AuctionReviewParser(ReviewParser):
             logging.warning(f"[_parse_review] 평점 파싱 예외 발생: {e}")
 
         # 내용
-        try:
-            content = review.find_element(By.CSS_SELECTOR, ".box__review-text p.text").text.strip()
-        except NoSuchElementException:
-            logging.warning("[_parse_review] 리뷰 내용 파싱 실패")
-        except Exception as e:
-            logging.warning(f"[_parse_review] 리뷰 내용 파싱 예외 발생: {e}")
+        content_boxes = review.find_elements(By.CSS_SELECTOR, ".box__review-text")
+        if content_boxes:
+            try:
+                content = content_boxes[0].find_element(By.CSS_SELECTOR, "p.text").text.strip()
+            except NoSuchElementException:
+                logging.warning("[_parse_review] 리뷰 내용 요소 없음")
+            except Exception as e:
+                logging.warning(f"[_parse_review] 리뷰 내용 파싱 예외 발생: {e}")
+        else:
+            logging.info("[_parse_review] 리뷰 내용 없음")
+            content = ""
 
         # 이미지
         try:

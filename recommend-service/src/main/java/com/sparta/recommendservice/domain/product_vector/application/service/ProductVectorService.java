@@ -140,7 +140,6 @@ public class ProductVectorService {
 		float[] targetVec = target.getEmbedding().toArray();
 
 		ProductInfoDto targetInfo = productClient.getProductInfo(target.getProductId());
-		//ProductInfoDto targetInfo = getDummyProductInfo(target.getProductId());
 
 		// 2. 후보 상품 각각에 점수를 계산하고 정렬 후 상위 N개 선정
 		List<ScoredProduct> scoredProducts = candidates.stream()
@@ -150,7 +149,6 @@ public class ProductVectorService {
 			.map(p -> {
 
 				ProductInfoDto candidateInfo = productClient.getProductInfo(p.getProductId());
-				//ProductInfoDto candidateInfo = getDummyProductInfo(p.getProductId());
 
 				double score = 0.0;
 
@@ -186,21 +184,6 @@ public class ProductVectorService {
 			.toList();
 
 		return scoredProducts.stream().map(ScoredProduct::getProductId).toList();
-	}
-
-	// 임시 Stub DTO 생성 메서드
-	// TODO : FeignClient 정상 확인되면 지우기
-	private ProductInfoDto getDummyProductInfo(UUID productId) {
-		return new ProductInfoDto(
-			productId,
-			"dummyBrand",
-			UUID.randomUUID(),
-			BigDecimal.valueOf(1000),
-			"dummyProductName",
-			"https://dummyimage.com/200x200",
-			0L,
-			BigDecimal.valueOf(0)
-		);
 	}
 
 }

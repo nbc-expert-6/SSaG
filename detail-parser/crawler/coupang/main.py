@@ -1,5 +1,6 @@
 import time
 
+from common.platform import Platform
 from crawler.coupang.coupang_detail_parser import CoupangDetailParser
 from common.kafka_utils import create_consumer
 from common.kafka_utils import create_producer
@@ -37,7 +38,7 @@ if __name__ == "__main__":
 
             product_details = parser.get_product_details(url)
             product_details["main_product_id"] = main_product_id
-
+            product_details["platform"] = Platform.COUPANG.value
             producer.send('product-details', product_details)
             # 파싱 종료
             parser_end = time.perf_counter()

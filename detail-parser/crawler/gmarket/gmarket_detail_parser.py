@@ -6,7 +6,6 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
 
 from common.config import CHROME_BINARY, CHROMEDRIVER_PATH
-from common.platform import Platform
 from crawler.detail_parser import DetailParser
 
 
@@ -137,4 +136,5 @@ class GmarketDetailParser(DetailParser):
         info["sale_link"] = self.driver.current_url
         return info
 
-        return info
+    def quit(self):
+        self.driver.quit()

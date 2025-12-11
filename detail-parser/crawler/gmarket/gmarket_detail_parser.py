@@ -134,7 +134,6 @@ class GmarketDetailParser(DetailParser):
         except Exception:
             info["image_url"] = None
 
-        info["platform"] = Platform.GMARKET.value
         info["sale_link"] = self.driver.current_url
         return info
 

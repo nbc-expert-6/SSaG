@@ -12,7 +12,7 @@ total_start = time.perf_counter()
 # Kafka Consumer 설정
 consumer = create_consumer(
     topic='elevenst-product-urls',
-    group_id='elevenst-detail-parser'
+    group_id='elevenst-detail-group'
 )
 
 # Kafka Producer 설정

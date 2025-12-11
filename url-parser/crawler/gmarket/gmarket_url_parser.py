@@ -48,6 +48,14 @@ class GmarketUrlParser(UrlParser):
             kwargs["version_main"] = None
 
         self.driver = uc.Chrome(**kwargs)
+        # 브라우저 안정화 시간 체크
+        # 타이틀에 접근 가능하면 브라우저 준비됨
+        for _ in range(10):
+            try:
+                _ = self.driver.title
+                break
+            except:
+                time.sleep(0.3)
         self.wait = WebDriverWait(self.driver, 10)
 
     def open_main_page(self):

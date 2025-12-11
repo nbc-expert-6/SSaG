@@ -16,7 +16,7 @@ import org.springframework.stereotype.Service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.sparta.analysisservice.domain.product_analysis.application.service.ClickEventExtractor;
+import com.sparta.analysisservice.domain.product_analysis.application.extractor.ClickEventExtractor;
 import com.sparta.analysisservice.domain.product_analysis.domain.entity.UserEventDocument;
 import com.sparta.analysisservice.domain.product_analysis.domain.repository.UserEventRepository;
 import com.sparta.analysisservice.domain.product_analysis.infrastructure.dto.UserActivityEvent;

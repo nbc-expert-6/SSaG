@@ -6,7 +6,8 @@ import lombok.Getter;
 public enum PlatformType {
 	COUPANG("쿠팡"),
 	AUCTION("옥션"),
-	G_MARKET("G마켓");
+	GMARKET("G마켓"),
+	ELEVENST("11번가");
 
 	private final String description;
 

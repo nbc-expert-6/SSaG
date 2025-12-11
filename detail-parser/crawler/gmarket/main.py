@@ -39,6 +39,14 @@ if __name__ == "__main__":
             product_details = parser.get_product_details(url)
             product_details["main_product_id"] = main_product_id
             product_details["platform"] = Platform.GMARKET.value
+
+            # 파싱 결과 유효성 최소 검증
+            if(product_details["price"] == None):
+                logging.info(f"{main_product_id}의 상품 상세 파싱 실패")
+                parser_end = time.perf_counter()
+                logging.info(f"[PERF] ===== parsing time: {parser_end - parser_start:.4f}s =====")
+                continue
+
             producer.send('product-details', product_details)
 
             # 파싱 종료

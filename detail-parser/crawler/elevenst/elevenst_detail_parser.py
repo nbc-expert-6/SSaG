@@ -60,6 +60,14 @@ class ElevenStDetailParser(DetailParser):
     def get_product_info(self) -> dict:
         driver = self.driver
 
+        # 초기값
+        image_url = None
+        brand = None
+        seller = None
+        name = None
+        price = None
+        shipping_fee = None
+
         # 브랜드
         try:
             # 상품 정보 탭으로 이동
@@ -77,48 +85,39 @@ class ElevenStDetailParser(DetailParser):
                     "//table[contains(@class,'prdc_detail_table')]//th[contains(text(),'브랜드')]/following-sibling::td")
             brand = brand_el.text.strip()
         except NoSuchElementException:
-            logging.exception(f"[get_product_info] 브랜드 파싱 실패")
-            brand = None
+            logging.warning(f"[get_product_info] 브랜드 파싱 실패")
         except Exception as e:
-            logging.exception(f"[get_product_info] 브랜드 파싱 예외 발생: {e}")
-            brand = None
+            logging.warning(f"[get_product_info] 브랜드 파싱 예외 발생: {e}")
 
         # 이미지
         try:
             image_url = driver.find_element(By.CSS_SELECTOR, "div.img_full img").get_attribute('src')
         except NoSuchElementException:
-            logging.exception(f"[get_product_info] 이미지 파싱 실패")
-            image_url = None
+            logging.warning(f"[get_product_info] 이미지 파싱 실패")
         except Exception as e:
-            logging.exception(f"[get_product_info] 이미지 파싱 예외 발생: {e}")
-            image_url = None
+            logging.warning(f"[get_product_info] 이미지 파싱 예외 발생: {e}")
 
         # 판매자 정보
         try:
             seller = driver.find_element(By.CSS_SELECTOR, "div.c_product_store_cont h1.c_product_store_title a").text
         except NoSuchElementException:
-            logging.exception(f"[get_product_info] 판매자 정보 파싱 실패")
-            seller = None
+            logging.warning(f"[get_product_info] 판매자 정보 파싱 실패")
         except Exception as e:
-            logging.exception(f"[get_product_info] 판매자 정보 파싱 예외 발생: {e}")
-            seller = None
+            logging.warning(f"[get_product_info] 판매자 정보 파싱 예외 발생: {e}")
 
         # 제품명
         try:
             name = driver.find_element(By.CSS_SELECTOR, "div.c_product_info_title h1.title").text
         except NoSuchElementException:
-            logging.exception(f"[get_product_info] 제품명 파싱 실패")
-            name = None
+            logging.warning(f"[get_product_info] 제품명 파싱 실패")
         except Exception as e:
-            logging.exception(f"[get_product_info] 제품명 파싱 예외 발생: {e}")
-            name = None
+            logging.warning(f"[get_product_info] 제품명 파싱 예외 발생: {e}")
 
         # 가격
         try:
             price = self._parse_price()
         except Exception as e:
-            logging.exception(f"[get_product_info] 가격 파싱 예외 발생: {e}")
-            price = None
+            logging.warning(f"[get_product_info] 가격 파싱 예외 발생: {e}")
 
         # 배송비
         try:
@@ -161,11 +160,9 @@ class ElevenStDetailParser(DetailParser):
                     shipping_fee = None
 
         except NoSuchElementException:
-            logging.exception("[get_product_info] 배송비 파싱 실패")
-            shipping_fee = None
+            logging.warning("[get_product_info] 배송비 파싱 실패")
         except Exception as e:
-            logging.exception(f"[get_product_info] 배송비 파싱 예외 발생: {e}")
-            shipping_fee = None
+            logging.warning(f"[get_product_info] 배송비 파싱 예외 발생: {e}")
 
         return {
             "brand": brand,

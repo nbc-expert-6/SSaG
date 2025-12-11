@@ -178,7 +178,6 @@ class CoupangReviewParser(ReviewParser):
             self.driver.execute_script("arguments[0].scrollIntoView({block: 'center'});", article)
 
             review_data = {}
-            review_data["platform"] = common.platform.Platform.COUPANG.value
 
             # 제목 파싱
             try:

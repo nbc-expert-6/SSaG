@@ -1,5 +1,7 @@
 package com.sparta.analysisservice.domain.product_analysis.infrastructure.beam;
 
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -59,35 +61,6 @@ public class EtlPipeline {
 			.setCoder(SerializableCoder.of(UserEventDocument.class));
 	}
 
-	// Extracted -> DataLake(간단 JSON lines) 저장
-	/*public void writeExtractedToDataLake(PCollection<BaseExtractor.Extracted> extracted,
-		String pathPrefix) {
-		extracted.apply("ExtractedToJSON", MapElements.into(TypeDescriptors.strings())
-				.via(e -> {
-					ObjectMapper mapper = new ObjectMapper();
-					try {
-						// metaJson 문자열 -> JsonNode 변환
-						JsonNode metaNode = mapper.readTree(e.getMetaJson());
-
-						// 새 ObjectNode 생성
-						ObjectNode output = mapper.createObjectNode();
-						output.put("eventType", e.getEventType());
-						output.put("productId", e.getProductId() != null ? e.getProductId().toString() : null);
-						output.put("sessionId", e.getSessionId().toString());
-						output.put("timestamp", e.getTimestamp());
-						output.set("metaJson", metaNode); // 문자열이 아닌 JsonNode로 넣음
-
-						// pretty print로 JSON 문자열 생성
-						return mapper.writerWithDefaultPrettyPrinter().writeValueAsString(output);
-					} catch (Exception ex) {
-						return "{}";
-					}
-				}))
-			.apply("WriteExtractedToDL", TextIO.write().to(pathPrefix)
-				.withSuffix(".json")
-				.withoutSharding());
-	}*/
-
 	public static class JsonArrayCombineFn extends Combine.CombineFn<String, List<String>, String> {
 
 		@Override
@@ -116,8 +89,12 @@ public class EtlPipeline {
 		}
 	}
 
+	// Extracted -> DataLake(간단 JSON lines) 저장
 	public void writeExtractedToDataLakeAsArray(PCollection<BaseExtractor.Extracted> extracted,
 		String outputFilePath) {
+
+		String today = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyyMMdd"));
+		String filePath = outputFilePath + "/" + today;
 
 		// 1) 각 객체를 JSON 문자열로 변환
 		PCollection<String> jsonStrings = extracted.apply("ExtractedToJSON", MapElements.into(TypeDescriptors.strings())
@@ -147,7 +124,7 @@ public class EtlPipeline {
 
 		// 3) 파일로 저장
 		jsonArray.apply("WriteArrayToFile", TextIO.write()
-			.to(outputFilePath)
+			.to(filePath)
 			.withoutSharding()
 			.withSuffix(".json"));
 	}

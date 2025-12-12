@@ -1,5 +1,5 @@
 services:
-  auction-url-parser:
+  auction-review-parser:
     image: auction-review-parser:latest
     container_name: auction-review-parser
     env_file:
@@ -7,7 +7,7 @@ services:
     networks:
       - infra
 
-  coupang-url-parser:
+  coupang-review-parser:
     image: coupang-review-parser:latest
     container_name: coupang-review-parser
     env_file:
@@ -15,7 +15,7 @@ services:
     networks:
       - infra
 
-  elevenst-url-parser:
+  elevenst-review-parser:
     image: elevenst-review-parser:latest
     container_name: elevenst-review-parser
     env_file:
@@ -23,7 +23,7 @@ services:
     networks:
       - infra
 
-  gmarket-url-parser:
+  gmarket-review-parser:
     image: gmarket-review-parser:latest
     container_name: gmarket-review-parser
     env_file:

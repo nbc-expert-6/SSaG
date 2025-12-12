@@ -54,7 +54,6 @@ class CoupangDetailParser(DetailParser):
 
         # 판매링크와 플랫폼 세팅
         info["sale_link"] = self.driver.current_url
-        info["platform"] = common.platform.Platform.COUPANG.value
         # 브랜드
         try:
             brand_elem = self.driver.find_element(By.CSS_SELECTOR, "div.twc-text-sm.twc-text-blue-600")

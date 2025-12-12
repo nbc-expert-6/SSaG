@@ -1,8 +1,14 @@
+import time
+
+from common.platform import Platform
 from crawler.coupang.coupang_review_parser import CoupangReviewParser
 from common.kafka_utils import create_consumer
 from common.kafka_utils import create_producer
 from common.logging_utils import setup_logger
 import logging
+
+# 시작 시간
+total_start = time.perf_counter()
 
 # Kafka Consumer 설정
 consumer = create_consumer(
@@ -17,7 +23,6 @@ producer = create_producer()
 setup_logger()
 
 if __name__ == "__main__":
-    # 임시로 6개 페이지 파싱 설정
     parser = CoupangReviewParser()
 
     for url_info in consumer:
@@ -28,28 +33,28 @@ if __name__ == "__main__":
 
         # 제품 리뷰 정보 파싱 실행
         for url in urls:
+            # 파싱 시작
+            parser_start = time.perf_counter()
+
             product_reviews = {}
             reviews = parser.get_reviews(url)
             if(len(reviews) < 1):
                 logging.warning(f"[no-review] 리뷰가 존재하지 않아 메시지를 발행하지 않습니다. ", {url})
+                # 파싱 완료
+                parser_end = time.perf_counter()
+                logging.info(f"[PERF] ===== parsing time: {parser_end - parser_start:.4f}s =====")
                 continue
+
             product_reviews["main_product_id"] = main_product_id
+            product_reviews["platform"] = Platform.COUPANG.value
             product_reviews["reviews"] = reviews
 
             producer.send('product-reviews', product_reviews)
+            # 파싱 완료
+            parser_end = time.perf_counter()
+            logging.info(f"[PERF] ===== parsing time: {parser_end - parser_start:.4f}s =====")
             logging.info(f"[publish] product-reviews: {product_reviews}")
 
-
-    # # 테스트용
-    # urls = ["https://itempage3.auction.co.kr/DetailView.aspx?itemno=F301578522",
-    #         "https://itempage3.auction.co.kr/detailview.aspx?ItemNo=A564284718"]
-    # for url in urls:
-    #     product_reviews = {}
-    #     reviews = parser.get_reviews(url)
-    #     product_reviews["main_product_id"] = "main_product_id"
-    #     product_reviews["platform"] = "auction"
-    #     product_reviews["reviews"] = reviews
-    #
-    #     logging.info(f"[publish] product-reviews: {product_reviews}")
-
     parser.quit()
+total_end = time.perf_counter()
+logging.info(f"[PERF] ===== total time: {total_end - total_start:.4f}s =====")

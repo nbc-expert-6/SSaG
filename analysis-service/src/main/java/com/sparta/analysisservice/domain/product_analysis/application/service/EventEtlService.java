@@ -72,9 +72,9 @@ public class EventEtlService {
 			grouped.apply("ComputeDuration", ParDo.of(new DurationFn()));
 
 		// 4) Write to Datalake
-		pipeline.writeExtractedToDataLake(pageEnterFeats, "/tmp/extracted/enter");
-		pipeline.writeExtractedToDataLake(pageExitFeats, "/tmp/extracted/exit");
-		pipeline.writeExtractedToDataLake(sessionDurations, "/tmp/extracted/session"); // ← New!
+		pipeline.writeExtractedToDataLakeAsArray(pageEnterFeats, "/tmp/extracted/enter");
+		pipeline.writeExtractedToDataLakeAsArray(pageExitFeats, "/tmp/extracted/exit");
+		pipeline.writeExtractedToDataLakeAsArray(sessionDurations, "/tmp/extracted/session"); // ← New!
 
 		System.out.println("[DL WRITE] Page enter/exit features write started...");
 

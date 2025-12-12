@@ -1,10 +1,14 @@
 package com.sparta.analysisservice.domain.product_analysis.infrastructure.beam;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.apache.beam.sdk.Pipeline;
 import org.apache.beam.sdk.coders.SerializableCoder;
 import org.apache.beam.sdk.io.TextIO;
 import org.apache.beam.sdk.io.elasticsearch.ElasticsearchIO;
 import org.apache.beam.sdk.options.PipelineOptions;
+import org.apache.beam.sdk.transforms.Combine;
 import org.apache.beam.sdk.transforms.MapElements;
 import org.apache.beam.sdk.transforms.ParDo;
 import org.apache.beam.sdk.values.PCollection;
@@ -56,7 +60,7 @@ public class EtlPipeline {
 	}
 
 	// Extracted -> DataLake(간단 JSON lines) 저장
-	public void writeExtractedToDataLake(PCollection<BaseExtractor.Extracted> extracted,
+	/*public void writeExtractedToDataLake(PCollection<BaseExtractor.Extracted> extracted,
 		String pathPrefix) {
 		extracted.apply("ExtractedToJSON", MapElements.into(TypeDescriptors.strings())
 				.via(e -> {
@@ -82,6 +86,70 @@ public class EtlPipeline {
 			.apply("WriteExtractedToDL", TextIO.write().to(pathPrefix)
 				.withSuffix(".json")
 				.withoutSharding());
+	}*/
+
+	public static class JsonArrayCombineFn extends Combine.CombineFn<String, List<String>, String> {
+
+		@Override
+		public List<String> createAccumulator() {
+			return new ArrayList<>();
+		}
+
+		@Override
+		public List<String> addInput(List<String> accumulator, String input) {
+			accumulator.add(input);
+			return accumulator;
+		}
+
+		@Override
+		public List<String> mergeAccumulators(Iterable<List<String>> accumulators) {
+			List<String> merged = new ArrayList<>();
+			for (List<String> acc : accumulators) {
+				merged.addAll(acc);
+			}
+			return merged;
+		}
+
+		@Override
+		public String extractOutput(List<String> accumulator) {
+			return "[" + String.join(",", accumulator) + "]";
+		}
+	}
+
+	public void writeExtractedToDataLakeAsArray(PCollection<BaseExtractor.Extracted> extracted,
+		String outputFilePath) {
+
+		// 1) 각 객체를 JSON 문자열로 변환
+		PCollection<String> jsonStrings = extracted.apply("ExtractedToJSON", MapElements.into(TypeDescriptors.strings())
+			.via(e -> {
+				ObjectMapper mapper = new ObjectMapper();
+				try {
+					JsonNode metaNode = mapper.readTree(e.getMetaJson());
+
+					ObjectNode output = mapper.createObjectNode();
+					output.put("eventType", e.getEventType());
+					output.put("productId", e.getProductId() != null ? e.getProductId().toString() : null);
+					output.put("sessionId", e.getSessionId().toString());
+					output.put("timestamp", e.getTimestamp());
+					output.set("metaJson", metaNode);
+
+					// compact JSON (한 줄)
+					return mapper.writeValueAsString(output);
+
+				} catch (Exception ex) {
+					return "{}";
+				}
+			}));
+
+		// 2) PCollection 전체를 List로 모아 JSON Array 형태로 변환
+		PCollection<String> jsonArray = jsonStrings
+			.apply("CombineToList", Combine.globally(new JsonArrayCombineFn()).withoutDefaults());
+
+		// 3) 파일로 저장
+		jsonArray.apply("WriteArrayToFile", TextIO.write()
+			.to(outputFilePath)
+			.withoutSharding()
+			.withSuffix(".json"));
 	}
 
 }

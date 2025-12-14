@@ -6,6 +6,8 @@ services:
       - .env
     networks:
       - infra
+    tmpfs:
+      - /tmp:exec
 
   coupang-detail-parser:
     image: coupang-detail-parser:latest
@@ -14,6 +16,8 @@ services:
       - .env
     networks:
       - infra
+    tmpfs:
+      - /tmp:exec
 
   elevenst-detail-parser:
     image: elevenst-detail-parser:latest
@@ -22,6 +26,8 @@ services:
       - .env
     networks:
       - infra
+    tmpfs:
+      - /tmp:exec
 
   gmarket-detail-parser:
     image: gmarket-detail-parser:latest
@@ -30,6 +36,8 @@ services:
       - .env
     networks:
       - infra
+    tmpfs:
+      - /tmp:exec
 
 networks:
   infra:

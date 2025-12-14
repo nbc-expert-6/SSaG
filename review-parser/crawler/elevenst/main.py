@@ -39,7 +39,11 @@ if __name__ == "__main__":
             reviews = parser.get_reviews(url)
 
             if len(reviews) < 1:
-                logging.info(f"[리뷰 없음]: {url}")
+                logging.info(f"[no-review] 리뷰가 존재하지 않아 메시지를 발행하지 않습니다.")
+                # [PERF] review 파싱 end
+                parser_end = time.perf_counter()
+                logging.info(f"[PERF] ===== parsing time: {parser_end - parser_start:.4f}s =====")
+
                 continue
 
             product_reviews["main_product_id"] = main_product_id

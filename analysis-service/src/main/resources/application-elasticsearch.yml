@@ -17,3 +17,7 @@ spring:
     username: elasticsearch
     password: qwer1234!
 
+etl:
+  elasticsearch:
+    host: http://elasticsearch:9200
+    index: user-events

@@ -19,22 +19,13 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
     // 2) 페이지 진입 이벤트
-    sendEvent("PAGE_VIEW", null, location.pathname);
+    sendEvent("PAGE_ENTER", null, JSON.stringify({path: location.pathname}));
 
-    // 3) 스크롤 이벤트
-    let scrolled = false;
-    window.addEventListener("scroll", () => {
-        if (!scrolled && window.scrollY / (document.body.scrollHeight - window.innerHeight) > 0.5) {
-            scrolled = true;
-            sendEvent("SCROLL_HALF", null);
-        }
+    // 3) 페이지 이탈 이벤트
+    window.addEventListener("beforeunload", (event) => {
+        const payload = JSON.stringify({eventType: "PAGE_EXIT", meta: location.pathname});
+        const blob = new Blob([payload], {type: "application/json"});
+        navigator.sendBeacon("/api/v1/user-event", blob);
     });
-
-
-    // 4) 페이지에서 특정 영역 머문 시간 측정
-    setTimeout(() => {
-        sendEvent("TIME_ON_PAGE", null, "30_seconds");
-    }, 30000);
-
 
 });

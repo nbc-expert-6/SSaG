@@ -3,7 +3,7 @@ import time
 
 from sqlalchemy import func
 
-from common.config import URL_BATCH_SIZE, DB_OFFSET
+from common.config import DB_OFFSET, URL_BATCH_SIZE
 from common.database_utils import Database
 from common.kafka_utils import create_producer
 from common.logging_utils import setup_logger
@@ -95,8 +95,8 @@ if __name__ == "__main__":
             # 추후 재시도 시 해당 값들 사용
             except Exception as e:
                 logging.error(
-                    f"처리 실패. main_product_id={main_product_id}, "
-                    f"keyword={keyword}, offset={offset}"
+                    f"처리 실패. main_product_id={main_product_id}, keyword={keyword}, offset={offset}, error={e}",
+                    exc_info=True
                 )
                 # 파싱 종료 시간
                 parser_end = time.perf_counter()

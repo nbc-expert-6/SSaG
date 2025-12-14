@@ -91,7 +91,6 @@ if __name__ == "__main__":
                     'elevenst-product-urls',
                     {'main_product_id': main_product_id, 'urls': urls}
                 )
-
                 # [PERF] url 파싱 end
                 parser_end = time.perf_counter()
                 logging.info(f"[PERF] ===== parsing time: {parser_end - parser_start:.4f}s =====")
@@ -100,8 +99,8 @@ if __name__ == "__main__":
             # 추후 재시도 시 해당 값들 사용
             except Exception as e:
                 logging.error(
-                    f"처리 실패. main_product_id={main_product_id}, "
-                    f"keyword={keyword}, offset={offset}"
+                    f"처리 실패. main_product_id={main_product_id}, keyword={keyword}, offset={offset}, error={e}",
+                    exc_info=True
                 )
 
                 # [PERF] url 파싱 end

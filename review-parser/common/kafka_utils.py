@@ -19,5 +19,9 @@ def create_consumer(topic, servers=KAFKA_BOOTSTRAP, group_id=None):
         bootstrap_servers=servers,
         value_deserializer=lambda v: json.loads(v.decode('utf-8')),
         auto_offset_reset='earliest',
-        group_id=group_id
+        group_id=group_id,
+        max_poll_interval_ms=1800000,
+        request_timeout_ms=1805000,
+        connections_max_idle_ms=1805500,
+        enable_auto_commit=False
     )

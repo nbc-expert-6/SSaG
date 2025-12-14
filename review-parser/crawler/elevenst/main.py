@@ -58,6 +58,8 @@ if __name__ == "__main__":
 
             logging.info(f"[publish] product-reviews: {product_reviews}")
 
+        consumer.commit()
+
     parser.quit()
 
 # [PERF] 전체 코드 실행 end

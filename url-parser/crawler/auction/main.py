@@ -79,6 +79,11 @@ if __name__ == "__main__":
 
                 if len(urls) < 1:
                     logging.info(f"{keyword} 검색 결과 없음")
+
+                    # [PERF] url 파싱 end
+                    parser_end = time.perf_counter()
+                    logging.info(f"[PERF] ===== parsing time: {parser_end - parser_start:.4f}s =====")
+
                     continue
 
                 logging.info(f"{keyword} 검색 완료: {len(urls)}개 링크")

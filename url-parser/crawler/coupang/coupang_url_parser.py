@@ -1,3 +1,4 @@
+import logging
 import time
 from typing import List
 
@@ -53,13 +54,16 @@ class CoupangUrlParser(UrlParser):
         self.driver.get(self.url)
 
     def search(self, keyword: str):
-        search_box = self.wait.until(
-            EC.presence_of_element_located((By.CSS_SELECTOR, "input.headerSearchKeyword"))
-        )
-        search_box.clear()
-        search_box.send_keys(keyword)
-        search_box.send_keys(Keys.ENTER)
-        time.sleep(2)
+        try:
+            search_box = self.wait.until(
+                EC.presence_of_element_located((By.CSS_SELECTOR, "input.headerSearchKeyword"))
+            )
+            search_box.clear()
+            search_box.send_keys(keyword)
+            search_box.send_keys(Keys.ENTER)
+            time.sleep(2)
+        except:
+            logging.info(self.driver.page_source)
 
     """
     검색 결과가 있으면 True, 없으면 False

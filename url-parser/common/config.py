@@ -10,7 +10,7 @@ KAFKA_BOOTSTRAP = os.getenv("KAFKA_BOOTSTRAP")
 CHROME_BINARY = os.getenv("CHROME_BINARY")
 CHROMEDRIVER_PATH = os.getenv("CHROMEDRIVER_PATH")
 
-MAX_LINKS = os.getenv("MAX_LINKS")
+MAX_LINKS = int(os.getenv("MAX_LINKS", "5"))
 URL_BATCH_SIZE = os.getenv("URL_BATCH_SIZE")
 DB_OFFSET = os.getenv("DB_OFFSET")
 

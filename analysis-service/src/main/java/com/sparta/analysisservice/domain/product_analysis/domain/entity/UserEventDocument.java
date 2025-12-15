@@ -1,5 +1,6 @@
 package com.sparta.analysisservice.domain.product_analysis.domain.entity;
 
+import java.io.Serializable;
 import java.time.Instant;
 import java.util.UUID;
 
@@ -10,11 +11,13 @@ import org.springframework.data.elasticsearch.annotations.Field;
 import org.springframework.data.elasticsearch.annotations.FieldType;
 
 import lombok.Builder;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 
 @Getter
 @Document(indexName = "user-events")
-public class UserEventDocument {
+@EqualsAndHashCode
+public class UserEventDocument implements Serializable {
 
 	@Id
 	private String id;

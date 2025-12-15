@@ -1,4 +1,4 @@
-package com.sparta.analysisservice.domain.product_analysis.application.service;
+package com.sparta.analysisservice.domain.product_analysis.application.extractor;
 
 import java.time.Instant;
 import java.util.List;

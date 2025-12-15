@@ -7,6 +7,11 @@ from common.config import DB_OFFSET, URL_BATCH_SIZE
 from common.database_utils import Database
 from common.kafka_utils import create_producer
 from common.logging_utils import setup_logger
+from common.monitoring.metrics import (CRAWL_EXCEPTION_COUNT, CRAWL_LATENCY,
+                                       CRAWL_TRIAL_COUNT, DB_QUERY_LATENCY,
+                                       KAFKA_PUBLISH_COUNT,
+                                       KAFKA_PUBLISH_LATENCY)
+from common.monitoring.metrics_server import start_metrics_server
 from crawler.gmarket.gmarket_url_parser import GmarketUrlParser
 
 # 시작 시간
@@ -16,6 +21,7 @@ total_start = time.perf_counter()
 setup_logger()
 
 if __name__ == "__main__":
+    start_metrics_server()
 
     # 한번에 불러올 데이터 크기
     BATCH_SIZE = int(URL_BATCH_SIZE)
@@ -40,6 +46,7 @@ if __name__ == "__main__":
     # row 측정 io 종료 시간
     row_count_end = time.perf_counter()
     logging.info(f"[PERF] ===== row count time: {row_count_end - row_count_start:.4f}s =====")
+    DB_QUERY_LATENCY.observe(row_count_end - row_count_start)
 
     logging.info(f"total rows: {total}")
 
@@ -55,9 +62,11 @@ if __name__ == "__main__":
                 .offset(offset)
                 .limit(BATCH_SIZE)
             ).mappings().all()
+
         # 배치 사이즈 만큼 로딩 종료 시간
         data_load_end = time.perf_counter()
         logging.info(f"[PERF] ===== data load time: {data_load_end - data_load_start:.4f}s =====")
+        DB_QUERY_LATENCY.observe(data_load_end - data_load_start)
 
         # 데이터 없으면 중단
         if not rows:
@@ -73,20 +82,31 @@ if __name__ == "__main__":
             main_product_id = str(row['id'])
             keyword = row['name']
 
+            CRAWL_TRIAL_COUNT.labels(platform="auction").inc()
+
             try:
                 urls = parser.get_product_urls(keyword)
 
                 if len(urls) < 1:
                     logging.info(f"{keyword} 검색 결과 없음")
+
                     parser_end = time.perf_counter()
                     logging.info(f"[PERF] ===== parsing time: {parser_end - parser_start:.4f}s =====")
+                    CRAWL_LATENCY.labels(platform="gmarket").observe(parser_end - parser_start)
+
                     continue
 
                 logging.info(f"{keyword} 검색 완료: {len(urls)}개 링크")
+
+                publish_start = time.perf_counter()
                 producer.send(
                     'gmarket-product-urls',
                     {'main_product_id': main_product_id, 'urls': urls}
                 )
+                publish_end = time.perf_counter()
+                KAFKA_PUBLISH_LATENCY.observe(publish_end - publish_start)
+                KAFKA_PUBLISH_COUNT.inc()
+
                 # 파싱 종료 시간
                 parser_end = time.perf_counter()
                 logging.info(f"[PERF] ===== parsing time: {parser_end - parser_start:.4f}s =====")
@@ -102,6 +122,9 @@ if __name__ == "__main__":
                 # 파싱 종료 시간
                 parser_end = time.perf_counter()
                 logging.info(f"[PERF] ===== parsing time: {parser_end - parser_start:.4f}s =====")
+                CRAWL_LATENCY.labels(platform="gmarket").observe(parser_end - parser_start)
+                CRAWL_EXCEPTION_COUNT.labels(platform="gmarket").inc()
+
                 continue  # 다음 row 진행
 
         producer.flush()
@@ -111,7 +134,6 @@ if __name__ == "__main__":
 
     parser.quit()
     producer.close()
-end_time = time.perf_counter()
 
-total_end = time.perf_counter()
-logging.info(f"[PERF] ===== total time: {total_end - total_start:.4f}s =====")
+    total_end = time.perf_counter()
+    logging.info(f"[PERF] ===== total time: {total_end - total_start:.4f}s =====")

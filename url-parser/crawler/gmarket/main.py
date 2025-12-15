@@ -59,6 +59,12 @@ if __name__ == "__main__":
         data_load_end = time.perf_counter()
         logging.info(f"[PERF] ===== data load time: {data_load_end - data_load_start:.4f}s =====")
 
+        # 새로운 오프셋을 불러올 때 브라우저 초기화
+        logging.info("브라우저 리셋, 새 브라우저 로딩")
+        parser.quit()
+        parser = GmarketUrlParser()
+        time.sleep(1)
+
         # 데이터 없으면 중단
         if not rows:
             break

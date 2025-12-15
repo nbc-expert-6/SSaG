@@ -28,6 +28,14 @@ class ElevenStUrlParser(UrlParser):
         options.add_argument("--ignore-certificate-errors")
         options.add_argument("--window-size=1920,1080")
 
+        # 브라우저 헤더 위장
+        options.add_argument(
+            "--user-agent=Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) "
+            "AppleWebKit/537.36 (KHTML, like Gecko) "
+            "Chrome/143.0.0.0 Safari/537.36"
+        )
+        options.add_argument("--lang=ko-KR")
+
         chrome_binary = CHROME_BINARY
         driver_path = CHROMEDRIVER_PATH
 
@@ -47,6 +55,19 @@ class ElevenStUrlParser(UrlParser):
 
         self.driver = uc.Chrome(**kwargs)
         self.wait = WebDriverWait(self.driver, 10)
+
+        self.driver.execute_cdp_cmd(
+            "Network.setExtraHTTPHeaders",
+            {
+                "headers": {
+                    "Accept": (
+                        "text/html,application/xhtml+xml,application/xml;"
+                        "q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8"
+                    ),
+                    "Accept-Language": "ko-KR,ko;q=0.9,en-US;q=0.8"
+                }
+            }
+        )
 
     def open_main_page(self):
         self.driver.get(self.url)

@@ -105,7 +105,7 @@ public class KafkaPublisher {
 
 		try {
 			String data = objectMapper.writeValueAsString(event);
-			//kafkaTemplate.send("product.analysis", data);
+			kafkaTemplate.send("product.analysis", data);
 			log.info("[PUBLISH → product.analysis] sessionId={}, productId={}, timestamp={}",
 				sessionId, productId, timestamp);
 		} catch (JsonProcessingException e) {

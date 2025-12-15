@@ -1,4 +1,5 @@
 import time
+import re
 
 import undetected_chromedriver as uc
 from selenium.webdriver.common.by import By
@@ -6,7 +7,6 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
 
 from common.config import CHROME_BINARY, CHROMEDRIVER_PATH
-from common.platform import Platform
 from crawler.detail_parser import DetailParser
 
 
@@ -46,15 +46,48 @@ class GmarketDetailParser(DetailParser):
             kwargs["version_main"] = None
 
         self.driver = uc.Chrome(**kwargs)
+
+        # 브라우저 안정화 시간 체크
+        # 타이틀에 접근 가능하면 브라우저 준비됨
+        for _ in range(10):
+            try:
+                _ = self.driver.title
+                break
+            except:
+                time.sleep(0.3)
+
         self.wait = WebDriverWait(self.driver, 10)
 
+    """
+    드라이버 크래시(NoSuchWindow 등) 발생 시
+    자동으로 드라이버를 재생성하여 1회 재시도
+    """
     def open_product_detail_page(self, url: str):
-        self.driver.get(url)
-        time.sleep(1)
+        for attempt in range(2):  # 최대 2번까지
+            try:
+                # 브라우저 창이 살아있는지 체크
+                _ = self.driver.title
+                self.driver.get(url)
+                time.sleep(1)
+                return
+
+            except Exception:
+                # 드라이버 죽었으면 종료
+                try:
+                    self.driver.quit()
+                except:
+                    pass
+
+                # 마지막 시도가 아니면 재생성 후 재시도
+                if attempt == 0:
+                    self.__init__()
+                    continue
+
+                # 마지막 시도 실패 → 예외 그대로 throw
+                raise
 
     def get_product_info(self) -> dict:
         info = {}
-
 
         # 브랜드
         try:
@@ -79,18 +112,27 @@ class GmarketDetailParser(DetailParser):
             By.CSS_SELECTOR, ".price_innerwrap.price_innerwrap-coupon strong.price_real"
         )
 
+        price_text = None
+
         if coupon_price:
-            price_text = coupon_price[0].text.replace(",", "").replace("원", "").strip()
-            info["price"] = int(price_text)
+            price_text = coupon_price[0].text.strip()
         else:
             normal_price = self.driver.find_elements(
                 By.CSS_SELECTOR, ".price_innerwrap:not(.price_innerwrap-coupon) strong.price_real"
             )
             if normal_price:
-                price_text = normal_price[0].text.replace(",", "").replace("원", "").strip()
-                info["price"] = int(price_text)
+                price_text = normal_price[0].text.strip()
+
+        if price_text:
+            # 숫자만 추출
+            nums = re.findall(r"\d+", price_text.replace(",", ""))
+            if nums:
+                info["price"] = int("".join(nums))
             else:
+                # SOLD OUT / 일시품절 / 재고없음 등 숫자가 없으면 무효 처리
                 info["price"] = None
+        else:
+            info["price"] = None
 
         # 배송비 처리
         info["shipping_fee"] = None
@@ -107,7 +149,6 @@ class GmarketDetailParser(DetailParser):
             # 배송비 있는 경우 처리
             elif "배송비" in text:
                 # 숫자만 추출
-                import re
                 match = re.search(r"\d+", text.replace(",", ""))
                 if match:
                     info["shipping_fee"] = int(match.group())
@@ -137,4 +178,5 @@ class GmarketDetailParser(DetailParser):
         info["sale_link"] = self.driver.current_url
         return info
 
-        return info
+    def quit(self):
+        self.driver.quit()

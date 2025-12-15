@@ -3,6 +3,7 @@ package com.sparta.analysisservice.domain.product_analysis.presentation.controll
 import java.io.IOException;
 
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -23,6 +24,7 @@ import lombok.RequiredArgsConstructor;
 @RestController
 @RequestMapping("/api/v1")
 @RequiredArgsConstructor
+@CrossOrigin(origins = "http://localhost:8080", allowCredentials = "true")
 public class UserEventController {
 
 	private final UserEventService userEventService;

@@ -107,8 +107,13 @@ distances, _ = neighbors_fit.kneighbors(X_scaled)
 k_distances = np.sort(distances[:, -1])
 
 diffs = np.diff(k_distances)
-elbow_idx = np.argmax(diffs)
-eps = k_distances[elbow_idx]
+if np.all(diffs <= 0):
+    eps = np.percentile(k_distances, 90)
+else:
+    elbow_idx = np.argmax(diffs)
+    eps = k_distances[elbow_idx]
+
+eps = max(float(eps), 1e-6)
 print(f"Estimated eps: {eps:.3f}, min_samples: {min_samples}")
 
 dbscan = DBSCAN(eps=eps, min_samples=min_samples)

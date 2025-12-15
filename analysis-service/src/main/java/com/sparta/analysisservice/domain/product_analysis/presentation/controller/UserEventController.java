@@ -62,9 +62,4 @@ public class UserEventController {
 		return ResponseEntity.ok().build();
 	}
 
-	@GetMapping("/metrics/anaomaly-ratio")
-	public void updateMetrics() {
-		clusterService.getClusterAnomalyRatio();
-	}
-
 }

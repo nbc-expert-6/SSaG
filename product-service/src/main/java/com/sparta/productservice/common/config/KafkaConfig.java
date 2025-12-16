@@ -32,7 +32,7 @@ public class KafkaConfig {
 	private final KafkaProperties kafkaProperties;
 
 	// ============================================================
-	// 범용 Consumer (기본)
+	// 내부 범용 Consumer - 헤더타입 존재
 	// ============================================================
 
 	@Bean
@@ -46,7 +46,7 @@ public class KafkaConfig {
 		config.put(ErrorHandlingDeserializer.VALUE_DESERIALIZER_CLASS, JsonDeserializer.class.getName());
 
 		config.put(JsonDeserializer.TRUSTED_PACKAGES, "*");
-		config.put(JsonDeserializer.USE_TYPE_INFO_HEADERS, false);
+		config.put(JsonDeserializer.USE_TYPE_INFO_HEADERS, true);
 
 		return new DefaultKafkaConsumerFactory<>(config);
 	}

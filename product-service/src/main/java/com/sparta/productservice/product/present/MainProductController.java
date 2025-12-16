@@ -26,7 +26,9 @@ import com.sparta.productservice.product.present.dto.SearchMainProductResponse;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @RestController
 @RequestMapping("/api/v1/main-products")
 @RequiredArgsConstructor
@@ -64,6 +66,13 @@ public class MainProductController {
 	) {
 		Page<MainProductSearchResult> result = productService.searchMainProduct(request.toCommand());
 		SearchMainProductResponse response = SearchMainProductResponse.from(result);
+
 		return ResponseEntity.ok(ApiResponse.success(response));
+	}
+
+	@GetMapping("/sync")
+	public Void syncEs() {
+		productService.syncAllFromRdbToEs();
+		return null;
 	}
 }

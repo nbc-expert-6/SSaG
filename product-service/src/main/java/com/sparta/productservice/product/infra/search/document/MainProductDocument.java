@@ -1,9 +1,10 @@
 package com.sparta.productservice.product.infra.search.document;
 
 import java.math.BigDecimal;
-import java.time.Instant;
+import java.time.LocalDateTime;
 
 import org.springframework.data.annotation.Id;
+import org.springframework.data.elasticsearch.annotations.DateFormat;
 import org.springframework.data.elasticsearch.annotations.Document;
 import org.springframework.data.elasticsearch.annotations.Field;
 import org.springframework.data.elasticsearch.annotations.FieldType;
@@ -15,7 +16,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-@Document(indexName = "main_products")
+@Document(indexName = "main_products", createIndex = false)
 @Getter
 @Builder
 @NoArgsConstructor
@@ -50,8 +51,8 @@ public class MainProductDocument {
 	@Field(type = FieldType.Long)
 	private Long clickCount;
 
-	@Field(type = FieldType.Date)
-	private Instant createdAt;
+	@Field(type = FieldType.Date, format = DateFormat.date_hour_minute_second_millis)
+	private LocalDateTime createdAt;
 
 	@Field(type = FieldType.Keyword)
 	private String categoryId;
@@ -70,6 +71,7 @@ public class MainProductDocument {
 			.rating(mainProduct.getReviewRatingAvg())
 			.reviewCount(mainProduct.getReviewCount())
 			.clickCount(mainProduct.getClickCount())
+			.createdAt(mainProduct.getCreatedAt())
 			.categoryId(mainProduct.getCategoryMediumId().toString())
 			.deleted(mainProduct.isDeleted())
 			.build();

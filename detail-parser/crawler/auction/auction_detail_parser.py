@@ -8,11 +8,11 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 
 from common.config import CHROME_BINARY, CHROMEDRIVER_PATH
-from common.logging_utils import setup_logger
+from common.logging_utils import setup_dev_logger
 from crawler.detail_parser import DetailParser
 
 # Logging 설정
-setup_logger()
+setup_dev_logger()
 
 class AuctionDetailParser(DetailParser):
     def __init__(self):

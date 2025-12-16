@@ -2,7 +2,8 @@ import logging
 import time
 
 from common.kafka_utils import create_consumer, create_producer
-from common.logging_utils import setup_logger
+from common.logging_utils import setup_dev_logger
+from common.monitoring.logger import setup_logger
 from common.monitoring.metrics import (CRAWL_EXCEPTION_COUNT, CRAWL_LATENCY,
                                        CRAWL_TRIAL_COUNT, KAFKA_PUBLISH_COUNT,
                                        KAFKA_PUBLISH_LATENCY)
@@ -26,7 +27,8 @@ consumer = create_consumer(
 producer = create_producer()
 
 # Logging 설정
-setup_logger()
+logger = setup_logger("gmarket")
+setup_dev_logger()
 
 if __name__ == "__main__":
     start_metrics_server()
@@ -39,7 +41,7 @@ if __name__ == "__main__":
 
     for url_info in consumer:
         # 받은 url 정보
-        logging.info("[gmarket-product-urls]: {}".format(url_info.value))
+        logger.info("KAFKA_CONSUME", value=f"{url_info.value}")
         main_product_id = url_info.value['main_product_id']
         urls = url_info.value['urls']
 
@@ -60,11 +62,11 @@ if __name__ == "__main__":
                 reviews = parser.get_reviews(url)
 
                 if len(reviews) < 1:
-                    logging.info(f"[no-review] 리뷰가 존재하지 않아 메시지를 발행하지 않습니다.")
+                    logger.info("REVIEW_NO_RESULT")
                     # 파싱 완료
                     parser_end = time.perf_counter()
                     CRAWL_LATENCY.labels(platform="gmarket").observe(parser_end - parser_start)
-                    logging.info(f"[PERF] ===== parsing time: {parser_end - parser_start:.4f}s =====")
+                    logger.perf("PARSING_COMPLETED", time=round(parser_end - parser_start, 4))
                     processed_count += 1
 
                     continue
@@ -76,7 +78,7 @@ if __name__ == "__main__":
                 # 파싱 종료
                 parser_end = time.perf_counter()
                 CRAWL_LATENCY.labels(platform="gmarket").observe(parser_end - parser_start)
-                logging.info(f"[PERF] ===== parsing time: {parser_end - parser_start:.4f}s =====")
+                logger.perf("PARSING_COMPLETED", time=round(parser_end - parser_start, 4))
 
                 kafka_start = time.perf_counter()
                 producer.send('product-reviews', product_reviews)
@@ -84,17 +86,18 @@ if __name__ == "__main__":
                 KAFKA_PUBLISH_LATENCY.observe(kafka_end - kafka_start)
                 KAFKA_PUBLISH_COUNT.inc()
 
-                logging.info(f"[publish] product-reviews: {product_reviews}")
+                logger.info("KAFKA_PUBLISH", product_reviews=product_reviews)
                 processed_count += 1
 
             except Exception as e:
-                logging.error(
-                    f"처리 실패. main_product_id={main_product_id}, url={url}, error={e}",
-                    exc_info=True
-                )
+                logger.error("PARSING_FAILED",
+                             main_product_id=main_product_id,
+                             url=url,
+                             exception=str(e),
+                             exc_info=True)
                 CRAWL_EXCEPTION_COUNT.labels(platform="gmarket").inc()
 
     parser.quit()
 
     total_end = time.perf_counter()
-    logging.info(f"[PERF] ===== total time: {total_end - total_start:.4f}s =====")
+    logger.info("PROGRAM_EXITED", total_time=round(total_end - total_start, 4))

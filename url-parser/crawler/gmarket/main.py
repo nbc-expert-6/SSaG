@@ -6,7 +6,7 @@ from sqlalchemy import func
 from common.config import DB_OFFSET, URL_BATCH_SIZE
 from common.database_utils import Database
 from common.kafka_utils import create_producer
-from common.logging_utils import setup_local_logger
+from common.logging_utils import setup_dev_logger
 from common.monitoring.logger import setup_logger
 from common.monitoring.metrics import (CRAWL_EXCEPTION_COUNT, CRAWL_LATENCY,
                                        CRAWL_TRIAL_COUNT, DB_QUERY_LATENCY,
@@ -19,7 +19,7 @@ from crawler.gmarket.gmarket_url_parser import GmarketUrlParser
 total_start = time.perf_counter()
 
 # Logging 설정
-setup_local_logger()
+setup_dev_logger()
 logger = setup_logger("gmarket")
 
 if __name__ == "__main__":

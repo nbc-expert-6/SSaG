@@ -10,11 +10,11 @@ from selenium.webdriver.support import expected_conditions as ec
 from selenium.webdriver.support.ui import WebDriverWait
 
 from common.config import CHROME_BINARY, CHROMEDRIVER_PATH
-from common.logging_utils import setup_logger
+from common.logging_utils import setup_dev_logger
 from crawler.review_parser import ReviewParser
 
 # Logging 설정
-setup_logger()
+setup_dev_logger()
 
 class AuctionReviewParser(ReviewParser):
     def __init__(self, max_pages: int = None):

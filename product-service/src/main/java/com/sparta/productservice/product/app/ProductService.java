@@ -93,9 +93,11 @@ public class ProductService implements CreateProductUseCase, UpdateMainProductRe
 		BigDecimal totalRating = command.newRatings().stream()
 			.reduce(BigDecimal.ZERO, BigDecimal::add);
 
+		long reviewCount = command.newRatings().size();
+
 		mainProductRepository.increaseReviewStatBatch(
 			command.mainProductId(),
-			command.newRatings().stream().count(),
+			reviewCount,
 			totalRating
 		);
 

@@ -20,6 +20,7 @@ CRAWL_EXCEPTION_COUNT = Counter(
 CRAWL_LATENCY = Histogram(
     "crawl_latency_seconds",
     "개별 크롤링에 소요된 시간(초) 분포",
+    ["platform"],
     buckets= exponential_buckets(start=0.1, factor=2, count=10)
 )
 

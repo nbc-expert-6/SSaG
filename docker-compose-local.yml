@@ -84,6 +84,22 @@ services:
     networks:
       - infra
 
+  loki:
+    image: grafana/loki
+    ports:
+      - "3100:3100"
+    networks:
+      - infra
+
+  promtail:
+    image: grafana/promtail
+    volumes:
+      - /var/lib/docker/containers:/var/lib/docker/containers:ro
+      - ./promtail.yml:/etc/promtail/promtail.yml
+    command: -config.file=/etc/promtail/promtail.yml
+    networks:
+      - infra
+
 volumes:
   postgres_data:
   elasticsearch_data:

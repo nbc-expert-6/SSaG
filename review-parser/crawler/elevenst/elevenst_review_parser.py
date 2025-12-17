@@ -10,10 +10,10 @@ from selenium.webdriver.support import expected_conditions as ec
 from selenium.webdriver.support.ui import WebDriverWait
 
 from common.config import CHROME_BINARY, CHROMEDRIVER_PATH
-from common.logging_utils import setup_logger
+from common.logging_utils import setup_dev_logger
 from crawler.review_parser import ReviewParser
 
-setup_logger()
+setup_dev_logger()
 
 class ElevenStReviewParser(ReviewParser):
     def __init__(self):
@@ -52,7 +52,7 @@ class ElevenStReviewParser(ReviewParser):
         self.wait = WebDriverWait(self.driver, 10)
 
     def open_product_detail_page(self, url: str):
-        logging.info(f"[open_product_detail_page] {url}")
+        logging.info(f"detail page: {url}")
         self.driver.get(url)
         time.sleep(2)
 
@@ -65,7 +65,6 @@ class ElevenStReviewParser(ReviewParser):
             self.wait.until(ec.element_to_be_clickable((By.ID, "tabMenuDetail2")))
             review_tab.click()
             time.sleep(1.2)
-            logging.info("[move_to_review] 리뷰 탭 클릭 완료")
         except:
             logging.exception(f"[move_to_review] 리뷰 탭 클릭 실패")
             self.no_review = True
@@ -75,18 +74,16 @@ class ElevenStReviewParser(ReviewParser):
         try:
             num_el = self.driver.find_element(By.CSS_SELECTOR, "#prdReview .text_num")
             total_count = int(num_el.text.strip())
-            logging.info(f"[get_review_info] 전체 리뷰 {total_count}개")
+            logging.info(f"전체 리뷰 {total_count}개")
         except:
             total_count = 0
 
         if total_count == 0:
-            logging.info("[get_review_info] 리뷰 없음")
             return []
 
         # iframe 전환
         try:
             self.wait.until(ec.frame_to_be_available_and_switch_to_it((By.ID, "ifrmReview")))
-            logging.info("[get_review_info] iframe 전환 완료")
         except:
             logging.exception(f"[get_review_info] iframe 전환 실패")
             return []
@@ -140,7 +137,6 @@ class ElevenStReviewParser(ReviewParser):
                     except Exception as e:
                         logging.warning(f"[get_review_info] 리뷰 내용 파싱 예외 발생: {e}")
                 else:
-                    logging.info("[get_review_info] 리뷰 내용 없음")
                     content = ""
 
                 # 작성 날짜

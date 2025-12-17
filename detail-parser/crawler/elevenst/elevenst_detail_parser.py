@@ -9,11 +9,11 @@ from selenium.webdriver.support import expected_conditions as ec
 from selenium.webdriver.support.ui import WebDriverWait
 
 from common.config import CHROME_BINARY, CHROMEDRIVER_PATH
-from common.logging_utils import setup_logger
+from common.logging_utils import setup_dev_logger
 from crawler.detail_parser import DetailParser
 
 # Logging 설정
-setup_logger()
+setup_dev_logger()
 
 class ElevenStDetailParser(DetailParser):
     def __init__(self):
@@ -52,7 +52,7 @@ class ElevenStDetailParser(DetailParser):
 
     # 제품 상세 페이지 열기
     def open_product_detail_page(self, url: str):
-        logging.info(f"[open_product_detail_page] {url}")
+        logging.info(f"detail page: {url}")
         self.driver.get(url)
         time.sleep(2)
 
@@ -78,7 +78,6 @@ class ElevenStDetailParser(DetailParser):
             self.wait.until(ec.element_to_be_clickable((By.ID, "tabMenuDetail1")))
             review_tab.click()
             time.sleep(1.2)
-            logging.info("[get_product_info] 상품 정보 탭 클릭 완료")
 
             # 브랜드 정보 파싱
             brand_el = driver.find_element(By.XPATH,

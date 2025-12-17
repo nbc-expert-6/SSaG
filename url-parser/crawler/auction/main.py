@@ -1,4 +1,3 @@
-import logging
 import time
 
 from sqlalchemy import func
@@ -6,16 +5,22 @@ from sqlalchemy import func
 from common.config import DB_OFFSET, URL_BATCH_SIZE
 from common.database_utils import Database
 from common.kafka_utils import create_producer
-from common.logging_utils import setup_logger
+from common.monitoring.logger import setup_logger
+from common.monitoring.metrics import (CRAWL_EXCEPTION_COUNT, CRAWL_LATENCY,
+                                       CRAWL_TRIAL_COUNT, DB_QUERY_LATENCY,
+                                       KAFKA_PUBLISH_COUNT,
+                                       KAFKA_PUBLISH_LATENCY)
+from common.monitoring.metrics_server import start_metrics_server
 from crawler.auction.auction_url_parser import AuctionUrlParser
 
 # [PERF] 전체 코드 실행 start
 total_start = time.perf_counter()
 
 # Logging 설정
-setup_logger()
+logger = setup_logger("auction")
 
 if __name__ == "__main__":
+    start_metrics_server()
 
     # 한번에 불러올 데이터 크기
     BATCH_SIZE = int(URL_BATCH_SIZE)
@@ -29,7 +34,7 @@ if __name__ == "__main__":
     # 처음 시작할 row(env에 정의, 처음부터 하려면 0으로 세팅)
     offset = int(DB_OFFSET)
 
-    # [PERF] 전체 행 수 조회 start
+    # 전체 행 수 조회 start
     row_count_start = time.perf_counter()
 
     # 전체 행 수 조회
@@ -38,11 +43,12 @@ if __name__ == "__main__":
             func.count().select().select_from(p_main_product)
         ).scalar()
 
-    # [PERF] 전체 행 수 조회 end
+    # 전체 행 수 조회 end
     row_count_end = time.perf_counter()
-    logging.info(f"[PERF] ===== row count time: {row_count_end - row_count_start:.4f}s =====")
+    logger.perf("DB_QUERY_COMPLETED", query_type="total_count", time=round(row_count_end - row_count_start, 4))
+    DB_QUERY_LATENCY.observe(row_count_end - row_count_start)
 
-    logging.info(f"total rows: {total}")
+    logger.info("TOTAL_ROWS_RETRIEVED", total_rows=total)
 
     while True:
         # [PERF] 데이터 로딩 start
@@ -58,55 +64,75 @@ if __name__ == "__main__":
 
         # [PERF] 데이터 로딩 end
         data_load_end = time.perf_counter()
-        logging.info(f"[PERF] ===== data load time: {data_load_end - data_load_start:.4f}s =====")
+        logger.perf("DB_QUERY_COMPLETED", query_type="batch_load",
+                    offset=offset, time=round(data_load_end - data_load_start, 4))
+        DB_QUERY_LATENCY.observe(data_load_end - data_load_start)
 
         # 데이터 없으면 중단
         if not rows:
             break
 
-        logging.info(f"current batch offset: {offset}, size: {len(rows)}")
+        logger.info("BATCH_STARTED", offset=offset, batch_size=len(rows))
 
         # 가져온 대표상품을 순회하며 url 파싱
         for row in rows:
-            # [PERF] url 파싱 start
+            # url 파싱 start
             parser_start = time.perf_counter()
 
             main_product_id = str(row['id'])
             keyword = row['name']
 
+            CRAWL_TRIAL_COUNT.labels(platform="auction").inc()
+
             try:
                 urls = parser.get_product_urls(keyword)
 
                 if len(urls) < 1:
-                    logging.info(f"{keyword} 검색 결과 없음")
+                    logger.info("SEARCH_NO_RESULT", keyword=str(keyword))
+
+                    # url 파싱 end
+                    parser_end = time.perf_counter()
+                    logger.perf("PARSING_COMPLETED", url_cnt=len(urls), time=round(parser_end - parser_start, 4))
+                    CRAWL_LATENCY.labels(platform="auction").observe(parser_end - parser_start)
+
                     continue
 
-                logging.info(f"{keyword} 검색 완료: {len(urls)}개 링크")
+                logger.info("SEARCH_COMPLETED", keyword=str(keyword), url_cnt=len(urls))
+
+                publish_start = time.perf_counter()
                 producer.send(
                     'auction-product-urls',
                     {'main_product_id': main_product_id, 'urls': urls}
                 )
+                publish_end = time.perf_counter()
+                KAFKA_PUBLISH_LATENCY.observe(publish_end - publish_start)
+                KAFKA_PUBLISH_COUNT.inc()
 
                 # [PERF] url 파싱 end
                 parser_end = time.perf_counter()
-                logging.info(f"[PERF] ===== parsing time: {parser_end - parser_start:.4f}s =====")
+                logger.perf("PARSING_COMPLETED", url_cnt=len(urls), time=round(parser_end - parser_start, 4))
+                CRAWL_LATENCY.labels(platform="auction").observe(parser_end - parser_start)
 
             # 실패 지점에서 대표상품 Id와 offset을 로그로 기록
             # 추후 재시도 시 해당 값들 사용
             except Exception as e:
-                logging.error(
-                    f"처리 실패. main_product_id={main_product_id}, "
-                    f"keyword={keyword}, offset={offset}"
-                )
+                logger.error("PARSING_FAILED",
+                             main_product_id=main_product_id,
+                             keyword=str(keyword),
+                             offset=offset,
+                             exception=str(e),
+                             exc_info=True)
 
                 # [PERF] url 파싱 end
                 parser_end = time.perf_counter()
-                logging.info(f"[PERF] ===== parsing time: {parser_end - parser_start:.4f}s =====")
+                logger.perf("PARSING_COMPLETED", time=round(parser_end - parser_start, 4))
+                CRAWL_LATENCY.labels(platform="auction").observe(parser_end - parser_start)
+                CRAWL_EXCEPTION_COUNT.labels(platform="auction").inc()
 
                 continue  # 다음 row 진행
 
         producer.flush()
-        logging.info(f"{offset} ~ {offset + len(rows) - 1} 처리 완료")
+        logger.info("OFFSET_PROCESSED", range=f"{offset} ~ {offset + len(rows) - 1}")
 
         offset += BATCH_SIZE
 
@@ -115,4 +141,4 @@ if __name__ == "__main__":
 
     # [PERF] 전체 코드 실행 end
     total_end = time.perf_counter()
-    logging.info(f"[PERF] ===== total time: {total_end - total_start:.4f}s =====")
+    logger.info("PROGRAM_EXITED", total_time=round(total_end - total_start, 4))

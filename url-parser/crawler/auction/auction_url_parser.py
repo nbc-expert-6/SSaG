@@ -1,3 +1,4 @@
+import logging
 import time
 from typing import List
 
@@ -74,11 +75,14 @@ class AuctionUrlParser(UrlParser):
         time.sleep(1)
 
     def search(self, keyword: str):
-        search_box = self.wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, "input.search_input_keyword")))
-        search_box.clear()
-        search_box.send_keys(keyword)
-        search_box.send_keys(Keys.ENTER)
-        time.sleep(2)
+        try:
+            search_box = self.wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, "input.search_input_keyword")))
+            search_box.clear()
+            search_box.send_keys(keyword)
+            search_box.send_keys(Keys.ENTER)
+            time.sleep(1)
+        except:
+            logging.info(self.driver.page_source)
 
     def sort_by_low_price(self):
         try:

@@ -14,6 +14,7 @@ services:
       RDS_DB_NAME: recommend_service_db
       RDS_USERNAME: postgres
       RDS_PASSWORD: qwer1234!
+      PRODUCT_SERVICE_URL: # TODO: 추후 상품서비스 배포 url
 
       TZ: "Asia/Seoul"
     volumes:

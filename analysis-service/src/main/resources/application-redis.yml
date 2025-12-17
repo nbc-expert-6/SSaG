@@ -12,7 +12,7 @@ spring:
 spring:
   config:
     activate:
-      on-profile: redis
+      on-profile: docker
   data:
     redis:
       host: redis
@@ -20,11 +20,11 @@ spring:
 
 ---
 
-#spring:
-#  config:
-#    activate:
-#      on-profile: dev
-#  data:
-#    redis:
-#      host: ${REDIS_HOST}
-#      port: ${REDIS_PORT}
+spring:
+  config:
+    activate:
+      on-profile: dev
+  data:
+    redis:
+      host: ${REDIS_HOST}
+      port: ${REDIS_PORT}

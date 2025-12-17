@@ -9,7 +9,7 @@ WORKDIR /app
 
 
 COPY src/main/resources/vector/requirements.txt /app/requirements.txt
-RUN pip3 install --no-cache-dir -r /app/requirements.txt
+RUN pip3 install --default-timeout=100 --no-cache-dir -r /app/requirements.txt
 
 COPY src/main/resources/vector /app/vector
 

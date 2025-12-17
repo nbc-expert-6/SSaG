@@ -7,8 +7,12 @@ services:
     ports:
       - "8082:8082"
     environment:
-      SPRING_PROFILES_ACTIVE: docker
+      SPRING_PROFILES_ACTIVE: dev
       KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+      ES_HOST: https://1aef128f11714b44870402bd6190321d.ap-northeast-2.aws.elastic-cloud.com:443
+      ES_USERNAME: elastic
+      ES_PASSWORD: 81ieilMmNELN8Quf2Vq0Fv5y
+
       TZ: "Asia/Seoul"
     volumes:
       - ./logs:/app/logs

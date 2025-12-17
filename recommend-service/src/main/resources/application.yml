@@ -9,7 +9,7 @@ spring:
       - kafka
       - service
       - actuator
-    active: docker
+    active: dev
 server:
   port: 8081
 

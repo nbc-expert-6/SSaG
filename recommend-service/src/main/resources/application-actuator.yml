@@ -46,3 +46,27 @@ server:
   tomcat:
     mbeanregistry:
       enabled: true
+
+---
+
+spring:
+  config:
+    activate:
+      on-profile: dev
+
+management:
+  metrics:
+    enable:
+      process: true
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+  endpoint:
+    health:
+      show-details: always
+
+server:
+  tomcat:
+    mbeanregistry:
+      enabled: true

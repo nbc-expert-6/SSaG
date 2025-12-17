@@ -82,8 +82,14 @@ services:
     container_name: grafana
     ports:
       - "3000:3000"
+    volumes:
+      - grafana-data:/var/lib/grafana
     networks:
       - infra
+    depends_on:
+      - prometheus
+      - loki
+      - tempo
 
   loki:
     image: grafana/loki
@@ -104,6 +110,21 @@ services:
       - -config.expand-env=true
     env_file:
       - .env
+    networks:
+      - infra
+
+  tempo:
+    image: grafana/tempo
+    container_name: tempo
+    command: [ "-config.file=/etc/tempo.yaml" ]
+    user: root
+    volumes:
+      - ./tempo.yml:/etc/tempo.yaml
+      - tempo_data:/tmp/tempo
+    ports:
+      - "3200:3200"   # Tempo HTTP
+      - "4317:4317"   # OTLP gRPC
+      - "4318:4318"   # OTLP HTTP
     networks:
       - infra
 
@@ -152,6 +173,8 @@ volumes:
   elasticsearch_data:
   ngrinder_data:
   ngrinder_scripts:
+  tempo_data:
+  grafana-data:
 
 networks:
   infra:

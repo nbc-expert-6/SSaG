@@ -33,6 +33,11 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-actuator'
     //prometheus
     runtimeOnly 'io.micrometer:micrometer-registry-prometheus'
+    // OpenTelemetry
+    implementation 'io.micrometer:micrometer-tracing-bridge-otel'
+    implementation 'io.opentelemetry:opentelemetry-exporter-otlp'
+    // Logging (JSON format for Loki)
+    implementation 'net.logstash.logback:logstash-logback-encoder:7.4'
     //lombok
     compileOnly 'org.projectlombok:lombok'
     annotationProcessor 'org.projectlombok:lombok'
@@ -43,6 +48,12 @@ dependencies {
     annotationProcessor "com.querydsl:querydsl-apt:5.0.0:jakarta"
     annotationProcessor "jakarta.annotation:jakarta.annotation-api"
     annotationProcessor "jakarta.persistence:jakarta.persistence-api"
+    // Loki logback
+    implementation 'com.github.loki4j:loki-logback-appender:1.5.1'
+    // Retry
+    implementation 'org.springframework.retry:spring-retry'
+    // AOP
+    implementation 'org.springframework.boot:spring-boot-starter-aop'
     //Thymeleaf
     implementation 'org.springframework.boot:spring-boot-starter-thymeleaf'
     // Kafka

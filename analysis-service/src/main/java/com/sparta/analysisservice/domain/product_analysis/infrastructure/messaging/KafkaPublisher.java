@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.sparta.analysisservice.domain.product_analysis.application.service.SessionClusterService;
 import com.sparta.analysisservice.domain.product_analysis.infrastructure.dto.UserActivityEvent;
 
 import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
@@ -23,6 +24,7 @@ public class KafkaPublisher {
 	private final KafkaTemplate<String, Object> kafkaTemplate;
 	private final ObjectMapper objectMapper;
 	private final CircuitBreakerFactory circuitBreakerFactory;
+	private final SessionClusterService sessionClusterService;
 
 	@CircuitBreaker(name = "kafkaPublishCB", fallbackMethod = "fallbackpublishUserEvent")
 	public void publishUserEvent(UUID sessionId, UUID productId, String eventType, String meta) {
@@ -89,6 +91,16 @@ public class KafkaPublisher {
 
 	@CircuitBreaker(name = "kafkaPublishCB", fallbackMethod = "fallbackPublishProductAnalysisEvent")
 	public void publishProductAnalysisEvent(UUID sessionId, UUID productId, Instant timestamp) {
+
+		if (sessionClusterService.isAnomalousSession(sessionId.toString())) {
+			log.info(
+				"[ANOMALY FILTER] sessionId={}, skipped recommendation event",
+				sessionId
+			);
+
+			return;
+		}
+
 		UserActivityEvent event = new UserActivityEvent(sessionId, productId, "CLICK", timestamp, null);
 
 		try {

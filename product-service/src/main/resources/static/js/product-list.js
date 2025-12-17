@@ -10,21 +10,21 @@ let currentState = {
 };
 
 // 페이지 로드 시 초기화
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', function () {
     initializePage();
     loadProducts();
-    
+
     // 검색 입력 처리
     const searchInput = document.getElementById('searchInput');
     const clearBtn = document.getElementById('clearBtn');
-    
-    searchInput.addEventListener('keypress', function(e) {
+
+    searchInput.addEventListener('keypress', function (e) {
         if (e.key === 'Enter') {
             searchProducts();
         }
     });
-    
-    searchInput.addEventListener('input', function() {
+
+    searchInput.addEventListener('input', function () {
         clearBtn.style.display = this.value ? 'flex' : 'none';
     });
 });
@@ -61,7 +61,7 @@ function changeSortType(button) {
     document.querySelectorAll('.sort-btn').forEach(btn => {
         btn.classList.remove('active');
     });
-    
+
     button.classList.add('active');
     currentState.sort = button.getAttribute('data-sort');
     currentState.page = 0;
@@ -71,12 +71,12 @@ function changeSortType(button) {
 // 뷰 모드 변경
 function changeView(mode) {
     currentState.viewMode = mode;
-    
+
     document.querySelectorAll('.view-icon').forEach(btn => {
         btn.classList.remove('active');
     });
     event.target.closest('.view-icon').classList.add('active');
-    
+
     const productList = document.getElementById('productList');
     if (mode === 'grid') {
         productList.classList.add('grid-view');
@@ -97,10 +97,10 @@ function changePageSize() {
 function toggleShipping() {
     const toggle = document.getElementById('shippingToggle');
     const text = document.querySelector('.toggle-text');
-    
+
     currentState.includeShipping = toggle.checked;
     text.textContent = toggle.checked ? 'ON' : 'OFF';
-    
+
     currentState.page = 0;
     loadProducts();
 }
@@ -108,7 +108,7 @@ function toggleShipping() {
 // 상품 목록 로드
 async function loadProducts() {
     showLoading();
-    
+
     try {
         const requestBody = {
             productName: currentState.searchKeyword || null,
@@ -117,7 +117,7 @@ async function loadProducts() {
             size: currentState.size,
             sort: currentState.sort
         };
-        
+
         const response = await fetch('/api/v1/main-products/search', {
             method: 'POST',
             headers: {
@@ -125,13 +125,13 @@ async function loadProducts() {
             },
             body: JSON.stringify(requestBody)
         });
-        
+
         if (!response.ok) {
             throw new Error('상품 목록을 불러오는데 실패했습니다.');
         }
-        
+
         const result = await response.json();
-        
+
         if (result.success && result.data) {
             renderProducts(result.data.products);
             renderPagination(result.data.products);
@@ -139,7 +139,7 @@ async function loadProducts() {
         } else {
             showError('상품 목록을 불러오는데 실패했습니다.');
         }
-        
+
     } catch (error) {
         console.error('Error loading products:', error);
         showError(error.message);
@@ -175,7 +175,7 @@ function showError(message) {
 // 상품 렌더링
 function renderProducts(pageData) {
     const productList = document.getElementById('productList');
-    
+
     if (!pageData.content || pageData.content.length === 0) {
         productList.innerHTML = `
             <div class="empty-state">
@@ -189,7 +189,7 @@ function renderProducts(pageData) {
         `;
         return;
     }
-    
+
     productList.innerHTML = pageData.content.map(product => createProductItem(product)).join('');
 }
 
@@ -205,9 +205,9 @@ function handleImageError(img) {
 function createProductItem(product) {
     const isNew = isNewProduct(product.createdAt);
     const imageUrl = product.imageUrl || "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Crect fill='%23f0f0f0' width='200' height='200'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' font-family='Arial' font-size='14' fill='%23999'%3E이미지 없음%3C/text%3E%3C/svg%3E";
-    
+
     return `
-        <div class="product-item" onclick="goToDetail('${product.id}')">
+        <div class="product-item" data-product-id="${product.id}" onclick="goToDetail('${product.id}')">
             <div class="product-image-wrap">
                 <img src="${imageUrl}" alt="${escapeHtml(product.name)}" class="product-image" 
                      onerror="handleImageError(this)">
@@ -271,18 +271,18 @@ function renderPagination(pageData) {
     const pagination = document.getElementById('pagination');
     const totalPages = pageData.totalPages;
     const currentPage = pageData.page;
-    
+
     // 현재 페이지가 속한 10개 블록 계산
     const blockSize = 10;
     const currentBlock = Math.floor(currentPage / blockSize);
     const startPage = currentBlock * blockSize;
     const endPage = startPage + blockSize - 1; // 무조건 10개 블록
-    
+
     // 실제 렌더링할 마지막 페이지 (totalPages 넘지 않도록)
     const renderEndPage = Math.min(endPage, totalPages - 1);
-    
+
     let html = '';
-    
+
     // 이전 블록 버튼 (◀)
     const hasPrevBlock = startPage > 0;
     html += `
@@ -291,7 +291,7 @@ function renderPagination(pageData) {
             ◀
         </button>
     `;
-    
+
     // 페이지 번호 (현재 블록의 10개, 단 totalPages 이내만)
     for (let i = startPage; i <= renderEndPage; i++) {
         html += `
@@ -300,14 +300,14 @@ function renderPagination(pageData) {
             </button>
         `;
     }
-    
+
     // 다음 블록 버튼 (▶) - 항상 활성화
     html += `
         <button class="page-btn" onclick="goToPage(${endPage + 1})">
             ▶
         </button>
     `;
-    
+
     pagination.innerHTML = html;
 }
 
@@ -315,7 +315,7 @@ function renderPagination(pageData) {
 function goToPage(page) {
     currentState.page = page;
     loadProducts();
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    window.scrollTo({top: 0, behavior: 'smooth'});
 }
 
 // 상세 페이지로 이동

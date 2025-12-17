@@ -20,6 +20,11 @@ public class SessionClusterService {
 		}
 	}
 
+	public boolean isAnomalousSession(String sessionId) {
+		SessionClusterRequest.SessionDto dto = sessionStore.get(sessionId);
+		return dto != null && dto.isAnomalous();
+	}
+
 	// 클러스터별 총 세션 수
 	public Map<Integer, Long> getClusterTotalCount() {
 		return sessionStore.values().stream()

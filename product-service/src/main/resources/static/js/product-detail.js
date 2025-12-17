@@ -8,7 +8,7 @@ let productData = null;
 let reviewData = null;
 
 // 페이지 로드
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', function () {
     loadProductDetail();
     loadReviews();
     initTabs();
@@ -17,7 +17,7 @@ document.addEventListener('DOMContentLoaded', function() {
 // 탭 초기화
 function initTabs() {
     document.querySelectorAll('.tab-btn').forEach(btn => {
-        btn.addEventListener('click', function() {
+        btn.addEventListener('click', function () {
             const tabName = this.getAttribute('data-tab');
             switchTab(tabName);
         });
@@ -31,7 +31,7 @@ function switchTab(tabName) {
         btn.classList.remove('active');
     });
     document.querySelector(`[data-tab="${tabName}"]`).classList.add('active');
-    
+
     // 탭 내용 active
     document.querySelectorAll('.tab-content').forEach(content => {
         content.classList.remove('active');
@@ -43,20 +43,20 @@ function switchTab(tabName) {
 async function loadProductDetail() {
     try {
         const response = await fetch(`/api/v1/main-products/${productId}`);
-        
+
         if (!response.ok) {
             throw new Error('상품 정보를 불러오는데 실패했습니다.');
         }
-        
+
         const result = await response.json();
-        
+
         if (result.success && result.data) {
             productData = result.data;
             renderProductDetail(result.data);
         } else {
             showError('상품 정보를 불러오는데 실패했습니다.');
         }
-        
+
     } catch (error) {
         console.error('Error loading product:', error);
         showError(error.message);
@@ -65,23 +65,26 @@ async function loadProductDetail() {
 
 // 상품 정보 렌더링
 function renderProductDetail(data) {
-    const { mainProduct, priceComparison, reviews } = data;
-    
+    const {mainProduct, priceComparison, reviews} = data;
+
+    const container = document.getElementById('productDetail');
+    container.dataset.productId = productId;
+
     // 브레드크럼
-    document.getElementById('categoryPath').textContent = 
+    document.getElementById('categoryPath').textContent =
         `${mainProduct.category.large.name} > ${mainProduct.category.medium.name}`;
-    
+
     // 이미지
     const mainImage = document.getElementById('mainImage');
     mainImage.src = mainProduct.imageUrl || getPlaceholderImage();
     mainImage.alt = mainProduct.name;
-    
+
     // 상품명
     document.getElementById('productName').textContent = mainProduct.name;
-    
+
     // 최저가
     document.getElementById('lowestPrice').textContent = mainProduct.lowestPrice;
-    
+
     // 구매 버튼
     const lowestProduct = priceComparison.allProducts.find(p => p.isLowest);
     if (lowestProduct) {
@@ -89,16 +92,16 @@ function renderProductDetail(data) {
             window.open(lowestProduct.saleLink, '_blank');
         };
     }
-    
+
     // 가격 비교 테이블 (플랫폼별 최저가)
     renderPriceTable(priceComparison.platformLowestPrices);
-    
+
     // 온라인 쇼핑몰 리스트 (전체 상품)
     renderOnlineShopList(priceComparison.allProducts);
-    
+
     // 리뷰 요약
     renderReviewSummary(mainProduct, reviews);
-    
+
     // 카운트 표시
     document.getElementById('priceCompareCount').textContent = `${priceComparison.totalCount}`;
 }
@@ -120,7 +123,7 @@ function renderPriceTable(platformPrices) {
             </button>
         </div>
     `).join('');
-    
+
     document.getElementById('priceTable').innerHTML = html;
 }
 
@@ -140,26 +143,26 @@ function renderOnlineShopList(products) {
             </button>
         </div>
     `).join('');
-    
+
     document.getElementById('onlineShopList').innerHTML = html;
 }
 
 // 리뷰 요약 렌더링
 function renderReviewSummary(mainProduct, reviews) {
     // 평균 평점
-    const avgRating = reviews.length > 0 ? 
-        (reviews.reduce((sum, r) => sum + parseFloat(r.rating), 0) / reviews.length).toFixed(1) : 
+    const avgRating = reviews.length > 0 ?
+        (reviews.reduce((sum, r) => sum + parseFloat(r.rating), 0) / reviews.length).toFixed(1) :
         '0.0';
-    
+
     document.getElementById('avgRating').textContent = avgRating;
-    
+
     // 별점
     const stars = renderStars(parseFloat(avgRating));
     document.getElementById('avgStars').innerHTML = stars;
-    
+
     // 리뷰 개수
     document.getElementById('reviewCount').textContent = `(${reviews.length})`;
-    
+
     // 평점 분포
     const distribution = calculateRatingDistribution(reviews);
     renderRatingDistribution(distribution);
@@ -169,8 +172,8 @@ function renderReviewSummary(mainProduct, reviews) {
 function renderStars(rating) {
     let html = '';
     for (let i = 1; i <= 5; i++) {
-        html += i <= rating ? 
-            '<span class="star">★</span>' : 
+        html += i <= rating ?
+            '<span class="star">★</span>' :
             '<span class="star empty">★</span>';
     }
     return html;
@@ -178,12 +181,12 @@ function renderStars(rating) {
 
 // 평점 분포 계산
 function calculateRatingDistribution(reviews) {
-    const dist = { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 };
+    const dist = {5: 0, 4: 0, 3: 0, 2: 0, 1: 0};
     reviews.forEach(review => {
         const rating = Math.floor(parseFloat(review.rating));
         if (dist[rating] !== undefined) dist[rating]++;
     });
-    
+
     const total = reviews.length || 1;
     return Object.entries(dist).reverse().map(([rating, count]) => ({
         rating,
@@ -203,7 +206,7 @@ function renderRatingDistribution(distribution) {
             <div class="rating-percent">${item.percent}%</div>
         </div>
     `).join('');
-    
+
     document.getElementById('ratingDistribution').innerHTML = html;
 }
 
@@ -213,18 +216,18 @@ async function loadReviews() {
         const response = await fetch(
             `/api/v1/reviews?mainProductId=${productId}&page=${currentReviewPage}&size=SIZE_30`
         );
-        
+
         if (!response.ok) {
             throw new Error('리뷰를 불러오는데 실패했습니다.');
         }
-        
+
         const result = await response.json();
-        
+
         if (result.success && result.data) {
             reviewData = result.data;
             renderReviews(result.data);
         }
-        
+
     } catch (error) {
         console.error('Error loading reviews:', error);
     }
@@ -232,11 +235,11 @@ async function loadReviews() {
 
 // 리뷰 렌더링
 function renderReviews(data) {
-    const { summary, reviews } = data;
-    
+    const {summary, reviews} = data;
+
     // 리뷰 탭 카운트
     document.getElementById('reviewTabCount').textContent = summary.totalCount;
-    
+
     // 리뷰 리스트
     if (!reviews.content || reviews.content.length === 0) {
         document.getElementById('reviewList').innerHTML = `
@@ -246,7 +249,7 @@ function renderReviews(data) {
         `;
         return;
     }
-    
+
     const html = reviews.content.map(review => `
         <div class="review-item">
             <div class="review-header">
@@ -274,9 +277,9 @@ function renderReviews(data) {
             ` : ''}
         </div>
     `).join('');
-    
+
     document.getElementById('reviewList').innerHTML = html;
-    
+
     // 페이지네이션
     renderReviewPagination(reviews);
 }
@@ -285,18 +288,18 @@ function renderReviews(data) {
 function renderReviewPagination(pageData) {
     const totalPages = pageData.totalPages;
     const currentPage = pageData.number;
-    
+
     // 현재 페이지가 속한 10개 블록 계산
     const blockSize = 10;
     const currentBlock = Math.floor(currentPage / blockSize);
     const startPage = currentBlock * blockSize;
     const endPage = startPage + blockSize - 1; // 무조건 10개 블록
-    
+
     // 실제 렌더링할 마지막 페이지 (totalPages 넘지 않도록)
     const renderEndPage = Math.min(endPage, totalPages - 1);
-    
+
     let html = '';
-    
+
     // 이전 블록 버튼 (◀)
     const hasPrevBlock = startPage > 0;
     html += `
@@ -305,7 +308,7 @@ function renderReviewPagination(pageData) {
             ◀
         </button>
     `;
-    
+
     // 페이지 번호 (현재 블록의 10개, 단 totalPages 이내만)
     for (let i = startPage; i <= renderEndPage; i++) {
         html += `
@@ -315,14 +318,14 @@ function renderReviewPagination(pageData) {
             </button>
         `;
     }
-    
+
     // 다음 블록 버튼 (▶) - 항상 활성화
     html += `
         <button class="page-btn" onclick="goToReviewPage(${endPage + 1})">
             ▶
         </button>
     `;
-    
+
     document.getElementById('reviewPagination').innerHTML = html;
 }
 
@@ -330,9 +333,9 @@ function renderReviewPagination(pageData) {
 function goToReviewPage(page) {
     currentReviewPage = page;
     loadReviews();
-    
+
     // 리뷰 탭으로 스크롤
-    document.getElementById('reviewTab').scrollIntoView({ behavior: 'smooth' });
+    document.getElementById('reviewTab').scrollIntoView({behavior: 'smooth'});
 }
 
 // 리뷰 정렬 변경

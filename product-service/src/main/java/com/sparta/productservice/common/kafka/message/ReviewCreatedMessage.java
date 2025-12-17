@@ -1,4 +1,4 @@
-package com.sparta.productservice.common.message;
+package com.sparta.productservice.common.kafka.message;
 
 import java.math.BigDecimal;
 import java.util.List;

@@ -107,14 +107,6 @@ services:
     networks:
       - infra
 
-  zipkin:
-    image: openzipkin/zipkin
-    container_name: zipkin
-    ports:
-      - "9411:9411"
-    networks:
-      - infra
-
   kafka-ui:
     container_name: kafka-ui
     image: provectuslabs/kafka-ui:latest
@@ -164,3 +156,4 @@ volumes:
 networks:
   infra:
     name: infra
+    external: true

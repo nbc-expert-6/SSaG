@@ -7,6 +7,8 @@ import java.util.UUID;
 
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -24,6 +26,7 @@ import com.sparta.productservice.product.app.port.out.ReviewClient;
 import com.sparta.productservice.product.app.port.out.dto.CategoryInfo;
 import com.sparta.productservice.product.app.port.out.dto.ReviewInfo;
 import com.sparta.productservice.product.domain.entity.MainProduct;
+import com.sparta.productservice.product.domain.event.MainProductEsSyncEvent;
 import com.sparta.productservice.product.domain.event.ProductCreatedEvent;
 import com.sparta.productservice.product.domain.repository.MainProductRepository;
 import com.sparta.productservice.product.domain.repository.MainProductSearchRepository;
@@ -90,25 +93,65 @@ public class ProductService implements CreateProductUseCase, UpdateMainProductRe
 		BigDecimal totalRating = command.newRatings().stream()
 			.reduce(BigDecimal.ZERO, BigDecimal::add);
 
+		long reviewCount = command.newRatings().size();
+
 		mainProductRepository.increaseReviewStatBatch(
 			command.mainProductId(),
-			command.newRatings().stream().count(),
+			reviewCount,
 			totalRating
 		);
 
 		MainProduct updatedProduct = getByMainProductId(command.mainProductId());
-		syncAfterReviewUpdate(updatedProduct);
+		syncToEs(updatedProduct);
 	}
 
+	@Transactional(readOnly = true)
 	public MainProduct getByMainProductId(UUID mainProductId) {
 		return mainProductRepository.getById(mainProductId)
 			.orElseThrow(() -> new NoSuchElementException("상품을 찾을 수 없습니다."));
 	}
 
-	private void syncAfterReviewUpdate(MainProduct mainProduct) {
+	private void syncToEs(MainProduct mainProduct) {
 		MainProductDocument document = MainProductDocument.from(mainProduct);
 		mainProductSearchRepository.save(document);
 
 		log.info("Synced review stats to ES for main product: {}", mainProduct.getId());
+	}
+
+	@Transactional(readOnly = true)
+	public void syncAllFromRdbToEs() {
+		log.info("🚀 Start DB → ES full sync (by Event)");
+
+		int page = 0;
+		int size = 1000;
+		long totalIndexed = 0;
+
+		try {
+			Page<MainProduct> result;
+
+			do {
+				result = mainProductRepository.getAll(
+					PageRequest.of(page, size, Sort.by("createdAt").ascending())
+				);
+
+				List<MainProductEsSyncEvent.MainProductDto> dtos = result.getContent().stream()
+					.map(MainProductEsSyncEvent.MainProductDto::from)
+					.toList();
+
+				if (!dtos.isEmpty()) {
+					eventPublisher.publishEvent(new MainProductEsSyncEvent(dtos));
+					totalIndexed += dtos.size();
+					log.info("📦 Event published: page={}, indexed={}", page, totalIndexed);
+				}
+
+				page++;
+
+			} while (!result.isEmpty());
+
+			log.info("✅ DB → ES full sync completed. total indexed={}", totalIndexed);
+
+		} catch (Exception e) {
+			log.error("❌ DB → ES full sync failed", e);
+		}
 	}
 }

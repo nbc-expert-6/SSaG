@@ -4,6 +4,8 @@ import java.math.BigDecimal;
 import java.util.Optional;
 import java.util.UUID;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Component;
 
 import com.sparta.productservice.product.domain.entity.MainProduct;
@@ -36,4 +38,8 @@ public class MainProductRepositoryAdapter implements MainProductRepository {
 		jpaMainProductRepository.increaseClick(mainProductId);
 	}
 
+	@Override
+	public Page<MainProduct> getAll(Pageable pageable) {
+		return jpaMainProductRepository.findAll(pageable);
+	}
 }

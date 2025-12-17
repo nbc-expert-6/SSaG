@@ -1,9 +1,5 @@
 package com.sparta.productservice.product.infra.search.mapper;
 
-import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.time.ZoneOffset;
-
 import org.springframework.stereotype.Component;
 
 import com.sparta.productservice.product.domain.event.ProductCreatedEvent;
@@ -24,7 +20,7 @@ public class MainProductDocumentMapper {
 			.reviewCount(document.getReviewCount())
 			.clickCount(document.getClickCount())
 			.categoryId(document.getCategoryId())
-			.createdAt(LocalDateTime.ofInstant(document.getCreatedAt(), ZoneId.systemDefault()))
+			.createdAt(document.getCreatedAt())
 			.build();
 	}
 
@@ -41,7 +37,7 @@ public class MainProductDocumentMapper {
 			.clickCount(event.getClickCount())
 			.categoryId(event.getCategoryId().toString())
 			.deleted(false)
-			.createdAt(event.getCreatedAt().toInstant(ZoneOffset.UTC))
+			.createdAt(event.getCreatedAt())
 			.build();
 	}
 }

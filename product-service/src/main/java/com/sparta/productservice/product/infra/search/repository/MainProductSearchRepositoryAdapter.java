@@ -67,6 +67,11 @@ public class MainProductSearchRepositoryAdapter implements MainProductSearchRepo
 		return new PageImpl<>(content, pageable, hits.getTotalHits());
 	}
 
+	@Override
+	public void saveAll(List<MainProductDocument> mainProductDocuments) {
+		esMainProductSearchRepository.saveAll(mainProductDocuments);
+	}
+
 	/**
 	 * 검색 조건을 BoolQuery로 구성
 	 */

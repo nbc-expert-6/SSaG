@@ -28,6 +28,11 @@ public class ElasticsearchConfig extends ElasticsearchConfiguration {
 		ClientConfiguration.MaybeSecureClientConfigurationBuilder builder = ClientConfiguration.builder()
 			.connectedTo(parseUri(elasticsearchUri));
 
+		// HTTPS 사용시 SSL 활성화
+		if (elasticsearchUri.startsWith("https://")) {
+			builder.usingSsl();
+		}
+
 		if (username != null && !username.isEmpty()) {
 			builder.withBasicAuth(username, password);
 		}
@@ -39,7 +44,18 @@ public class ElasticsearchConfig extends ElasticsearchConfiguration {
 	}
 
 	private String parseUri(String uri) {
-		return uri.replace("http://", "").replace("https://", "");
+		String result = uri.replace("http://", "").replace("https://", "");
+
+		// 포트가 없으면 기본 포트 추가
+		if (!result.contains(":")) {
+			if (uri.startsWith("https://")) {
+				result = result + ":443";
+			} else {
+				result = result + ":9200";
+			}
+		}
+
+		return result;
 	}
 
 	private long parseTimeout(String timeout) {

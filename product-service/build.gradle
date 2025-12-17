@@ -53,6 +53,8 @@ dependencies {
     testImplementation 'org.springframework.kafka:spring-kafka-test'
     testImplementation 'org.testcontainers:kafka:1.19.0'
     testImplementation 'org.testcontainers:junit-jupiter:1.19.0'
+    // p6spy
+    implementation 'com.github.gavlyukovskiy:p6spy-spring-boot-starter:1.9.0'
 
     //elasticsearch
     implementation 'org.springframework.boot:spring-boot-starter-data-elasticsearch'

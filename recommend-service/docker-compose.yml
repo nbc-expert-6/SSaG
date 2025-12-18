@@ -17,7 +17,7 @@ services:
       RDS_USERNAME: postgres
       RDS_PASSWORD: qwer1234!
 
-      REDIS_HOST: # TODO : 추후 Elasticache 엔드포인트 넣기
+      REDIS_HOST: ssag-cache-server.pm5lbg.ng.0001.apn2.cache.amazonaws.com
       REDIS_PORT: 6379
 
       PRODUCT_SERVICE_URL: # TODO: 추후 상품서비스 배포 url

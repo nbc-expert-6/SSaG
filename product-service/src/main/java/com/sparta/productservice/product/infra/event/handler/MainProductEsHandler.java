@@ -1,8 +1,12 @@
 package com.sparta.productservice.product.infra.event.handler;
 
+import java.io.IOException;
 import java.util.List;
 
 import org.springframework.context.event.EventListener;
+import org.springframework.retry.annotation.Backoff;
+import org.springframework.retry.annotation.Recover;
+import org.springframework.retry.annotation.Retryable;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.event.TransactionPhase;
@@ -11,9 +15,11 @@ import org.springframework.transaction.event.TransactionalEventListener;
 import com.sparta.productservice.product.domain.event.MainProductEsSyncEvent;
 import com.sparta.productservice.product.domain.event.ProductCreatedEvent;
 import com.sparta.productservice.product.domain.repository.MainProductSearchRepository;
+import com.sparta.productservice.common.kafka.publisher.DLQPublisher;
 import com.sparta.productservice.product.infra.search.document.MainProductDocument;
 import com.sparta.productservice.product.infra.search.mapper.MainProductDocumentMapper;
 
+import co.elastic.clients.elasticsearch._types.ElasticsearchException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -24,22 +30,44 @@ public class MainProductEsHandler {
 
 	private final MainProductSearchRepository searchRepository;
 	private final MainProductDocumentMapper mainProductDocumentMapper;
+	private final DLQPublisher dlqPublisher;
+	private static final int MAX_ATTEMPTS = 3;
 
 	/**
 	 * 상품 생성 시 ES 동기화
 	 */
 	@Async
 	@TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+	@Retryable(
+		retryFor = {ElasticsearchException.class, IOException.class},
+		maxAttempts = MAX_ATTEMPTS,
+		backoff = @Backoff(delay = 1000, multiplier = 2.0)
+	)
 	public void handleProductCreated(ProductCreatedEvent event) {
-		try {
-			MainProductDocument document = mainProductDocumentMapper.toDocument(event);
-			searchRepository.save(document);
-			log.info("✅ ES indexed: {}", document.getId());
-		} catch (Exception e) {
-			log.error("❌ Failed to index to ES: {}", event.getMainProductId(), e);
-			throw e;
-		}
+		MainProductDocument document = mainProductDocumentMapper.toDocument(event);
+		searchRepository.save(document);
+		log.info("✅ ES indexed: {}", document.getId());
 	}
+
+	/**
+	 * 재시도 실패 시 DLQ 전송
+	 */
+	@Recover
+	public void recoverProductCreated(Exception e, ProductCreatedEvent event) {
+		int actualRetryCount = MAX_ATTEMPTS - 1;
+
+		log.error("❌ Failed to index after {} retries (total {} attempts), sending to DLQ: {}",
+			actualRetryCount, MAX_ATTEMPTS, event.getMainProductId(), e);
+
+		dlqPublisher.sendToDLQ(
+			"product.es.sync",
+			event.getMainProductId().toString(),
+			event,
+			e,
+			actualRetryCount
+		);
+	}
+
 
 	@Async
 	@EventListener
@@ -71,10 +99,18 @@ public class MainProductEsHandler {
 			searchRepository.saveAll(docs);
 			successCount += 500;
 		} catch (Exception e) {
-			log.error("❌ Failed to sync ES doc: id={}, name={}");
+			log.error("❌ Failed to sync batch ES doc");
 			failCount += 500;
+
+			dlqPublisher.sendToDLQ(
+				"product.es.sync.batch",              // product.es.sync.batch → product.es.sync.batch.dlq
+				event.toString(),
+				event,
+				e,
+				0  // 배치는 재시도 없이 바로 DLQ
+			);
 		}
 
-		log.info("✅ ES sync completed: success={}, failed={}", successCount, failCount);
+		log.info("ES sync completed: success={}, failed={}", successCount, failCount);
 	}
 }

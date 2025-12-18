@@ -1,4 +1,4 @@
-package com.sparta.productservice.common.config;
+package com.sparta.productservice.common.kafka.config;
 
 import java.util.HashMap;
 import java.util.Map;

@@ -112,10 +112,12 @@ public class ProductService implements CreateProductUseCase, UpdateMainProductRe
 	}
 
 	private void syncToEs(MainProduct mainProduct) {
-		MainProductDocument document = MainProductDocument.from(mainProduct);
-		mainProductSearchRepository.save(document);
-
-		log.info("Synced review stats to ES for main product: {}", mainProduct.getId());
+		try {
+			MainProductDocument document = MainProductDocument.from(mainProduct);
+			mainProductSearchRepository.save(document);
+		} catch (Exception e) {
+			log.error("Synced review stats to ES for main product: {}", mainProduct.getId());
+		}
 	}
 
 	@Transactional(readOnly = true)

@@ -8,7 +8,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.sparta.productservice.product.app.command.UpdateMainProductReviewStatsCommand;
 import com.sparta.productservice.product.app.port.in.UpdateMainProductReviewStatsUseCase;
-import com.sparta.productservice.common.message.ReviewCreatedMessage;
+import com.sparta.productservice.common.kafka.message.ReviewCreatedMessage;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

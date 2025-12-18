@@ -1,18 +1,19 @@
 import logging
 import time
 
+from common.config import BATCH_SIZE
 from common.kafka_utils import create_producer, create_consumer
 from common.logging_utils import setup_dev_logger
 from common.monitoring.logger import setup_logger
 from common.monitoring.metrics import (CRAWL_EXCEPTION_COUNT, CRAWL_LATENCY,
-                                       CRAWL_TRIAL_COUNT, DB_QUERY_LATENCY,
+                                       CRAWL_TRIAL_COUNT,
                                        KAFKA_PUBLISH_COUNT,
                                        KAFKA_PUBLISH_LATENCY)
 from common.monitoring.metrics_server import start_metrics_server
 from crawler.gmarket.gmarket_url_parser import GmarketUrlParser
 
 # 해당 크기만큼 처리 후 브라우저 리셋
-MAX_BATCH = 20
+MAX_BATCH = int(BATCH_SIZE)
 
 # 시작 시간
 total_start = time.perf_counter()
@@ -63,6 +64,8 @@ if __name__ == "__main__":
                 parser_end = time.perf_counter()
                 logger.perf("PARSING_COMPLETED", url_cnt=len(urls), time=round(parser_end - parser_start, 4))
                 CRAWL_LATENCY.labels(platform="gmarket").observe(parser_end - parser_start)
+                processed_count += 1
+                consumer.commit()
                 continue
 
             logger.info("SEARCH_COMPLETED", keyword=str(keyword), url_cnt=len(urls))
@@ -76,9 +79,12 @@ if __name__ == "__main__":
             KAFKA_PUBLISH_LATENCY.observe(publish_end - publish_start)
             KAFKA_PUBLISH_COUNT.inc()
 
+
             # 파싱 종료 시간
             parser_end = time.perf_counter()
             logger.perf("PARSING_COMPLETED", url_cnt=len(urls), time=round(parser_end - parser_start, 4))
+            processed_count += 1
+            consumer.commit()
 
         # 실패 지점에서 대표상품 Id와 offset을 로그로 기록
         # 추후 재시도 시 해당 값들 사용
@@ -94,6 +100,7 @@ if __name__ == "__main__":
             logger.perf("PARSING_COMPLETED", time=round(parser_end - parser_start, 4))
             CRAWL_LATENCY.labels(platform="gmarket").observe(parser_end - parser_start)
             CRAWL_EXCEPTION_COUNT.labels(platform="gmarket").inc()
+            consumer.commit()
 
             continue  # 다음 row 진행
 

@@ -1,14 +1,14 @@
 import os
 import time
+
 import undetected_chromedriver as uc
 from selenium.webdriver.common.by import By
-from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.support.ui import WebDriverWait
 
-from common.config import CHROME_BINARY, CHROMEDRIVER_PATH
 import common.platform
+from common.config import CHROME_BINARY, CHROMEDRIVER_PATH
 from crawler.review_parser import ReviewParser
-
 
 """
 쿠팡 리뷰 크롤러
@@ -178,6 +178,15 @@ class CoupangReviewParser(ReviewParser):
             self.driver.execute_script("arguments[0].scrollIntoView({block: 'center'});", article)
 
             review_data = {}
+
+            # 리뷰 ID 파싱
+            try:
+                review_data["id"] = article.find_element(
+                    By.XPATH,
+                    ".//div[contains(@class,'js_reviewArticleHelpfulContainer')]"
+                ).get_attribute("data-review-id")
+            except:
+                review_data["id"] = None
 
             # 제목 파싱
             try:

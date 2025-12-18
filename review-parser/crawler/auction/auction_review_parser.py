@@ -158,11 +158,20 @@ class AuctionReviewParser(ReviewParser):
     def _parse_review(self, review) -> dict:
 
         # 초기값 설정
+        review_id = None
         author_name = None
         rating = None
         content = None
         image_urls = []
         created_at = None
+
+        # 리뷰 아이디
+        try:
+            review_id = review.get_attribute("data-review-seq")
+            if not review_id:
+                review_id = review.get_attribute("id")
+        except Exception as e:
+            logging.warning(f"[_parse_review] 리뷰 ID 파싱 실패: {e}")
 
         # 작성자
         try:
@@ -223,6 +232,7 @@ class AuctionReviewParser(ReviewParser):
             logging.warning(f"[_parse_review] 리뷰 작성 날짜 파싱 예외 발생: {e}")
 
         return {
+            "id": review_id,
             "author_name": author_name,
             "title": "",
             "rating": rating,

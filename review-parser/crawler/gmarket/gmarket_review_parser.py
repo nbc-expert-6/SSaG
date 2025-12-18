@@ -1,13 +1,15 @@
+import hashlib
+import re
 import time
 from typing import List, Optional
+
 import undetected_chromedriver as uc
 from selenium.webdriver.common.by import By
-from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.support.ui import WebDriverWait
 
 from common.config import CHROME_BINARY, CHROMEDRIVER_PATH
 from common.platform import Platform
-
 
 """
 지마켓 리뷰 크롤러
@@ -181,6 +183,17 @@ class GmarketReviewParser:
         rows = self.driver.find_elements(By.CSS_SELECTOR, "table.tb_comment.tb_premium tbody tr")
         for row in rows:
             try:
+                # 리뷰 아이디
+                review_id = None
+                try:
+                    link = row.find_element(By.CSS_SELECTOR, "a.uxelayer_ctrl")
+                    pop_url = link.get_attribute("data-pop-layer-url")
+                    m = re.search(r"prvw_no=(\d+)", pop_url)
+                    if m:
+                        review_id = m.group(1)
+                except:
+                    pass
+
                 # 작성자
                 author_name = ""
                 try:
@@ -216,6 +229,7 @@ class GmarketReviewParser:
                     image_url = src
 
                 review = {
+                    "id": review_id,
                     "author_name": author_name,
                     "created_at": created_at,
                     "image_urls": image_url,
@@ -262,7 +276,11 @@ class GmarketReviewParser:
                 except:
                     pass
 
+                # 리뷰 ID (일반: 파생 키)
+                review_id = self._make_review_key(author_name, created_at, content)
+
                 review = {
+                    "id": review_id,
                     "author_name": author_name,
                     "created_at": created_at,
                     "image_urls": None,
@@ -276,6 +294,10 @@ class GmarketReviewParser:
                 print(f"[WARN] 일반 리뷰 행 파싱 실패: {e}")
                 continue
         return results
+
+    def _make_review_key(self, author: str, created_at: str, content: str) -> str:
+        raw = f"{author}|{created_at}|{content}"
+        return hashlib.sha1(raw.encode("utf-8")).hexdigest()[:16]
 
     """
     프리미엄 상품평 파싱 유즈케이스

@@ -104,11 +104,18 @@ class ElevenStReviewParser(ReviewParser):
 
             for item in review_items[loaded_count:]:
                 # 초기값 설정
+                review_id = None
                 author_name = None
                 rating = None
                 content = None
                 image_urls = []
                 created_at = None
+
+                # 리뷰 아이디
+                try:
+                    review_id = item.get_attribute("data-contmapno")
+                except Exception:
+                    review_id = None
 
                 # 작성자
                 try:
@@ -164,6 +171,7 @@ class ElevenStReviewParser(ReviewParser):
                     logging.warning(f"[get_review_info] 리뷰 이미지 파싱 예외 발생: {e}")
 
                 results.append({
+                    "id": review_id,
                     "author_name": author_name,
                     "title": "",
                     "rating": rating,

@@ -21,6 +21,10 @@ def load_all_json(folder_path):
     for file_path in glob(os.path.join(folder_path, "*.json")):
         print("Loading file:", os.path.basename(file_path))
         with open(file_path, "r", encoding="utf-8") as f:
+            content = f.read().strip()
+            if not content:
+                print(f"[WARN] Empty file skipped: {file_path}")
+                continue
             all_data.extend(json.load(f))
     return all_data
 
@@ -35,6 +39,10 @@ all_data = enter_data + exit_data + session_data
 
 # 4) DataFrame으로 변환
 df = pd.json_normalize(all_data)
+
+if df.empty or "sessionId" not in df.columns:
+    print("[WARN] No data to process, exiting.")
+    exit(0)
 
 # 5) 세션별 의미 있는 feature 추가
 session_group = (

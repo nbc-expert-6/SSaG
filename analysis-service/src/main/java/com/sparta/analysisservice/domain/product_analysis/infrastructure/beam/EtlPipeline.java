@@ -44,16 +44,17 @@ public class EtlPipeline {
 	}
 
 	// ES에서 읽어 UserEvent PCollection 반환
-	public PCollection<UserEventDocument> readFromElastic(Pipeline p) {
-		ElasticsearchIO.ConnectionConfiguration connectionConfiguration =
+	public PCollection<UserEventDocument> readFromElastic(Pipeline p,
+		ElasticsearchIO.ConnectionConfiguration connConfig) {
+		/*ElasticsearchIO.ConnectionConfiguration connectionConfiguration =
 			ElasticsearchIO.ConnectionConfiguration.create(
 				new String[] {esHost},
 				esIndex
-			);
+			);*/
 
 		PCollection<String> jsons = p.apply("ReadFromEs",
 			ElasticsearchIO.read()
-				.withConnectionConfiguration(connectionConfiguration)
+				.withConnectionConfiguration(connConfig)
 		);
 
 		return jsons

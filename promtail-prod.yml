@@ -6,7 +6,7 @@ positions:
   filename: /tmp/positions.yaml
 
 clients:
-  - url: http://promtail:3100/loki/api/v1/push
+  - url: http://${SERVER_IP}:3100/loki/api/v1/push
 
 scrape_configs:
   - job_name: parser
@@ -32,7 +32,13 @@ scrape_configs:
       # log json 파싱
       - json:
           expressions:
+            timestamp: timestamp
             level: level
+            event: event
+            platform: platform
+            environment: environment
+            exception: exception
+            main_product_id: main_product_id
 
       # timestamp 설정
       - timestamp:
@@ -41,7 +47,11 @@ scrape_configs:
 
       # 라벨 설정
       - labels:
+          level:
+          platform:
+          environment:
           container_name:
+          event:
 
       - output:
           source: message

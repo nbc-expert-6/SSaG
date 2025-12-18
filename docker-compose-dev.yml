@@ -179,4 +179,3 @@ volumes:
 networks:
   infra:
     name: infra
-    external: true

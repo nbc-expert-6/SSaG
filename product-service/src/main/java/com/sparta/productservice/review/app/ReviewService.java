@@ -6,7 +6,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.sparta.productservice.common.message.ReviewCreatedMessage;
+import com.sparta.productservice.common.kafka.message.ReviewCreatedMessage;
 import com.sparta.productservice.review.app.command.CreateReviewsCommand;
 import com.sparta.productservice.review.app.command.ListReviewCommand;
 import com.sparta.productservice.review.app.dto.ListReviewResult;

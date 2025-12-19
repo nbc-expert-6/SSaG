@@ -53,7 +53,7 @@ def setup_logger(platform: str):
             # Exception 정보 포맷팅
             structlog.processors.format_exc_info,
             # 출력 형식 (json)
-            structlog.processors.JSONRenderer()
+            structlog.processors.JSONRenderer(ensure_ascii=False)
         ],
         context_class=dict,
         logger_factory=structlog.stdlib.LoggerFactory(),

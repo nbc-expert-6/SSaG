@@ -141,7 +141,6 @@ cluster_profiles = (
 
 payload = {"sessions": session_clusters, "clusterProfiles": cluster_profiles}
 
-# TODO : 추후 analysis-service로 변경
 ANALYSIS_SERVER_URL = "http://analysis-service/api/v1/session-cluster"
 
 response = requests.post(ANALYSIS_SERVER_URL, json=payload, timeout=5)

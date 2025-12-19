@@ -5,7 +5,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // 모든 이벤트 공통 처리 함수
     function sendEvent(eventType, productId = null, meta = null) {
-        fetch("http://localhost:8082/api/v1/user-event", {
+        fetch("http:/analysis-service/api/v1/user-event", {
             method: "POST",
             credentials: "include",
             headers: {"Content-Type": "application/json"},
@@ -40,7 +40,8 @@ document.addEventListener("DOMContentLoaded", () => {
     window.addEventListener("beforeunload", (event) => {
         const payload = JSON.stringify({eventType: "PAGE_EXIT", meta: location.pathname});
         const blob = new Blob([payload], {type: "application/json"});
-        navigator.sendBeacon("http://localhost:8082/api/v1/user-event", blob);
+        // TODO: analysis-service로 변경
+        navigator.sendBeacon("http://analysis-service/api/v1/user-event", blob);
     });
 
 });

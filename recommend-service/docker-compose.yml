@@ -7,8 +7,21 @@ services:
     ports:
       - "8081:8081"
     environment:
-      SPRING_PROFILES_ACTIVE: docker
-      KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+      SPRING_PROFILES_ACTIVE: dev
+
+      KAFKA_BOOTSTRAP_SERVERS: "10.0.32.159:9092,10.0.33.239:9092,10.0.34.129:9092"
+
+      RDS_HOST: ssag-database.cnkkgqgcc71r.ap-northeast-2.rds.amazonaws.com
+      RDS_PORT: 5432
+      RDS_DB_NAME: recommend_service_db
+      RDS_USERNAME: postgres
+      RDS_PASSWORD: qwer1234!
+
+      REDIS_HOST: ssag-cache-server.pm5lbg.ng.0001.apn2.cache.amazonaws.com
+      REDIS_PORT: 6379
+
+      PRODUCT_SERVICE_URL: # TODO: 추후 상품서비스 배포 url
+
       TZ: "Asia/Seoul"
     volumes:
       - ./logs:/app/logs

@@ -36,6 +36,10 @@ all_data = enter_data + exit_data + session_data
 # 4) DataFrame으로 변환
 df = pd.json_normalize(all_data)
 
+if df.empty or "sessionId" not in df.columns:
+    print("[WARN] No data to process, exiting.")
+    exit(0)
+
 # 5) 세션별 의미 있는 feature 추가
 session_group = (
     df.groupby("sessionId")

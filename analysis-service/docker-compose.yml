@@ -6,9 +6,19 @@ services:
     container_name: analysis-service
     ports:
       - "8082:8082"
+
     environment:
-      SPRING_PROFILES_ACTIVE: docker
-      KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+      SPRING_PROFILES_ACTIVE: dev
+
+      KAFKA_BOOTSTRAP_SERVERS: "10.0.32.159:9092,10.0.33.239:9092,10.0.34.129:9092"
+
+      ES_HOST: https://1aef128f11714b44870402bd6190321d.ap-northeast-2.aws.elastic-cloud.com:443
+      ES_USERNAME: elastic
+      ES_PASSWORD: 81ieilMmNELN8Quf2Vq0Fv5y
+      
+      REDIS_HOST: ssag-cache-server.pm5lbg.ng.0001.apn2.cache.amazonaws.com
+      REDIS_PORT: 6379
+
       TZ: "Asia/Seoul"
     volumes:
       - ./logs:/app/logs

@@ -1,6 +1,7 @@
 package com.sparta.analysisservice.domain.product_analysis.application.service;
 
 import org.apache.beam.sdk.Pipeline;
+import org.apache.beam.sdk.io.elasticsearch.ElasticsearchIO;
 import org.apache.beam.sdk.transforms.Filter;
 import org.apache.beam.sdk.transforms.Flatten;
 import org.apache.beam.sdk.transforms.GroupByKey;
@@ -11,6 +12,7 @@ import org.apache.beam.sdk.values.PCollection;
 import org.apache.beam.sdk.values.PCollectionList;
 import org.apache.beam.sdk.values.TypeDescriptor;
 import org.apache.beam.sdk.values.TypeDescriptors;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.sparta.analysisservice.domain.product_analysis.application.extractor.BaseExtractor;
@@ -29,11 +31,14 @@ public class EventEtlService {
 
 	private final EtlPipeline pipeline;
 
+	@Autowired
+	private ElasticsearchIO.ConnectionConfiguration esConnConfig;
+
 	public void runEtlJob() {
 		Pipeline p = pipeline.create();
 
 		// 1) ES에서 읽어오기
-		PCollection<UserEventDocument> events = pipeline.readFromElastic(p);
+		PCollection<UserEventDocument> events = pipeline.readFromElastic(p, esConnConfig);
 
 		// 2) Transform
 		PCollection<BaseExtractor.Extracted> extracted =

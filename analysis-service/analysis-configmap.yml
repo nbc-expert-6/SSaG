@@ -1,0 +1,9 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: analysis-service-config
+
+data:
+  SPRING_PROFILES_ACTIVE: dev
+  KAFKA_BOOTSTRAP_SERVERS: "10.0.32.159:9092,10.0.33.239:9092,10.0.34.129:9092"
+  TZ: "Asia/Seoul"

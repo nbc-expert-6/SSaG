@@ -1,0 +1,64 @@
+apiVersion: apps/v1
+kind: Deployment
+
+metadata:
+  name: analysis-service-deployment
+
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: analysis-service
+  template:
+    metadata:
+      labels:
+        app: analysis-service
+    spec:
+      containers:
+        - name: analysis-service-container
+          # 이미지 수정
+          image: 139144002104.dkr.ecr.ap-northeast-2.amazonaws.com/analysis-service:1.0
+          ports:
+            - containerPort: 8080
+          env:
+            - name: SPRING_PROFILES_ACTIVE
+              valueFrom:
+                configMapKeyRef:
+                  name: analysis-service-config
+                  key: SPRING_PROFILES_ACTIVE
+            - name: KAFKA_BOOTSTRAP_SERVERS
+              valueFrom:
+                configMapKeyRef:
+                  name: analysis-service-config
+                  key: KAFKA_BOOTSTRAP_SERVERS
+            - name: TZ
+              valueFrom:
+                configMapKeyRef:
+                  name: analysis-service-config
+                  key: TZ
+
+            - name: ES_HOST
+              valueFrom:
+                secretKeyRef:
+                  name: analysis-service-secret
+                  key: ES_HOST
+            - name: ES_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: analysis-service-secret
+                  key: ES_USERNAME
+            - name: ES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: analysis-service-secret
+                  key: ES_PASSWORD
+            - name: REDIS_HOST
+              valueFrom:
+                secretKeyRef:
+                  name: analysis-service-secret
+                  key: REDIS_HOST
+            - name: REDIS_PORT
+              valueFrom:
+                secretKeyRef:
+                  name: analysis-service-secret
+                  key: REDIS_PORT

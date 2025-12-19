@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: recommend-service-config
+data:
+  SPRING_PROFILES_ACTIVE: dev
+  KAFKA_BOOTSTRAP_SERVERS: "10.0.32.159:9092,10.0.33.239:9092,10.0.34.129:9092"
+  RDS_HOST: db-service # ssag-database.cnkkgqgcc71r.ap-northeast-2.rds.amazonaws.com
+  RDS_PORT: "5432"
+  RDS_DB_NAME: recommend_service_db
+  REDIS_HOST: redis-service # ssag-cache-server.pm5lbg.ng.0001.apn2.cache.amazonaws.com
+  REDIS_PORT: "6379"
+  PRODUCT_SERVICE_URL: http://product-service  # TODO: 상품서비스 URL
+  TZ: "Asia/Seoul"

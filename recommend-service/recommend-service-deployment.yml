@@ -1,0 +1,76 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: recommend-service-deployment
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: recommend-service
+  template:
+    metadata:
+      labels:
+        app: recommend-service
+    spec:
+      containers:
+        - name: recommend-service-container
+          # 이미지 주소 수정
+          image: 139144002104.dkr.ecr.ap-northeast-2.amazonaws.com/recommend-service:1.0
+          ports:
+            - containerPort: 8080
+          env:
+            - name: SPRING_PROFILES_ACTIVE
+              valueFrom:
+                configMapKeyRef:
+                  name: recommend-service-config
+                  key: SPRING_PROFILES_ACTIVE
+            - name: KAFKA_BOOTSTRAP_SERVERS
+              valueFrom:
+                configMapKeyRef:
+                  name: recommend-service-config
+                  key: KAFKA_BOOTSTRAP_SERVERS
+            - name: RDS_HOST
+              valueFrom:
+                configMapKeyRef:
+                  name: recommend-service-config
+                  key: RDS_HOST
+            - name: RDS_PORT
+              valueFrom:
+                configMapKeyRef:
+                  name: recommend-service-config
+                  key: RDS_PORT
+            - name: RDS_DB_NAME
+              valueFrom:
+                configMapKeyRef:
+                  name: recommend-service-config
+                  key: RDS_DB_NAME
+            - name: RDS_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: recommend-service-secret
+                  key: RDS_USERNAME
+            - name: RDS_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: recommend-service-secret
+                  key: RDS_PASSWORD
+            - name: REDIS_HOST
+              valueFrom:
+                configMapKeyRef:
+                  name: recommend-service-config
+                  key: REDIS_HOST
+            - name: REDIS_PORT
+              valueFrom:
+                configMapKeyRef:
+                  name: recommend-service-config
+                  key: REDIS_PORT
+            - name: PRODUCT_SERVICE_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: recommend-service-config
+                  key: PRODUCT_SERVICE_URL
+            - name: TZ
+              valueFrom:
+                configMapKeyRef:
+                  name: recommend-service-config
+                  key: TZ

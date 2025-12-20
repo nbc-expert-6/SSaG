@@ -57,18 +57,22 @@ public class Review extends BaseEntity {
 	@Column(name = "author_name", length = 100)
 	private String authorName;
 
+	@Column(name = "platform_review_id", nullable = false)
+	private String platformReviewId;
+
 	@OneToMany(mappedBy = "review", cascade = CascadeType.ALL, orphanRemoval = true)
 	private List<ReviewImage> images = new ArrayList<>();
 
 	@Builder
 	public Review(ReviewRating rating, String content, UUID mainProductId,
-		PlatformType platformType, String title, String authorName) {
+		PlatformType platformType, String title, String authorName, String platformReviewId) {
 		this.rating = rating;
 		this.content = content;
 		this.mainProductId = mainProductId;
 		this.platformType = platformType;
 		this.title = title;
 		this.authorName = authorName;
+		this.platformReviewId = platformReviewId;
 	}
 
 	public List<String> getImageUrls() {

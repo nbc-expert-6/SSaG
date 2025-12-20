@@ -7,6 +7,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Component;
 
+import com.sparta.productservice.product.domain.vo.PlatformType;
 import com.sparta.productservice.review.domain.entity.Review;
 import com.sparta.productservice.review.domain.repository.ReviewRepository;
 import com.sparta.productservice.review.domain.repository.dto.RatingCountQuery;
@@ -37,5 +38,10 @@ public class ReviewRepositoryAdapter implements ReviewRepository {
 	@Override
 	public List<Review> saveAll(List<Review> reviews) {
 		return jpaReviewRepository.saveAll(reviews);
+	}
+
+	@Override
+	public List<String> existsPlatformReviewIds(List<String> platformReviewIds, PlatformType platformType) {
+		return reviewQueryRepository.existsPlatformReviewIds(platformReviewIds, platformType);
 	}
 }

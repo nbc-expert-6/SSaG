@@ -4,6 +4,7 @@ import org.springframework.kafka.annotation.DltHandler;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.annotation.RetryableTopic;
 import org.springframework.kafka.retrytopic.TopicSuffixingStrategy;
+import org.springframework.kafka.support.Acknowledgment;
 import org.springframework.kafka.support.KafkaHeaders;
 import org.springframework.messaging.handler.annotation.Header;
 import org.springframework.retry.annotation.Backoff;
@@ -37,10 +38,11 @@ public class ReviewEventConsumer {
 		groupId = "${spring.kafka.consumer.group-id}",
 		containerFactory = "kafkaListenerContainerFactory"
 	)
-	public void consume(ReviewCreatedMessage message) {
+	public void consume(ReviewCreatedMessage message, Acknowledgment ack) {
 		log.info("📥 Consumed Review event: mainProductId={}", message.mainProductId());
 
 		handler.handleReviewCreated(message);
+		ack.acknowledge();
 
 		log.info("✅ Successfully processed review event: mainProductId={}", message.mainProductId());
 	}

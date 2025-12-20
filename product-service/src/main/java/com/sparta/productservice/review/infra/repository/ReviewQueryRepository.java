@@ -9,6 +9,7 @@ import org.springframework.stereotype.Repository;
 
 import com.querydsl.core.types.Projections;
 import com.sparta.productservice.common.querydsl.QuerydslRepositorySupport;
+import com.sparta.productservice.product.domain.vo.PlatformType;
 import com.sparta.productservice.review.domain.entity.Review;
 import com.sparta.productservice.review.domain.repository.dto.RatingCountQuery;
 
@@ -32,6 +33,16 @@ public class ReviewQueryRepository extends QuerydslRepositorySupport {
 			)
 			.groupBy(review.rating.value.floor())
 			.orderBy(review.rating.value.floor().intValue().desc())
+			.fetch();
+	}
+
+	public List<String> existsPlatformReviewIds(List<String> platformReviewIds, PlatformType platformType) {
+		return select(review.platformReviewId)
+			.from(review)
+			.where(
+				review.platformReviewId.in(platformReviewIds),
+				review.platformType.eq(platformType)
+			)
 			.fetch();
 	}
 }

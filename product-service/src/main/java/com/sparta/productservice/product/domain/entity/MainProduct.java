@@ -73,6 +73,13 @@ public class MainProduct extends BaseEntity {
 	}
 
 	public void addProduct(Product product) {
+		boolean duplicate = this.products.stream()
+			.map(Product::getLink)
+			.anyMatch(link -> link.equals(product.getLink()));
+
+		if (duplicate) {
+			throw new IllegalArgumentException("이미 동일한 플랫폼의 상품 링크가 등록되어 있습니다.");
+		}
 		this.products.add(product);
 		product.updateMainProduct(this);
 

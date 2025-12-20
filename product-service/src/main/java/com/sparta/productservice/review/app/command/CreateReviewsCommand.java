@@ -14,8 +14,12 @@ public record CreateReviewsCommand(
 	PlatformType platformType,
 	List<CreateReviewDto> reviews
 ) {
+	public List<String> getPlatformReviewIds() {
+		return this.reviews.stream().map(CreateReviewDto::platformReviewId).toList();
+	}
 
 	public record CreateReviewDto(
+		String platformReviewId,
 		String title,
 		String content,
 		String authorName,
@@ -27,6 +31,7 @@ public record CreateReviewsCommand(
 			Review review = Review.builder()
 				.mainProductId(mainProductId)
 				.platformType(platformType)
+				.platformReviewId(platformReviewId)
 				.title(title)
 				.content(content)
 				.authorName(authorName)
@@ -46,7 +51,7 @@ public record CreateReviewsCommand(
 
 	public List<Review> toReviews() {
 		return reviews.stream()
-			.map(dto -> dto.toReview(mainProductId, platformType)) // ✅ 핵심 수정
+			.map(dto -> dto.toReview(mainProductId, platformType))
 			.toList();
 	}
 }

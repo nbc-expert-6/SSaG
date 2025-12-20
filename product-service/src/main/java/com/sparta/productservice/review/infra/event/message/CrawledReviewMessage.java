@@ -22,6 +22,7 @@ public record CrawledReviewMessage(
 		List<CreateReviewsCommand.CreateReviewDto> reviewCommands =
 			reviews.stream()
 				.map(review -> new CreateReviewsCommand.CreateReviewDto(
+					review.platformReviewId(),
 					review.title(),
 					review.content(),
 					review.authorName(),
@@ -38,6 +39,7 @@ public record CrawledReviewMessage(
 	}
 
 	public record CrawledReview(
+		@JsonProperty("id") String platformReviewId,
 		@JsonProperty("title") String title,
 		@JsonProperty("content") String content,
 		@JsonProperty("rating") double rating,

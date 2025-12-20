@@ -39,8 +39,16 @@ public class ReviewService implements CreateReviewsUseCase {
 	@Override
 	@Transactional
 	public void createReviews(CreateReviewsCommand command) {
-		List<Review> reviews = reviewRepository.saveAll(command.toReviews());
+		List<String> existingReviewIds = reviewRepository.existsPlatformReviewIds(command.getPlatformReviewIds(),
+			command.platformType());
 
-		reviewEventProducer.publishReviewCreatedEvents(ReviewCreatedMessage.from(command.mainProductId(), command.platformType(), reviews));
+		List<Review> newReviews = command.toReviews().stream()
+			.filter(review -> !existingReviewIds.contains(review.getPlatformReviewId()))
+			.toList();
+
+		List<Review> savedReviews = reviewRepository.saveAll(newReviews);
+
+		reviewEventProducer.publishReviewCreatedEvents(
+			ReviewCreatedMessage.from(command.mainProductId(), command.platformType(), savedReviews));
 	}
 }

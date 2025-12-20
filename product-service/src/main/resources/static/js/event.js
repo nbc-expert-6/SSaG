@@ -5,7 +5,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // 모든 이벤트 공통 처리 함수
     function sendEvent(eventType, productId = null, meta = null) {
-        fetch("http:/analysis-service/api/v1/user-event", {
+        fetch("http:/k8s-default-apiingre-23aef56856-1588504632.ap-northeast-2.elb.amazonaws.com/api/v1/user-event", {
             method: "POST",
             credentials: "include",
             headers: {"Content-Type": "application/json"},
@@ -40,8 +40,7 @@ document.addEventListener("DOMContentLoaded", () => {
     window.addEventListener("beforeunload", (event) => {
         const payload = JSON.stringify({eventType: "PAGE_EXIT", meta: location.pathname});
         const blob = new Blob([payload], {type: "application/json"});
-        // TODO: analysis-service로 변경
-        navigator.sendBeacon("http://analysis-service/api/v1/user-event", blob);
+        navigator.sendBeacon("http://k8s-default-apiingre-23aef56856-1588504632.ap-northeast-2.elb.amazonaws.com/api/v1/user-event", blob);
     });
 
 });

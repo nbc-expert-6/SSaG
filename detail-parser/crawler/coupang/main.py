@@ -92,7 +92,7 @@ if __name__ == "__main__":
                     DLQ_TOPIC,
                     {
                         "platform": PLATFORM,
-                        "main_product_id": "main_product_id",
+                        "main_product_id": main_product_id,
                         "url": url,
                         "stage": e.stage,
                         "reason": e.reason,

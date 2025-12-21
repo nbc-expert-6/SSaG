@@ -1,4 +1,3 @@
-import logging
 import re
 import time
 
@@ -9,11 +8,9 @@ from selenium.webdriver.support import expected_conditions as ec
 from selenium.webdriver.support.ui import WebDriverWait
 
 from common.config import CHROME_BINARY, CHROMEDRIVER_PATH
-from common.logging_utils import setup_dev_logger
+from common.exceptions import DetailParseException
 from crawler.detail_parser import DetailParser
 
-# Logging 설정
-setup_dev_logger()
 
 class ElevenStDetailParser(DetailParser):
     def __init__(self):
@@ -52,21 +49,20 @@ class ElevenStDetailParser(DetailParser):
 
     # 제품 상세 페이지 열기
     def open_product_detail_page(self, url: str):
-        logging.info(f"detail page: {url}")
-        self.driver.get(url)
-        time.sleep(2)
+        try:
+            self.driver.get(url)
+            time.sleep(2)
+        except Exception as e:
+            raise DetailParseException(
+                stage="page_load",
+                reason="failed to load product page",
+                original_exception=e,
+                original_exception_type=type(e).__name__,
+            )
 
     # 제품 상세 정보 수집
     def get_product_info(self) -> dict:
         driver = self.driver
-
-        # 초기값
-        image_url = None
-        brand = None
-        seller = None
-        name = None
-        price = None
-        shipping_fee = None
 
         # 브랜드
         try:
@@ -83,40 +79,57 @@ class ElevenStDetailParser(DetailParser):
             brand_el = driver.find_element(By.XPATH,
                     "//table[contains(@class,'prdc_detail_table')]//th[contains(text(),'브랜드')]/following-sibling::td")
             brand = brand_el.text.strip()
-        except NoSuchElementException:
-            logging.warning(f"[get_product_info] 브랜드 파싱 실패")
         except Exception as e:
-            logging.warning(f"[get_product_info] 브랜드 파싱 예외 발생: {e}")
+            raise DetailParseException(
+                stage="brand",
+                reason="brand parsing failed",
+                original_exception=e,
+                original_exception_type=type(e).__name__,
+            )
 
         # 이미지
         try:
             image_url = driver.find_element(By.CSS_SELECTOR, "div.img_full img").get_attribute('src')
-        except NoSuchElementException:
-            logging.warning(f"[get_product_info] 이미지 파싱 실패")
         except Exception as e:
-            logging.warning(f"[get_product_info] 이미지 파싱 예외 발생: {e}")
+            raise DetailParseException(
+                stage="image",
+                reason="image parsing failed",
+                original_exception=e,
+                original_exception_type=type(e).__name__,
+            )
 
         # 판매자 정보
         try:
             seller = driver.find_element(By.CSS_SELECTOR, "div.c_product_store_cont h1.c_product_store_title a").text
-        except NoSuchElementException:
-            logging.warning(f"[get_product_info] 판매자 정보 파싱 실패")
         except Exception as e:
-            logging.warning(f"[get_product_info] 판매자 정보 파싱 예외 발생: {e}")
+            raise DetailParseException(
+                stage="seller",
+                reason="seller parsing failed",
+                original_exception=e,
+                original_exception_type=type(e).__name__,
+            )
 
         # 제품명
         try:
             name = driver.find_element(By.CSS_SELECTOR, "div.c_product_info_title h1.title").text
-        except NoSuchElementException:
-            logging.warning(f"[get_product_info] 제품명 파싱 실패")
         except Exception as e:
-            logging.warning(f"[get_product_info] 제품명 파싱 예외 발생: {e}")
+            raise DetailParseException(
+                stage="name",
+                reason="product name parsing failed",
+                original_exception=e,
+                original_exception_type=type(e).__name__,
+            )
 
         # 가격
         try:
             price = self._parse_price()
         except Exception as e:
-            logging.warning(f"[get_product_info] 가격 파싱 예외 발생: {e}")
+            raise DetailParseException(
+                stage="price",
+                reason="price parsing failed",
+                original_exception=e,
+                original_exception_type=type(e).__name__,
+            )
 
         # 배송비
         try:
@@ -157,11 +170,13 @@ class ElevenStDetailParser(DetailParser):
                     shipping_fee = int(match.group(1).replace(',', ''))
                 else:
                     shipping_fee = None
-
-        except NoSuchElementException:
-            logging.warning("[get_product_info] 배송비 파싱 실패")
         except Exception as e:
-            logging.warning(f"[get_product_info] 배송비 파싱 예외 발생: {e}")
+            raise DetailParseException(
+                stage="shipping_fee",
+                reason="shipping fee parsing failed",
+                original_exception=e,
+                original_exception_type=type(e).__name__,
+            )
 
         return {
             "brand": brand,
@@ -182,12 +197,6 @@ class ElevenStDetailParser(DetailParser):
 
     # ------------------------ 내부 메서드 ------------------------
 
-    """
-    11번가 가격 파싱
-    1) finalDscPrcArea의 노출 가격
-    2) maxDiscountResult의 노출 가격
-    3) 숨겨진 textContent
-    """
     def _parse_price(self):
         # finalDscPrcArea
         try:
@@ -216,4 +225,4 @@ class ElevenStDetailParser(DetailParser):
         except NoSuchElementException:
             pass
 
-        return None
+        raise NoSuchElementException("price element not found")

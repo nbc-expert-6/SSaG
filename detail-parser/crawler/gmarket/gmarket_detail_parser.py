@@ -165,6 +165,9 @@ class GmarketDetailParser(DetailParser):
                 "div.box__txt-information span.text__branch"
             )
 
+            if not delivery_elems:
+                raise NoSuchElementException("shipping fee element not found")
+
             for elem in delivery_elems:
                 text = elem.text.strip()
 

@@ -1,5 +1,7 @@
 import time
+import traceback
 
+from common.exceptions import ReviewParseException
 from common.kafka_utils import create_consumer, create_producer
 from common.monitoring.logger import setup_logger
 from common.monitoring.metrics import (CRAWL_EXCEPTION_COUNT, CRAWL_LATENCY,
@@ -8,6 +10,10 @@ from common.monitoring.metrics import (CRAWL_EXCEPTION_COUNT, CRAWL_LATENCY,
 from common.monitoring.metrics_server import start_metrics_server
 from common.platform import Platform
 from crawler.elevenst.elevenst_review_parser import ElevenStReviewParser
+
+DLQ_TOPIC = "elevenst-review.dlq"
+PRODUCT_REVIEWS_TOPIC = "product-reviews"
+PLATFORM = Platform.ELEVENST.value
 
 # [PERF] 전체 코드 실행 start
 total_start = time.perf_counter()
@@ -22,7 +28,7 @@ consumer = create_consumer(
 producer = create_producer()
 
 # Logging 설정
-logger = setup_logger("elevenst")
+logger = setup_logger(PLATFORM)
 
 if __name__ == "__main__":
     start_metrics_server()
@@ -30,8 +36,6 @@ if __name__ == "__main__":
     parser = ElevenStReviewParser()
 
     for url_info in consumer:
-        success = True
-
         # 받은 url 정보
         logger.info("KAFKA_CONSUME", value=f"{url_info.value}")
         main_product_id = url_info.value['main_product_id']
@@ -41,7 +45,7 @@ if __name__ == "__main__":
         for url in urls:
             # [PERF] review 파싱 start
             parser_start = time.perf_counter()
-            CRAWL_TRIAL_COUNT.labels(platform="elevenst").inc()
+            CRAWL_TRIAL_COUNT.labels(platform=PLATFORM).inc()
 
             try:
                 product_reviews = {}
@@ -51,42 +55,70 @@ if __name__ == "__main__":
                     logger.info("REVIEW_NO_RESULT")
 
                     parser_end = time.perf_counter()
-                    CRAWL_LATENCY.labels(platform="elevenst").observe(parser_end - parser_start)
+                    CRAWL_LATENCY.labels(platform=PLATFORM).observe(parser_end - parser_start)
                     logger.perf("PARSING_COMPLETED", time=round(parser_end - parser_start, 4))
 
                     continue
 
                 product_reviews["main_product_id"] = main_product_id
-                product_reviews["platform"] = Platform.ELEVENST.value
+                product_reviews["platform"] = PLATFORM
                 product_reviews["reviews"] = reviews
 
                 # 파싱 종료
                 parser_end = time.perf_counter()
-                CRAWL_LATENCY.labels(platform="elevenst").observe(parser_end - parser_start)
+                CRAWL_LATENCY.labels(platform=PLATFORM).observe(parser_end - parser_start)
                 logger.perf("PARSING_COMPLETED", time=round(parser_end - parser_start, 4))
 
                 kafka_start = time.perf_counter()
-                producer.send('product-reviews', product_reviews)
+                producer.send(PRODUCT_REVIEWS_TOPIC, product_reviews)
                 kafka_end = time.perf_counter()
                 KAFKA_PUBLISH_LATENCY.observe(kafka_end - kafka_start)
                 KAFKA_PUBLISH_COUNT.inc()
 
                 logger.info("KAFKA_PUBLISH", product_reviews=product_reviews)
 
-            except Exception as e:
-                success = False
-                logger.error("PARSING_FAILED",
-                             main_product_id=main_product_id,
-                             url=url,
-                             exception=str(e),
-                             exc_info=True)
-                CRAWL_EXCEPTION_COUNT.labels(platform="elevenst").inc()
+            except ReviewParseException as e:
+                parser_end = time.perf_counter()
+                logger.error(
+                    "REVIEW_PARSE_FAILED",
+                    main_product_id=main_product_id,
+                    url=url,
+                    stage=e.stage,
+                    reason=e.reason,
+                    original_exception_type=e.original_exception_type,
+                    elapsed=round(parser_end - parser_start, 4),
+                    exc_info=True,
+                )
+                CRAWL_EXCEPTION_COUNT.labels(platform=PLATFORM).inc()
 
-        if success:
-            consumer.commit()
+                producer.send(
+                    DLQ_TOPIC,
+                    {
+                        "platform": PLATFORM,
+                        "main_product_id": main_product_id,
+                        "url": url,
+                        "stage": e.stage,
+                        "reason": e.reason,
+                        "original_exception_type": e.original_exception_type,
+                        "exception_message": str(e),
+                        "stacktrace": traceback.format_exc(),
+                    },
+                )
+                continue
+            except Exception as e:
+                logger.exception(
+                    "UNEXPECTED_EXCEPTION",
+                    main_product_id=main_product_id,
+                    url=url,
+                    original_exception_type=type(e).__name__,
+                    exc_info=True,
+                )
+                CRAWL_EXCEPTION_COUNT.labels(platform=PLATFORM).inc()
+                continue
+
+        producer.flush()
+        consumer.commit()
 
     parser.quit()
-
-    # [PERF] 전체 코드 실행 end
     total_end = time.perf_counter()
     logger.info("PROGRAM_EXITED", total_time=round(total_end - total_start, 4))

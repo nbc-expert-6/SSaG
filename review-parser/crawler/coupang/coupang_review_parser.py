@@ -1,4 +1,3 @@
-import os
 import time
 
 import undetected_chromedriver as uc
@@ -6,8 +5,8 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
 
-import common.platform
 from common.config import CHROME_BINARY, CHROMEDRIVER_PATH
+from common.exceptions import ReviewParseException
 from crawler.review_parser import ReviewParser
 
 """
@@ -57,8 +56,16 @@ class CoupangReviewParser(ReviewParser):
     상품상세 페이지를 받아 브라우저로 오픈
     """
     def open_product_detail_page(self, url: str):
-        self.driver.get(url)
-        time.sleep(3)
+        try:
+            self.driver.get(url)
+            time.sleep(3)
+        except Exception as e:
+            raise ReviewParseException(
+                stage="page_load",
+                reason="failed to load product page",
+                original_exception=e,
+                original_exception_type=type(e).__name__,
+            )
 
     """
     상세정보 페이지의 리뷰 탭으로 이동 (요소 클릭 기반)
@@ -79,8 +86,12 @@ class CoupangReviewParser(ReviewParser):
             time.sleep(2)
         except Exception as e:
             self.has_review = False
-            print(f"[WARN] 리뷰 탭을 찾을 수 없음: {e}")
-
+            raise ReviewParseException(
+                stage="move_to_review",
+                reason="failed to find review tab",
+                original_exception=e,
+                original_exception_type=type(e).__name__,
+            )
     """
     현재 리뷰 페이징블록 정보를 로드 (시작 페이지, 끝 페이지, 햔재 페이지)
     현재 페이지가 페이징블록(10단위) 끝에 도달할 때 까지 다음 페이지 버튼 클릭
@@ -185,16 +196,26 @@ class CoupangReviewParser(ReviewParser):
                     By.XPATH,
                     ".//div[contains(@class,'js_reviewArticleHelpfulContainer')]"
                 ).get_attribute("data-review-id")
-            except:
-                review_data["id"] = None
+            except Exception as e:
+                raise ReviewParseException(
+                    stage="review_id",
+                    reason="review id parsing failed",
+                    original_exception=e,
+                    original_exception_type=type(e).__name__,
+                )
 
             # 제목 파싱
             try:
                 review_data["title"] = article.find_element(
                     By.XPATH, ".//div[contains(@class,'twc-font-bold') and contains(@class,'twc-text-bluegray-900')]"
                 ).text.strip()
-            except:
-                review_data["title"] = None
+            except Exception as e:
+                raise ReviewParseException(
+                    stage="title",
+                    reason="title parsing failed",
+                    original_exception=e,
+                    original_exception_type=type(e).__name__,
+                )
 
             # 작성자명 파싱
             try:
@@ -203,16 +224,26 @@ class CoupangReviewParser(ReviewParser):
                     ".//div[contains(@class,'twc-flex twc-items-center')]//span[@data-member-id]"
                 )
                 review_data["author_name"] = author_elem.text.strip()
-            except:
-                review_data["author_name"] = None
+            except Exception as e:
+                raise ReviewParseException(
+                    stage="author_name",
+                    reason="author name parsing failed",
+                    original_exception=e,
+                    original_exception_type=type(e).__name__,
+                )
 
             # 내용 파싱
             try:
                 review_data["content"] = article.find_element(
                     By.XPATH, ".//div[contains(@class,'twc-break-all')]//span"
                 ).text.strip()
-            except:
-                review_data["content"] = None
+            except Exception as e:
+                raise ReviewParseException(
+                    stage="content",
+                    reason="content parsing failed",
+                    original_exception=e,
+                    original_exception_type=type(e).__name__,
+                )
 
             # 생성일 파싱
             try:
@@ -220,8 +251,13 @@ class CoupangReviewParser(ReviewParser):
                     By.XPATH,
                     ".//div[contains(@class,'twc-items-center')]//div[contains(@class,'twc-text-bluegray-700')]"
                 ).text.strip()
-            except:
-                review_data["created_at"] = None
+            except Exception as e:
+                raise ReviewParseException(
+                    stage="created_at",
+                    reason="date parsing failed",
+                    original_exception=e,
+                    original_exception_type=type(e).__name__,
+                )
 
             # 평점 파싱
             try:
@@ -229,22 +265,34 @@ class CoupangReviewParser(ReviewParser):
                     By.XPATH, ".//i[contains(@class,'twc-bg-full-star') or contains(@class,'twc-bg-empty-star')]"
                 )
                 review_data["rating"] = sum(1 for s in star_elems if "full-star" in s.get_attribute("class"))
-            except:
-                review_data["rating"] = None
+            except Exception as e:
+                raise ReviewParseException(
+                    stage="rating",
+                    reason="rating parsing failed",
+                    original_exception=e,
+                    original_exception_type=type(e).__name__,
+                )
 
             # 이미지 파싱
+            img_urls = []
             try:
                 img_elems = article.find_elements(By.XPATH, ".//div[contains(@class,'twc-relative')]//img")
-                img_urls = []
-                for img in img_elems:
-                    img_url = img.get_attribute("src")
-                    if img_url and img_url.startswith("//"):
-                        img_url = "https:" + img_url
-                    if img_url:
-                        img_urls.append(img_url)
+
+                if img_elems:
+                    for img in img_elems:
+                        img_url = img.get_attribute("src")
+                        if img_url and img_url.startswith("//"):
+                            img_url = "https:" + img_url
+                        if img_url:
+                            img_urls.append(img_url)
                 review_data["image_urls"] = img_urls
-            except:
-                review_data["image_urls"] = []
+            except Exception as e:
+                raise ReviewParseException(
+                    stage="image",
+                    reason="image parsing failed",
+                    original_exception=e,
+                    original_exception_type=type(e).__name__,
+                )
 
             reviews.append(review_data)
 

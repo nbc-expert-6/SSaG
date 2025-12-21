@@ -111,7 +111,7 @@ class ElevenStDetailParser(DetailParser):
 
         # 제품명
         try:
-            name = driver.find_element(By.CSS_SELECTOR, "div.c_product_info_title h1.title").text
+            name = driver.find_element(By.CSS_SELECTOR, "div.c_nono_info_title h1.title").text
         except Exception as e:
             raise DetailParseException(
                 stage="name",
@@ -142,7 +142,7 @@ class ElevenStDetailParser(DetailParser):
                     break
 
             if not delivery_dt:
-                raise NoSuchElementException("배송 영역 dt 요소 없음")
+                raise NoSuchElementException("shipping fee element not found")
 
             # 텍스트 추출: 텍스트 노드 + 버튼/스팬 제거 후 텍스트만
             shipping_fee_txt = driver.execute_script("""

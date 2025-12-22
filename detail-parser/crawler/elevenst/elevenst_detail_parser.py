@@ -111,7 +111,7 @@ class ElevenStDetailParser(DetailParser):
 
         # 제품명
         try:
-            name = driver.find_element(By.CSS_SELECTOR, "div.c_nono_info_title h1.title").text
+            name = driver.find_element(By.CSS_SELECTOR, "div.c_product_info_title h1.title").text
         except Exception as e:
             raise DetailParseException(
                 stage="name",

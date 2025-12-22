@@ -21,7 +21,7 @@ public class CrawledReviewHandler {
 	 */
 	@Transactional
 	public void handleCrawledReview(CrawledReviewMessage message) {
-		log.info("Handling crawled review: {}", message.mainProductId());
+		log.info("Handling crawled review: {}", message.getMainProductId());
 		createReviewsUseCase.createReviews(message.toCommand());
 	}
 }

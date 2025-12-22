@@ -22,7 +22,7 @@ spring:
     activate:
       on-profile: local
   elasticsearch:
-    uris: http://localhost:9200
+    uris: ${SPRING_ELASTICSEARCH_URIS}
     connection-timeout: 5s
     socket-timeout: 60s
   cloud:
@@ -45,7 +45,9 @@ spring:
       repositories:
         enabled: true
   elasticsearch:
-    uris: ${SPRING_KAFKA_BOOTSTRAP_SERVERS}
+    uris: ${ES_HOST}
+    username: ${ES_USERNAME}
+    password: ${ES_PASSWORD}
     connection-timeout: 5s
     socket-timeout: 60s
   cloud:

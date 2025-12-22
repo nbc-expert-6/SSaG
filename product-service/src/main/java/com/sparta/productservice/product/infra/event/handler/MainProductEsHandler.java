@@ -12,10 +12,11 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.event.TransactionPhase;
 import org.springframework.transaction.event.TransactionalEventListener;
 
+import com.sparta.productservice.common.kafka.KafkaTopicType;
 import com.sparta.productservice.product.domain.event.MainProductEsSyncEvent;
 import com.sparta.productservice.product.domain.event.ProductCreatedEvent;
 import com.sparta.productservice.product.domain.repository.MainProductSearchRepository;
-import com.sparta.productservice.common.kafka.publisher.DLQPublisher;
+import com.sparta.productservice.common.kafka.publisher.DLTPublisher;
 import com.sparta.productservice.product.infra.search.document.MainProductDocument;
 import com.sparta.productservice.product.infra.search.mapper.MainProductDocumentMapper;
 
@@ -30,7 +31,7 @@ public class MainProductEsHandler {
 
 	private final MainProductSearchRepository searchRepository;
 	private final MainProductDocumentMapper mainProductDocumentMapper;
-	private final DLQPublisher dlqPublisher;
+	private final DLTPublisher DLTPublisher;
 	private static final int MAX_ATTEMPTS = 3;
 
 	/**
@@ -59,8 +60,8 @@ public class MainProductEsHandler {
 		log.error("❌ Failed to index after {} retries (total {} attempts), sending to DLQ: {}",
 			actualRetryCount, MAX_ATTEMPTS, event.getMainProductId(), e);
 
-		dlqPublisher.sendToDLQ(
-			"product.es.sync",
+		DLTPublisher.sendToDLT(
+			KafkaTopicType.PRODUCT_ES_SYNC,
 			event.getMainProductId().toString(),
 			event,
 			e,
@@ -102,12 +103,12 @@ public class MainProductEsHandler {
 			log.error("❌ Failed to sync batch ES doc");
 			failCount += 500;
 
-			dlqPublisher.sendToDLQ(
-				"product.es.sync.batch",              // product.es.sync.batch → product.es.sync.batch.dlq
+			DLTPublisher.sendToDLT(
+				KafkaTopicType.PRODUCT_ES_SYNC_BATCH,
 				event.toString(),
 				event,
 				e,
-				0  // 배치는 재시도 없이 바로 DLQ
+				0  // 배치는 재시도 없이 바로 DLT
 			);
 		}
 

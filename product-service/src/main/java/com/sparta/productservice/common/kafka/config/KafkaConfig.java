@@ -16,12 +16,7 @@ import org.springframework.kafka.core.DefaultKafkaConsumerFactory;
 import org.springframework.kafka.core.DefaultKafkaProducerFactory;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.core.ProducerFactory;
-import org.springframework.kafka.support.serializer.ErrorHandlingDeserializer;
-import org.springframework.kafka.support.serializer.JsonDeserializer;
 import org.springframework.kafka.support.serializer.JsonSerializer;
-
-import com.sparta.productservice.product.infra.event.message.CrawledProductMessage;
-import com.sparta.productservice.review.infra.event.message.CrawledReviewMessage;
 
 import lombok.RequiredArgsConstructor;
 
@@ -31,30 +26,18 @@ public class KafkaConfig {
 
 	private final KafkaProperties kafkaProperties;
 
-	// ============================================================
-	// 내부 범용 Consumer - 헤더타입 존재
-	// ============================================================
-
 	@Bean
-	public ConsumerFactory<Object, Object> consumerFactory() {
+	public ConsumerFactory<String, Object> consumerFactory() {
 		Map<String, Object> config = new HashMap<>(kafkaProperties.buildConsumerProperties());
-
-		config.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, ErrorHandlingDeserializer.class);
-		config.put(ErrorHandlingDeserializer.KEY_DESERIALIZER_CLASS, StringDeserializer.class.getName());
-
-		config.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, ErrorHandlingDeserializer.class);
-		config.put(ErrorHandlingDeserializer.VALUE_DESERIALIZER_CLASS, JsonDeserializer.class.getName());
-
-		config.put(JsonDeserializer.TRUSTED_PACKAGES, "*");
-		config.put(JsonDeserializer.USE_TYPE_INFO_HEADERS, true);
-
+		config.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
+		config.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, TopicBasedJsonDeserializer.class);
+		config.put(TopicBasedJsonDeserializer.TRUSTED_PACKAGES, "*");
 		return new DefaultKafkaConsumerFactory<>(config);
 	}
 
 	@Bean
-	public ConcurrentKafkaListenerContainerFactory<Object, Object>
-	kafkaListenerContainerFactory() {
-		ConcurrentKafkaListenerContainerFactory<Object, Object> factory =
+	public ConcurrentKafkaListenerContainerFactory<String, Object> kafkaListenerContainerFactory() {
+		ConcurrentKafkaListenerContainerFactory<String, Object> factory =
 			new ConcurrentKafkaListenerContainerFactory<>();
 
 		factory.setConsumerFactory(consumerFactory());
@@ -65,74 +48,6 @@ public class KafkaConfig {
 
 		return factory;
 	}
-
-	// ============================================================
-	// CrawledProductMessage 전용
-	// ============================================================
-
-	@Bean
-	public ConsumerFactory<String, CrawledProductMessage> crawledProductConsumerFactory() {
-		Map<String, Object> config = new HashMap<>(kafkaProperties.buildConsumerProperties());
-
-		config.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
-		config.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, JsonDeserializer.class);
-		config.put(JsonDeserializer.VALUE_DEFAULT_TYPE, CrawledProductMessage.class.getName());
-		config.put(JsonDeserializer.TRUSTED_PACKAGES, "*");
-		config.put(JsonDeserializer.USE_TYPE_INFO_HEADERS, false);
-
-		return new DefaultKafkaConsumerFactory<>(config);
-	}
-
-	@Bean
-	public ConcurrentKafkaListenerContainerFactory<String, CrawledProductMessage>
-	crawledProductKafkaListenerContainerFactory() {
-		ConcurrentKafkaListenerContainerFactory<String, CrawledProductMessage> factory =
-			new ConcurrentKafkaListenerContainerFactory<>();
-
-		factory.setConsumerFactory(crawledProductConsumerFactory());
-
-		KafkaProperties.Listener listenerProperties = kafkaProperties.getListener();
-		factory.setConcurrency(listenerProperties.getConcurrency());
-		factory.getContainerProperties().setAckMode(listenerProperties.getAckMode());
-
-		return factory;
-	}
-
-	// ============================================================
-	// CrawledReviewMessage 전용
-	// ============================================================
-
-	@Bean
-	public ConsumerFactory<String, CrawledReviewMessage> crawledReviewConsumerFactory() {
-		Map<String, Object> config = new HashMap<>(kafkaProperties.buildConsumerProperties());
-
-		config.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
-		config.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, JsonDeserializer.class);
-		config.put(JsonDeserializer.VALUE_DEFAULT_TYPE, CrawledReviewMessage.class.getName());
-		config.put(JsonDeserializer.TRUSTED_PACKAGES, "*");
-		config.put(JsonDeserializer.USE_TYPE_INFO_HEADERS, false);
-
-		return new DefaultKafkaConsumerFactory<>(config);
-	}
-
-	@Bean
-	public ConcurrentKafkaListenerContainerFactory<String, CrawledReviewMessage>
-	crawledReviewKafkaListenerContainerFactory() {
-		ConcurrentKafkaListenerContainerFactory<String, CrawledReviewMessage> factory =
-			new ConcurrentKafkaListenerContainerFactory<>();
-
-		factory.setConsumerFactory(crawledReviewConsumerFactory());
-
-		KafkaProperties.Listener listenerProperties = kafkaProperties.getListener();
-		factory.setConcurrency(listenerProperties.getConcurrency());
-		factory.getContainerProperties().setAckMode(listenerProperties.getAckMode());
-
-		return factory;
-	}
-
-	// ============================================================
-	// Producer
-	// ============================================================
 
 	@Bean
 	public ProducerFactory<String, Object> producerFactory() {

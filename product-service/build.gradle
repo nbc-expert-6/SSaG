@@ -36,6 +36,7 @@ dependencies {
     // OpenTelemetry
     implementation 'io.micrometer:micrometer-tracing-bridge-otel'
     implementation 'io.opentelemetry:opentelemetry-exporter-otlp'
+    implementation 'io.opentelemetry.instrumentation:opentelemetry-kafka-clients-2.6:1.32.0-alpha'
     // Logging (JSON format for Loki)
     implementation 'net.logstash.logback:logstash-logback-encoder:7.4'
     //lombok
@@ -50,6 +51,8 @@ dependencies {
     annotationProcessor "jakarta.persistence:jakarta.persistence-api"
     // Loki logback
     implementation 'com.github.loki4j:loki-logback-appender:1.5.1'
+    // database trace
+    implementation("net.ttddyy.observation:datasource-micrometer-spring-boot:1.1.1")
     // Retry
     implementation 'org.springframework.retry:spring-retry'
     // AOP
@@ -61,8 +64,6 @@ dependencies {
     testImplementation 'org.springframework.kafka:spring-kafka-test'
     testImplementation 'org.testcontainers:kafka:1.19.0'
     testImplementation 'org.testcontainers:junit-jupiter:1.19.0'
-    // p6spy
-    implementation 'com.github.gavlyukovskiy:p6spy-spring-boot-starter:1.9.0'
 
     //elasticsearch
     implementation 'org.springframework.boot:spring-boot-starter-data-elasticsearch'

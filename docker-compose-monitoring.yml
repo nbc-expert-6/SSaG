@@ -1,39 +1,74 @@
-version: "3.8"
+version: '3.8'
 
 services:
+  tempo:
+    image: grafana/tempo
+    container_name: tempo
+    command: [ "-config.file=/etc/tempo.yaml" ]
+    user: root
+    volumes:
+      - ./tempo-config.yml:/etc/tempo.yaml
+      - tempo_data:/tmp/tempo
+    ports:
+      - "3200:3200"
+      - "4317:4317"
+      - "4318:4318"
+    networks:
+      - infra
+    restart: unless-stopped
+
   prometheus:
     image: prom/prometheus
     container_name: prometheus
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus_data:/prometheus
     command:
       - "--config.file=/etc/prometheus/prometheus.yml"
-      - "--storage.tsdb.path=/prometheus"
       - "--web.listen-address=0.0.0.0:9090"
-    volumes:
-      - ./prometheus-prod.yml:/etc/prometheus/prometheus.yml:ro
-      - prometheus_data:/prometheus
+      - "--web.enable-remote-write-receiver"
+      - "--enable-feature=exemplar-storage"
     ports:
       - "9090:9090"
+    networks:
+      - infra
     restart: unless-stopped
-    networks:
-      - infra
 
-  promtail:
-    image: grafana/promtail
-    container_name: promtail
+  loki:
+    image: grafana/loki:2.9.0
+    container_name: loki
+    command: -config.file=/etc/loki/loki-config.yml
     volumes:
-      - /var/run/docker.sock:/var/run/docker.sock:ro
-      - ./promtail-prod.yml:/etc/promtail/promtail.yml
-    command:
-      - -config.file=/etc/promtail/promtail.yml
-      - -config.expand-env=true
-    env_file:
-      - .env
+      - ./loki-config.yml:/etc/loki/loki-config.yml:ro
+      - loki_data:/loki
+    ports:
+      - "3100:3100"
     networks:
       - infra
+    restart: unless-stopped
+
+  grafana:
+    image: grafana/grafana
+    container_name: grafana
+    ports:
+      - "3000:3000"
+    depends_on:
+      - prometheus
+      - loki
+      - tempo
+    volumes:
+      - grafana_data:/var/lib/grafana
+    networks:
+      - infra
+    restart: unless-stopped
 
 volumes:
+  tempo_data:
   prometheus_data:
+  loki_data:
+  grafana_data:
 
 networks:
   infra:
     name: infra
+    external: true

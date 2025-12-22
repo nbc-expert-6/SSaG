@@ -8,10 +8,10 @@ management:
   tracing:
     enabled: true
     sampling:
-      probability: 1.0  # test 환경: 100% 샘플링
+      probability: 1.0
   otlp:
     tracing:
-      endpoint: ${TEMPO_ENDPOINT:http://localhost:4318/v1/traces}
+      endpoint: ${TEMPO_OTLP_ENDPOINT:http://localhost:4318/v1/traces}
       timeout: 10s
       compression: gzip
 
@@ -26,10 +26,10 @@ management:
   tracing:
     enabled: true
     sampling:
-      probability: 0.1  # local 환경: 100% 샘플링
+      probability: 0.8
   otlp:
     tracing:
-      endpoint: ${TEMPO_ENDPOINT:http://localhost:4318/v1/traces}
+      endpoint: ${OTEL_EXPORTER_OTLP_TRACES_ENDPOINT:http://localhost:4318/v1/traces}
       timeout: 10s
       compression: gzip
 
@@ -44,9 +44,9 @@ management:
   tracing:
     enabled: true
     sampling:
-      probability: 0.5  # dev 환경: 50% 샘플링
+      probability: 0.1
   otlp:
     tracing:
-      endpoint: ${TEMPO_ENDPOINT:http://tempo:4318/v1/traces}
-      timeout: 10s
+      endpoint: ${TEMPO_OTLP_ENDPOINT}
+      timeout: 30s
       compression: gzip

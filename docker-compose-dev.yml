@@ -67,66 +67,19 @@ services:
     networks:
       - infra
 
-  prometheus:
-    image: prom/prometheus
-    container_name: prometheus
-    volumes:
-      - ./prometheus.yml:/etc/prometheus/prometheus.yml
-    ports:
-      - "9090:9090"
-    networks:
-      - infra
-
-  grafana:
-    image: grafana/grafana
-    container_name: grafana
-    ports:
-      - "3000:3000"
-    volumes:
-      - grafana-data:/var/lib/grafana
-    networks:
-      - infra
-    depends_on:
-      - prometheus
-      - loki
-      - tempo
-
-  loki:
-    image: grafana/loki
-    container_name: loki
-    ports:
-      - "3100:3100"
-    networks:
-      - infra
-
-  promtail:
-    image: grafana/promtail
-    container_name: promtail
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock:ro
-      - ./promtail.yml:/etc/promtail/promtail.yml
-    command:
-      - -config.file=/etc/promtail/promtail.yml
-      - -config.expand-env=true
-    env_file:
-      - .env
-    networks:
-      - infra
-
-  tempo:
-    image: grafana/tempo
-    container_name: tempo
-    command: [ "-config.file=/etc/tempo.yaml" ]
-    user: root
-    volumes:
-      - ./tempo.yml:/etc/tempo.yaml
-      - tempo_data:/tmp/tempo
-    ports:
-      - "3200:3200"   # Tempo HTTP
-      - "4317:4317"   # OTLP gRPC
-      - "4318:4318"   # OTLP HTTP
-    networks:
-      - infra
+#  promtail:
+#    image: grafana/promtail
+#    container_name: promtail
+#    volumes:
+#      - /var/run/docker.sock:/var/run/docker.sock:ro
+#      - ./promtail.yml:/etc/promtail/promtail.yml
+#    command:
+#      - -config.file=/etc/promtail/promtail.yml
+#      - -config.expand-env=true
+#    env_file:
+#      - .env
+#    networks:
+#      - infra
 
   kafka-ui:
     container_name: kafka-ui
@@ -142,40 +95,41 @@ services:
     networks:
       - infra
 
-  ngrinder-controller:
-    image: ngrinder/controller
-    platform: linux/amd64
-    container_name: ngrinder-controller
-    restart: always
-    ports:
-      - "9000:80"
-      - "16001:16001"
-      - "12000-12009:12000-12009"
-    volumes:
-      - ngrinder_data:/opt/ngrinder-controller
-      - ngrinder_scripts:/opt/ngrinder-controller/script
-    networks:
-      - infra
-
-  ngrinder-agent:
-    image: ngrinder/agent
-    platform: linux/amd64
-    container_name: ngrinder-agent
-    restart: always
-    depends_on:
-      - ngrinder-controller
-    command: ngrinder-controller:80
-    networks:
-      - infra
+#  ngrinder-controller:
+#    image: ngrinder/controller
+#    platform: linux/amd64
+#    container_name: ngrinder-controller
+#    restart: always
+#    ports:
+#      - "9000:80"
+#      - "16001:16001"
+#      - "12000-12009:12000-12009"
+#    volumes:
+#      - ngrinder_data:/opt/ngrinder-controller
+#      - ngrinder_scripts:/opt/ngrinder-controller/script
+#    networks:
+#      - infra
+#
+#  ngrinder-agent:
+#    image: ngrinder/agent
+#    platform: linux/amd64
+#    container_name: ngrinder-agent
+#    restart: always
+#    depends_on:
+#      - ngrinder-controller
+#    command: ngrinder-controller:80
+#    networks:
+#      - infra
 
 volumes:
   postgres_data:
   elasticsearch_data:
-  ngrinder_data:
-  ngrinder_scripts:
+#  ngrinder_data:
+#  ngrinder_scripts:
   tempo_data:
-  grafana-data:
+#  grafana-data:
 
 networks:
   infra:
     name: infra
+    external: true

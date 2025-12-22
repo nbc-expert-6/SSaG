@@ -21,7 +21,10 @@ def create_consumer(topic, servers=KAFKA_BOOTSTRAP, group_id=None):
         auto_offset_reset='earliest',
         group_id=group_id,
         max_poll_interval_ms=1800000,
+        session_timeout_ms=300000,
+        heartbeat_interval_ms=10000,
         request_timeout_ms=1805000,
         connections_max_idle_ms=1805500,
+        max_poll_records=1,
         enable_auto_commit=False
     )

@@ -387,7 +387,7 @@ class GmarketReviewParser:
             return []
 
         results = []
-        DROPDOWN_BTN = "div#vip-tab_comment div.board_paging button.uxeselect_btn"
+        DROPDOWN_BTN = "div#premium-pagenation-wrap div.board_paging button.uxeselect_btn"
         pages = self._get_page_numbers_from_dropdown(DROPDOWN_BTN)
 
         if not pages:
@@ -430,7 +430,7 @@ class GmarketReviewParser:
             print("[INFO] 일반 리뷰가 존재하지 않음")
             return []
         results = []
-        DROPDOWN_BTN = "div#text-pagenation-wrap button.uxeselect_btn"
+        DROPDOWN_BTN = "div#text-pagenation-wrap div.board_paging button.uxeselect_btn"
 
         pages = self._get_page_numbers_from_dropdown(DROPDOWN_BTN)
         print(f"[INFO] 일반 리뷰 총 페이지: {pages}")

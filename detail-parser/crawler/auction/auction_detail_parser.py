@@ -1,22 +1,17 @@
-import logging
 import re
 import time
 
 import undetected_chromedriver as uc
-from selenium.common import NoSuchElementException
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 
 from common.config import CHROME_BINARY, CHROMEDRIVER_PATH
-from common.logging_utils import setup_dev_logger
+from common.exceptions import DetailParseException
 from crawler.detail_parser import DetailParser
 
-# Logging 설정
-setup_dev_logger()
 
 class AuctionDetailParser(DetailParser):
     def __init__(self):
-
         options = uc.ChromeOptions()
         options.add_argument("--no-sandbox")
         options.add_argument("--disable-dev-shm-usage")
@@ -36,97 +31,129 @@ class AuctionDetailParser(DetailParser):
         kwargs = {}
         if chrome_binary:
             kwargs["options"] = options
-            kwargs["version_main"] = None
             kwargs["driver_executable_path"] = driver_path
             kwargs["options"].binary_location = chrome_binary
+            kwargs["version_main"] = None
             kwargs["use_subprocess"] = True
         else:
-            # 자동 탐지용
             kwargs["options"] = options
-            kwargs["use_subprocess"] = True
             kwargs["version_main"] = None
+            kwargs["use_subprocess"] = True
 
         self.driver = uc.Chrome(**kwargs)
         self.wait = WebDriverWait(self.driver, 10)
 
     # 제품 상세 페이지 열기
     def open_product_detail_page(self, url: str):
-        logging.info(f"[open_product_detail_page] {url}")
-        self.driver.get(url)
-        time.sleep(2)
+        try:
+            self.driver.get(url)
+            time.sleep(2)
+        except Exception as e:
+            raise DetailParseException(
+                stage="page_load",
+                reason="failed to load product page",
+                original_exception=e,
+                original_exception_type=type(e).__name__,
+            )
 
     # 제품 상세 정보 수집
     def get_product_info(self) -> dict:
         driver = self.driver
 
-        # 초기값
-        image_url = None
-        brand = None
-        seller = None
-        name = None
-        price = None
-        shipping_fee = None
-
         # 이미지
         try:
-            image_url = driver.find_element(By.CSS_SELECTOR, "ul.viewer li.on img").get_attribute('src')
-        except NoSuchElementException:
-            logging.warning(f"[get_product_info] 이미지 파싱 실패")
+            image_url = driver.find_element(
+                By.CSS_SELECTOR, "ul.viewer li.on img"
+            ).get_attribute("src")
         except Exception as e:
-            logging.warning(f"[get_product_info] 이미지 파싱 예외 발생: {e}")
+            raise DetailParseException(
+                stage="image",
+                reason="image parsing failed",
+                original_exception=e,
+                original_exception_type=type(e).__name__,
+            )
 
         # 브랜드
         try:
-            brand_element = driver.find_elements(By.CSS_SELECTOR, "div.box__official-store span.text__brand span.text")
-            brand = brand_element[0].text if brand_element else ""
-        except NoSuchElementException:
-            logging.warning(f"[get_product_info] 브랜드 파싱 실패")
+            brand_elements = driver.find_elements(
+                By.CSS_SELECTOR,
+                "div.box__official-store span.text__brand span.text",
+            )
+            brand = brand_elements[0].text if brand_elements else ""
         except Exception as e:
-            logging.warning(f"[get_product_info] 브랜드 파싱 예외 발생: {e}")
+            raise DetailParseException(
+                stage="brand",
+                reason="brand parsing failed",
+                original_exception=e,
+                original_exception_type=type(e).__name__,
+            )
 
         # 판매자 정보
         try:
-            seller = driver.find_element(By.CSS_SELECTOR, "div.box__official-store span.text__seller a.link__seller").text
-        except NoSuchElementException:
-            logging.warning(f"[get_product_info] 판매자 정보 파싱 실패")
+            seller = driver.find_element(
+                By.CSS_SELECTOR,
+                "div.box__official-store span.text__seller a.link__seller",
+            ).text
         except Exception as e:
-            logging.warning(f"[get_product_info] 판매자 정보 파싱 예외 발생: {e}")
+            raise DetailParseException(
+                stage="seller",
+                reason="seller parsing failed",
+                original_exception=e,
+                original_exception_type=type(e).__name__,
+            )
 
         # 제품명
         try:
             name = driver.find_element(By.CSS_SELECTOR, "h1.itemtit").text
-        except NoSuchElementException:
-            logging.warning(f"[get_product_info] 제품명 파싱 실패")
         except Exception as e:
-            logging.warning(f"[get_product_info] 제품명 파싱 예외 발생: {e}")
+            raise DetailParseException(
+                stage="name",
+                reason="product name parsing failed",
+                original_exception=e,
+                original_exception_type=type(e).__name__,
+            )
 
         # 가격
         try:
-            price_txt = driver.find_element(By.CSS_SELECTOR, "div.price strong.price_real").text.replace("판매가", "").replace("원", "").strip()
+            price_txt = (
+                driver.find_element(By.CSS_SELECTOR, "div.price strong.price_real")
+                .text.replace("판매가", "")
+                .replace("원", "")
+                .strip()
+            )
             price = int(price_txt.replace(",", ""))
-        except NoSuchElementException:
-            logging.warning(f"[get_product_info] 가격 파싱 실패")
         except Exception as e:
-            logging.warning(f"[get_product_info] 가격 파싱 예외 발생: {e}")
+            raise DetailParseException(
+                stage="price",
+                reason="price parsing failed",
+                original_exception=e,
+                original_exception_type=type(e).__name__,
+            )
 
         # 배송비
         try:
-            shipping_box = driver.find_element(By.CSS_SELECTOR, "div.box__information-title")
-            shipping_texts = shipping_box.find_elements(By.CSS_SELECTOR, "div.box__txt-information > span.text__branch")
+            shipping_box = driver.find_element(
+                By.CSS_SELECTOR, "div.box__information-title"
+            )
+            shipping_texts = shipping_box.find_elements(
+                By.CSS_SELECTOR, "div.box__txt-information > span.text__branch"
+            )
             shipping_fee_txt = shipping_texts[0].text if shipping_texts else ""
+
             if "무료" in shipping_fee_txt:
                 shipping_fee = 0
             else:
                 match = re.search(r"\(([\d,]+)원\)", shipping_fee_txt)
-                if match:
-                    amount = match.group(1)  # "3,000"
-                    shipping_fee = int(amount.replace(",", ""))
-                else:
-                    shipping_fee = None
-        except NoSuchElementException:
-            logging.warning(f"[get_product_info] 배송비 파싱 실패")
+                shipping_fee = (
+                    int(match.group(1).replace(",", "")) if match else None
+                )
         except Exception as e:
-            logging.warning(f"[get_product_info] 배송비 파싱 예외 발생: {e}")
+            raise DetailParseException(
+                stage="shipping_fee",
+                reason="shipping fee parsing failed",
+                original_exception=e,
+                original_exception_type=type(e).__name__,
+            )
 
         return {
             "brand": brand,
@@ -138,7 +165,7 @@ class AuctionDetailParser(DetailParser):
             "sale_link": self.driver.current_url
         }
 
-    def get_product_details(self, url):
+    def get_product_details(self, url: str) -> dict:
         self.open_product_detail_page(url)
         return self.get_product_info()
 

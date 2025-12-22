@@ -9,7 +9,7 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
 
 from common.config import CHROME_BINARY, CHROMEDRIVER_PATH
-from common.platform import Platform
+from common.exceptions import ReviewParseException
 
 """
 지마켓 리뷰 크롤러
@@ -65,8 +65,16 @@ class GmarketReviewParser:
         self.wait = WebDriverWait(self.driver, 10)
 
     def open_product_detail_page(self, url: str):
-        self.driver.get(url)
-        time.sleep(1)
+        try:
+            self.driver.get(url)
+            time.sleep(1)
+        except Exception as e:
+            raise ReviewParseException(
+                stage="page_load",
+                reason="failed to load product page",
+                original_exception=e,
+                original_exception_type=type(e).__name__,
+            )
 
     """
     프리미엄 상품평이 비어있는지 확인 (비어있으면 스킵)
@@ -122,8 +130,12 @@ class GmarketReviewParser:
 
         except Exception as e:
             print("[WARN] 리뷰 탭 이동 실패:", e)
-            return False
-
+            raise ReviewParseException(
+                stage="move_to_review",
+                reason="failed to move to review tab",
+                original_exception=e,
+                original_exception_type=type(e).__name__,
+            )
     """
     프리미엄 상품평과 일반 상품평의 드롭다운 박스를 구별할 수 있는 셀렉터를 인자로 넘겨줌
     드롭다운 박스에는 전체 페이지가 li로 들어있는데 이 숫자를 세서 전체 페이지 정보를 넘겨주는 유틸 함수
@@ -191,42 +203,77 @@ class GmarketReviewParser:
                     m = re.search(r"prvw_no=(\d+)", pop_url)
                     if m:
                         review_id = m.group(1)
-                except:
-                    pass
+                except Exception as e:
+                    raise ReviewParseException(
+                        stage="review_id",
+                        reason="review id parsing failed",
+                        original_exception=e,
+                        original_exception_type=type(e).__name__,
+                    )
 
                 # 작성자
-                author_name = ""
                 try:
                     author_name = row.find_element(By.CSS_SELECTOR,
                                                    "td.info dl.writer-info dd:nth-of-type(1)").text.strip()
-                except:
-                    pass
+                except Exception as e:
+                    raise ReviewParseException(
+                        stage="author_name",
+                        reason="author name parsing failed",
+                        original_exception=e,
+                        original_exception_type=type(e).__name__,
+                    )
 
                 # 등록일
-                created_at = row.find_element(By.CSS_SELECTOR, "td.info dl.writer-info dd:nth-of-type(2)").text.strip()
+                try:
+                    created_at = row.find_element(By.CSS_SELECTOR, "td.info dl.writer-info dd:nth-of-type(2)").text.strip()
+                except Exception as e:
+                    raise ReviewParseException(
+                        stage="created_at",
+                        reason="date parsing failed",
+                        original_exception=e,
+                        original_exception_type=type(e).__name__,
+                    )
 
                 # 제목
-                title = ""
                 try:
                     title = row.find_element(By.CSS_SELECTOR, "p.comment-tit").text.strip()
-                except:
-                    pass
+                except Exception as e:
+                    raise ReviewParseException(
+                        stage="title",
+                        reason="title parsing failed",
+                        original_exception=e,
+                        original_exception_type=type(e).__name__,
+                    )
 
                 # 내용
-                content = ""
                 try:
                     content = row.find_element(By.CSS_SELECTOR, "p.con").text.strip()
-                except:
-                    pass
+                except Exception as e:
+                    raise ReviewParseException(
+                        stage="content",
+                        reason="content parsing failed",
+                        original_exception=e,
+                        original_exception_type=type(e).__name__,
+                    )
 
                 # 이미지
-                img_el = row.find_elements(By.CSS_SELECTOR, "td.thumb img")
                 image_url: Optional[str] = None
-                if img_el:
-                    src = img_el[0].get_attribute("src")
-                    if src and src.startswith("//"):
-                        src = "https:" + src
-                    image_url = src
+                try:
+                    img_els = row.find_elements(By.CSS_SELECTOR, "td.thumb img")
+                except Exception as e:
+                    raise ReviewParseException(
+                        stage="image",
+                        reason="image element access failed",
+                        original_exception=e,
+                        original_exception_type=type(e).__name__,
+                    )
+
+                if img_els:
+                    src = img_els[0].get_attribute("src")
+                    if src:
+                        if src.startswith("//"):
+                            src = "https:" + src
+                        image_url = src
 
                 review = {
                     "id": review_id,
@@ -252,15 +299,35 @@ class GmarketReviewParser:
         rows = self.driver.find_elements(By.CSS_SELECTOR, "table.tb_comment.tb_comment_common tbody tr")
         for row in rows:
             try:
-                author_name = ""
+                # 작성자
                 try:
-                    author_name = row.find_element(By.CSS_SELECTOR,
-                                                   "td.info dl.writer-info dd:nth-of-type(1)").text.strip()
-                except:
-                    pass
+                    author_name = row.find_element(
+                        By.CSS_SELECTOR,
+                        "td.info dl.writer-info dd:nth-of-type(1)"
+                    ).text.strip()
+                except Exception as e:
+                    raise ReviewParseException(
+                        stage="author_name",
+                        reason="author name parsing failed",
+                        original_exception=e,
+                        original_exception_type=type(e).__name__,
+                    )
 
-                created_at = row.find_element(By.CSS_SELECTOR, "td.info dl.writer-info dd:nth-of-type(2)").text.strip()
+                # 작성일
+                try:
+                    created_at = row.find_element(
+                        By.CSS_SELECTOR,
+                        "td.info dl.writer-info dd:nth-of-type(2)"
+                    ).text.strip()
+                except Exception as e:
+                    raise ReviewParseException(
+                        stage="created_at",
+                        reason="date parsing failed",
+                        original_exception=e,
+                        original_exception_type=type(e).__name__,
+                    )
 
+                # 제목
                 title = ""
                 try:
                     title = row.find_element(By.CSS_SELECTOR, "p.comment-tit").text.strip()
@@ -270,11 +337,16 @@ class GmarketReviewParser:
                     except:
                         pass
 
-                content = ""
+                # 내용
                 try:
                     content = row.find_element(By.CSS_SELECTOR, "p.con").text.strip()
-                except:
-                    pass
+                except Exception as e:
+                    raise ReviewParseException(
+                        stage="content",
+                        reason="content parsing failed",
+                        original_exception=e,
+                        original_exception_type=type(e).__name__,
+                    )
 
                 # 리뷰 ID (일반: 파생 키)
                 review_id = self._make_review_key(author_name, created_at, content)
@@ -290,6 +362,11 @@ class GmarketReviewParser:
                 }
                 results.append(review)
                 print(review)
+
+            except ReviewParseException as e:
+                print(f"[WARN] 일반 리뷰 행 파싱 실패 ({e.stage}): {e}")
+                continue
+
             except Exception as e:
                 print(f"[WARN] 일반 리뷰 행 파싱 실패: {e}")
                 continue

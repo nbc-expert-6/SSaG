@@ -1,19 +1,16 @@
-import logging
 import re
 import time
 from typing import List
 
 import undetected_chromedriver as uc
-from selenium.common import NoSuchElementException
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as ec
 from selenium.webdriver.support.ui import WebDriverWait
 
 from common.config import CHROME_BINARY, CHROMEDRIVER_PATH
-from common.logging_utils import setup_dev_logger
+from common.exceptions import ReviewParseException
 from crawler.review_parser import ReviewParser
 
-setup_dev_logger()
 
 class ElevenStReviewParser(ReviewParser):
     def __init__(self):
@@ -52,9 +49,16 @@ class ElevenStReviewParser(ReviewParser):
         self.wait = WebDriverWait(self.driver, 10)
 
     def open_product_detail_page(self, url: str):
-        logging.info(f"detail page: {url}")
-        self.driver.get(url)
-        time.sleep(2)
+        try:
+            self.driver.get(url)
+            time.sleep(2)
+        except Exception as e:
+            raise ReviewParseException(
+                stage="page_load",
+                reason="failed to load product page",
+                original_exception=e,
+                original_exception_type=type(e).__name__,
+            )
 
     def move_to_review(self):
         try:
@@ -65,16 +69,20 @@ class ElevenStReviewParser(ReviewParser):
             self.wait.until(ec.element_to_be_clickable((By.ID, "tabMenuDetail2")))
             review_tab.click()
             time.sleep(1.2)
-        except:
-            logging.exception(f"[move_to_review] 리뷰 탭 클릭 실패")
-            self.no_review = True
+        except Exception as e:
+            raise ReviewParseException(
+                stage="move_to_review",
+                reason="failed to move to the review tab",
+                original_exception=e,
+                original_exception_type=type(e).__name__,
+            )
 
     def get_review_info(self) -> List[dict]:
         # 전체 리뷰 개수 파악
         try:
             num_el = self.driver.find_element(By.CSS_SELECTOR, "#prdReview .text_num")
             total_count = int(num_el.text.strip())
-            logging.info(f"전체 리뷰 {total_count}개")
+            # logging.info(f"전체 리뷰 {total_count}개")
         except:
             total_count = 0
 
@@ -84,9 +92,13 @@ class ElevenStReviewParser(ReviewParser):
         # iframe 전환
         try:
             self.wait.until(ec.frame_to_be_available_and_switch_to_it((By.ID, "ifrmReview")))
-        except:
-            logging.exception(f"[get_review_info] iframe 전환 실패")
-            return []
+        except Exception as e:
+            raise ReviewParseException(
+                stage="get_review_info",
+                reason="iframe switching failed",
+                original_exception=e,
+                original_exception_type=type(e).__name__,
+            )
 
         results = []
         loaded_count = 0
@@ -96,42 +108,48 @@ class ElevenStReviewParser(ReviewParser):
             try:
                 self.wait.until(ec.presence_of_element_located((By.CSS_SELECTOR, "li.review_list_element")))
             except Exception as e:
-                logging.warning(f"[get_review_info] 리뷰 요소 로딩 실패")
-
-                break
+                raise ReviewParseException(
+                    stage="get_review_info",
+                    reason="failed to load review list element",
+                    original_exception=e,
+                    original_exception_type=type(e).__name__,
+                )
 
             review_items = self.driver.find_elements(By.CSS_SELECTOR, "li.review_list_element")
 
             for item in review_items[loaded_count:]:
-                # 초기값 설정
-                review_id = None
-                author_name = None
-                rating = None
-                content = None
-                image_urls = []
-                created_at = None
-
                 # 리뷰 아이디
                 try:
                     review_id = item.get_attribute("data-contmapno")
-                except Exception:
-                    review_id = None
+                except Exception as e:
+                    raise ReviewParseException(
+                        stage="review_id",
+                        reason="review id parsing failed",
+                        original_exception=e,
+                        original_exception_type=type(e).__name__,
+                    )
 
                 # 작성자
                 try:
                     author_name = item.find_element(By.CSS_SELECTOR, ".c_product_reviewer .name").text.strip()
-                except NoSuchElementException:
-                    logging.warning("[get_review_info] 리뷰 작성자 파싱 실패")
                 except Exception as e:
-                    logging.warning(f"[get_review_info] 리뷰 작성자 파싱 예외 발생: {e}")
+                    raise ReviewParseException(
+                        stage="author_name",
+                        reason="author name parsing failed",
+                        original_exception=e,
+                        original_exception_type=type(e).__name__,
+                    )
 
                 # 평점
                 try:
                     rating = int(item.find_element(By.CSS_SELECTOR, ".grade em").text)
-                except NoSuchElementException:
-                    logging.warning("[get_review_info] 평점 파싱 실패")
                 except Exception as e:
-                    logging.warning(f"[get_review_info] 평점 파싱 예외 발생: {e}")
+                    raise ReviewParseException(
+                        stage="rating",
+                        reason="rating parsing failed",
+                        original_exception=e,
+                        original_exception_type=type(e).__name__,
+                    )
 
                 # 내용
                 content_box = item.find_elements(By.CSS_SELECTOR, ".cont_text_wrap")
@@ -139,22 +157,29 @@ class ElevenStReviewParser(ReviewParser):
                     try:
                         p = content_box[0].find_element(By.CSS_SELECTOR, "p")
                         content = p.get_attribute("innerText").strip()
-                    except NoSuchElementException:
-                        logging.warning("[get_review_info] 리뷰 내용 파싱 실패")
                     except Exception as e:
-                        logging.warning(f"[get_review_info] 리뷰 내용 파싱 예외 발생: {e}")
+                        raise ReviewParseException(
+                            stage="content",
+                            reason="content parsing failed",
+                            original_exception=e,
+                            original_exception_type=type(e).__name__,
+                        )
                 else:
                     content = ""
 
                 # 작성 날짜
                 try:
                     created_at = item.find_element(By.CSS_SELECTOR, ".side .date").text.strip()
-                except NoSuchElementException:
-                    logging.warning("[get_review_info] 리뷰 작성 날짜 파싱 실패")
                 except Exception as e:
-                    logging.warning(f"[get_review_info] 리뷰 작성 날짜 파싱 예외 발생: {e}")
+                    raise ReviewParseException(
+                        stage="created_at",
+                        reason="date parsing failed",
+                        original_exception=e,
+                        original_exception_type=type(e).__name__,
+                    )
 
                 # 이미지
+                image_urls = []
                 try:
                     thumbs = item.find_elements(By.CSS_SELECTOR, ".c_product_review_thumbnail2 ul.list li button")
                     for btn in thumbs:
@@ -165,10 +190,13 @@ class ElevenStReviewParser(ReviewParser):
                         m = re.search(r"url\(['\"]?(.*?)['\"]?\)", style)
                         if m:
                             image_urls.append(m.group(1))
-                except NoSuchElementException:
-                    logging.warning("[get_review_info] 리뷰 이미지 파싱 실패")
                 except Exception as e:
-                    logging.warning(f"[get_review_info] 리뷰 이미지 파싱 예외 발생: {e}")
+                    raise ReviewParseException(
+                        stage="image",
+                        reason="image parsing failed",
+                        original_exception=e,
+                        original_exception_type=type(e).__name__,
+                    )
 
                 results.append({
                     "id": review_id,
@@ -187,21 +215,26 @@ class ElevenStReviewParser(ReviewParser):
             # 리뷰 더보기
             try:
                 more_review_btn = self.driver.find_element(By.CSS_SELECTOR, ".review-next-list-div button")
-            except NoSuchElementException:
-                logging.info("리뷰 더보기 버튼 없음")
-                break
-            except:
-                logging.exceptioin("리뷰 더보기 버튼 찾기 실패")
-                break
+            except Exception as e:
+                raise ReviewParseException(
+                    stage="get_review_info",
+                    reason="failed to find more_review_btn",
+                    original_exception=e,
+                    original_exception_type=type(e).__name__,
+                )
 
             try:
                 self.driver.execute_script("arguments[0].scrollIntoView({block:'center'});", more_review_btn)
                 time.sleep(0.3)
                 more_review_btn.click()
                 time.sleep(1.0)
-            except:
-                logging.exceptioin("리뷰 더보기 버튼 클릭 실패:")
-                break
+            except Exception as e:
+                raise ReviewParseException(
+                    stage="get_review_info",
+                    reason="failed to click the more_review_btn",
+                    original_exception=e,
+                    original_exception_type=type(e).__name__,
+                )
 
         # 메인 프레임으로 이동
         self.driver.switch_to.default_content()

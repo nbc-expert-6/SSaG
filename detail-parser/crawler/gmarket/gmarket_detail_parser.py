@@ -1,12 +1,14 @@
-import time
 import re
+import time
 
 import undetected_chromedriver as uc
+from selenium.common import NoSuchElementException
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
 
 from common.config import CHROME_BINARY, CHROMEDRIVER_PATH
+from common.exceptions import DetailParseException
 from crawler.detail_parser import DetailParser
 
 
@@ -71,7 +73,7 @@ class GmarketDetailParser(DetailParser):
                 time.sleep(1)
                 return
 
-            except Exception:
+            except Exception as e:
                 # 드라이버 죽었으면 종료
                 try:
                     self.driver.quit()
@@ -84,7 +86,12 @@ class GmarketDetailParser(DetailParser):
                     continue
 
                 # 마지막 시도 실패 → 예외 그대로 throw
-                raise
+                raise DetailParseException(
+                    stage="page_load",
+                    reason="failed to load product page",
+                    original_exception=e,
+                    original_exception_type=type(e).__name__,
+                )
 
     def get_product_info(self) -> dict:
         info = {}
@@ -95,8 +102,13 @@ class GmarketDetailParser(DetailParser):
                 (By.CSS_SELECTOR, "span.text__brand span.text")
             ))
             info["brand"] = brand_elem.text.strip()
-        except:
-            info["brand"] = None
+        except Exception as e:
+            raise DetailParseException(
+                stage="brand",
+                reason="brand parsing failed",
+                original_exception=e,
+                original_exception_type=type(e).__name__,
+            )
 
         # 판매자
         try:
@@ -104,8 +116,13 @@ class GmarketDetailParser(DetailParser):
                 (By.CSS_SELECTOR, "span.text__seller a.link__seller")
             ))
             info["seller"] = seller_elem.text.strip()
-        except:
-            info["seller"] = None
+        except Exception as e:
+            raise DetailParseException(
+                stage="seller",
+                reason="seller parsing failed",
+                original_exception=e,
+                original_exception_type=type(e).__name__,
+            )
 
         # 가격 (쿠폰 적용가 우선)
         coupon_price = self.driver.find_elements(
@@ -132,28 +149,47 @@ class GmarketDetailParser(DetailParser):
                 # SOLD OUT / 일시품절 / 재고없음 등 숫자가 없으면 무효 처리
                 info["price"] = None
         else:
-            info["price"] = None
+            raise DetailParseException(
+                stage="price",
+                reason="price parsing failed",
+                original_exception=NoSuchElementException("price text not found"),
+                original_exception_type="NoSuchElementException",
+            )
 
         # 배송비 처리
-        info["shipping_fee"] = None
-        delivery_elems = self.driver.find_elements(By.CSS_SELECTOR, "div.box__txt-information span.text__branch")
+        try:
+            info["shipping_fee"] = None
 
-        for elem in delivery_elems:
-            text = elem.text.strip()
+            delivery_elems = self.driver.find_elements(
+                By.CSS_SELECTOR,
+                "div.box__txt-information span.text__branch"
+            )
 
-            # 무료배송 처리
-            if "무료배송" in text:
-                info["shipping_fee"] = 0
-                break
+            if not delivery_elems:
+                raise NoSuchElementException("shipping fee element not found")
 
-            # 배송비 있는 경우 처리
-            elif "배송비" in text:
-                # 숫자만 추출
-                match = re.search(r"\d+", text.replace(",", ""))
-                if match:
-                    info["shipping_fee"] = int(match.group())
-                break
+            for elem in delivery_elems:
+                text = elem.text.strip()
 
+                # 무료배송 처리
+                if "무료배송" in text:
+                    info["shipping_fee"] = 0
+                    break
+
+                # 배송비 있는 경우 처리
+                elif "배송비" in text:
+                    # 숫자만 추출
+                    match = re.search(r"\d+", text.replace(",", ""))
+                    if match:
+                        info["shipping_fee"] = int(match.group())
+                    break
+        except Exception as e:
+            raise DetailParseException(
+                stage="shipping_fee",
+                reason="shipping fee parsing failed",
+                original_exception=e,
+                original_exception_type=type(e).__name__,
+            )
 
         # 이미지 링크
         try:
@@ -171,9 +207,13 @@ class GmarketDetailParser(DetailParser):
                 info["image_url"] = None
             else:
                 info["image_url"] = img_url
-
-        except Exception:
-            info["image_url"] = None
+        except Exception as e:
+            raise DetailParseException(
+                stage="image",
+                reason="image parsing failed",
+                original_exception=e,
+                original_exception_type=type(e).__name__,
+            )
 
         info["sale_link"] = self.driver.current_url
         return info

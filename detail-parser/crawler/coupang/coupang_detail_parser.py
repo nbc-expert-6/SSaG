@@ -1,17 +1,17 @@
+import re
 import time
 
 import undetected_chromedriver as uc
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 
-import common.platform
 from common.config import CHROME_BINARY, CHROMEDRIVER_PATH
+from common.exceptions import DetailParseException
 from crawler.detail_parser import DetailParser
 
 
 class CoupangDetailParser(DetailParser):
     def __init__(self):
-
         options = uc.ChromeOptions()
         options.add_argument("--no-sandbox")
         options.add_argument("--disable-dev-shm-usage")
@@ -45,30 +45,47 @@ class CoupangDetailParser(DetailParser):
         self.wait = WebDriverWait(self.driver, 10)
 
     def open_product_detail_page(self, url: str):
-        print(f"[INFO] 상품 페이지 오픈: {url}")
-        self.driver.get(url)
-        time.sleep(3)
+        # print(f"[INFO] 상품 페이지 오픈: {url}")
+        try:
+            self.driver.get(url)
+            time.sleep(3)
+        except Exception as e:
+            raise DetailParseException(
+                stage="page_load",
+                reason="failed to load product page",
+                original_exception=e,
+                original_exception_type=type(e).__name__,
+            )
 
     def get_product_info(self) -> dict:
         info = {}
 
         # 판매링크와 플랫폼 세팅
         info["sale_link"] = self.driver.current_url
+
         # 브랜드
         try:
             brand_elem = self.driver.find_element(By.CSS_SELECTOR, "div.twc-text-sm.twc-text-blue-600")
             info["brand"] = brand_elem.text.strip()
-        except:
-            info["brand"] = None
-            print("[WARN] 브랜드 정보를 찾을 수 없음")
+        except Exception as e:
+            raise DetailParseException(
+                stage="brand",
+                reason="brand parsing failed",
+                original_exception=e,
+                original_exception_type=type(e).__name__,
+            )
 
         # 상품명
         try:
             title_elem = self.driver.find_element(By.CSS_SELECTOR, "h1.product-title span")
             info["name"] = title_elem.text.strip()
-        except:
-            info["name"] = None
-            print("[WARN] 상품명을 찾을 수 없음")
+        except Exception as e:
+            raise DetailParseException(
+                stage="name",
+                reason="product name parsing failed",
+                original_exception=e,
+                original_exception_type=type(e).__name__,
+            )
 
         # 가격
         try:
@@ -79,15 +96,16 @@ class CoupangDetailParser(DetailParser):
             raw_price = price_elem.text.strip()  # 예: "35,900원"
 
             # 숫자만 추출
-            import re
             numeric_price = int(re.sub(r"[^0-9]", "", raw_price))
 
             info["price"] = numeric_price
         except Exception as e:
-            info["price"] = None
-            print(f"[WARN] 가격 정보를 찾을 수 없음: {e}")
-
-        import re
+            raise DetailParseException(
+                stage="price",
+                reason="price parsing failed",
+                original_exception=e,
+                original_exception_type=type(e).__name__,
+            )
 
         # 배송비
         try:
@@ -111,10 +129,14 @@ class CoupangDetailParser(DetailParser):
                     info["shipping_fee"] = numeric_fee
                 else:
                     info["shipping_fee"] = None
-                    print("[WARN] 배송비 정보를 찾을 수 없음")
+                    # print("[WARN] 배송비 정보를 찾을 수 없음")
         except Exception as e:
-            info["shipping_fee"] = None
-            print(f"[WARN] 배송비 파싱 중 오류 발생: {e}")
+            raise DetailParseException(
+                stage="shipping_fee",
+                reason="shipping fee parsing failed",
+                original_exception=e,
+                original_exception_type=type(e).__name__,
+            )
 
         # 판매자 이름
         try:
@@ -131,8 +153,12 @@ class CoupangDetailParser(DetailParser):
 
             info['seller'] = seller_name
         except Exception as e:
-            info["seller"] = None
-            print(f"[WARN] 판매자 정보를 찾을 수 없음: {e}")
+            raise DetailParseException(
+                stage="seller",
+                reason="seller parsing failed",
+                original_exception=e,
+                original_exception_type=type(e).__name__,
+            )
 
         # 이미지
         try:
@@ -143,16 +169,23 @@ class CoupangDetailParser(DetailParser):
                 img_url = "https:" + img_url
 
             info["image_url"] = img_url
-        except:
-            info["image_url"] = None
-            print("[WARN] 이미지 정보를 찾을 수 없음")
+        except Exception as e:
+            raise DetailParseException(
+                stage="image",
+                reason="image parsing failed",
+                original_exception=e,
+                original_exception_type=type(e).__name__,
+            )
 
-        print(info)
+        # print(info)
         return info
 
     def get_product_details(self, url: str) -> dict:
-        print("[INFO] 상세 정보 크롤링 시작")
+        # print("[INFO] 상세 정보 크롤링 시작")
         self.open_product_detail_page(url)
         info = self.get_product_info()
-        print("[INFO] 상세 정보 크롤링 완료")
+        # print("[INFO] 상세 정보 크롤링 완료")
         return info
+
+    def quit(self):
+        self.driver.quit()

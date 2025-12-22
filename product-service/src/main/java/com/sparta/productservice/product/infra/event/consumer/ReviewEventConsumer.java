@@ -20,7 +20,7 @@ public class ReviewEventConsumer extends AbstractKafkaConsumer<ReviewCreatedMess
 	@KafkaListener(
 		topics = KafkaTopicType.Topics.REVIEW_CREATED,
 		groupId = "${spring.kafka.consumer.group-id}",
-		containerFactory = "kafkaListenerCommonContainerFactory"
+		containerFactory = "kafkaListenerContainerFactory"
 	)
 	public void consume(ReviewCreatedMessage message) {
 		log.info("📥 Consumed Review event: mainProductId={}", message.mainProductId());

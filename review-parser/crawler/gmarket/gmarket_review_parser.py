@@ -4,6 +4,7 @@ import time
 from typing import List, Optional
 
 import undetected_chromedriver as uc
+from selenium.common import NoSuchElementException
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
@@ -235,51 +236,32 @@ class GmarketReviewParser:
                     )
 
                 # 제목
-                try:
-                    title = row.find_element(By.CSS_SELECTOR, "p.comment-tit").text.strip()
-                except Exception as e:
-                    raise ReviewParseException(
-                        stage="title",
-                        reason="title parsing failed",
-                        original_exception=e,
-                        original_exception_type=type(e).__name__,
-                    )
+                title = None
+                title_elems = row.find_elements(By.CSS_SELECTOR, "p.comment-tit")
+                if title_elems:
+                    title = title_elems[0].text.strip()
 
                 # 내용
-                try:
-                    content = row.find_element(By.CSS_SELECTOR, "p.con").text.strip()
-                except Exception as e:
-                    raise ReviewParseException(
-                        stage="content",
-                        reason="content parsing failed",
-                        original_exception=e,
-                        original_exception_type=type(e).__name__,
-                    )
+                content = None
+                content_elems = row.find_elements(By.CSS_SELECTOR, "p.con")
+                if content_elems:
+                    content = content_elems[0].text.strip()
 
                 # 이미지
-                image_url: Optional[str] = None
-                try:
-                    img_els = row.find_elements(By.CSS_SELECTOR, "td.thumb img")
-                except Exception as e:
-                    raise ReviewParseException(
-                        stage="image",
-                        reason="image element access failed",
-                        original_exception=e,
-                        original_exception_type=type(e).__name__,
-                    )
-
-                if img_els:
-                    src = img_els[0].get_attribute("src")
+                image_urls = []
+                img_els = row.find_elements(By.CSS_SELECTOR, "td.thumb img")
+                for img in img_els:
+                    src = img.get_attribute("src")
                     if src:
                         if src.startswith("//"):
                             src = "https:" + src
-                        image_url = src
+                        image_urls.append(src)
 
                 review = {
                     "id": review_id,
                     "author_name": author_name,
                     "created_at": created_at,
-                    "image_urls": image_url,
+                    "image_urls": image_urls,
                     "title": title,
                     "content": content,
                     "rating": rating
@@ -328,7 +310,7 @@ class GmarketReviewParser:
                     )
 
                 # 제목
-                title = ""
+                title = None
                 try:
                     title = row.find_element(By.CSS_SELECTOR, "p.comment-tit").text.strip()
                 except:
@@ -340,6 +322,8 @@ class GmarketReviewParser:
                 # 내용
                 try:
                     content = row.find_element(By.CSS_SELECTOR, "p.con").text.strip()
+                except NoSuchElementException:
+                    content = None
                 except Exception as e:
                     raise ReviewParseException(
                         stage="content",

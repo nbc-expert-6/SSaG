@@ -210,7 +210,8 @@ class AuctionReviewParser(ReviewParser):
         content_box = review.find_elements(By.CSS_SELECTOR, ".box__review-text")
         if content_box:
             try:
-                content = content_box[0].find_element(By.CSS_SELECTOR, "p.text").text.strip()
+                text_elem = content_box[0].find_elements(By.CSS_SELECTOR, "p.text")
+                content = text_elem[0].text.strip() if text_elem else None
             except Exception as e:
                 raise ReviewParseException(
                     stage="content",
@@ -220,25 +221,19 @@ class AuctionReviewParser(ReviewParser):
                 )
         else:
             # 리뷰 내용 없음
-            content = ""
+            content = None
 
         # 이미지
-        try:
-            image_urls = []
-            thumbnails = review.find_elements(By.CSS_SELECTOR, ".box__list-thumbnail ul.list li.list-item a.link")
-            for t in thumbnails:
-                style = t.get_attribute("style")
-                # url 추출
-                m = re.search(r'url\(["\']?(.*?)["\']?\)', style)
-                if m:
-                    image_urls.append(m.group(1))
-        except Exception as e:
-            raise ReviewParseException(
-                stage="image",
-                reason="image parsing failed",
-                original_exception=e,
-                original_exception_type=type(e).__name__,
-            )
+        image_urls = []
+        thumbnails = review.find_elements(
+            By.CSS_SELECTOR,
+            ".box__list-thumbnail ul.list li.list-item a.link"
+        )
+        for t in thumbnails:
+            style = t.get_attribute("style") or ""
+            m = re.search(r'url\(["\']?(.*?)["\']?\)', style)
+            if m:
+                image_urls.append(m.group(1))
 
         # 작성 날짜
         try:
@@ -254,7 +249,7 @@ class AuctionReviewParser(ReviewParser):
         return {
             "id": review_id,
             "author_name": author_name,
-            "title": "",
+            "title": None,
             "rating": rating,
             "created_at": created_at,
             "content": content,

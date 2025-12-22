@@ -20,7 +20,7 @@ spring:
 etl:
   elasticsearch:
     host: http://elasticsearch:9200
-    index: user-events
+    index: user_events
 
 ---
 spring:
@@ -35,4 +35,4 @@ spring:
 etl:
   elasticsearch:
     host: ${ES_HOST}
-    index: user-events
+    index: user_events

@@ -18,7 +18,7 @@ public class BeamConfig {
 	public ElasticsearchIO.ConnectionConfiguration configuration() {
 		return ElasticsearchIO.ConnectionConfiguration.create(
 				new String[] {System.getenv("ES_HOST")},
-				"user-events"
+				"user_events"
 			)
 			.withUsername(System.getenv("ES_USERNAME"))
 			.withPassword(System.getenv("ES_PASSWORD"));

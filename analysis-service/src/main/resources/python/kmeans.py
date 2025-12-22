@@ -86,7 +86,6 @@ k_range = range(1, max_k + 1)
 
 # 8) Elbow 방법으로 최적의 군집 수 K 찾기
 wcss = []
-k_range = range(1, 11)  # k=1~10까지 확인
 for k in k_range:
     km = KMeans(n_clusters=k, random_state=42)
     km.fit(X_scaled)

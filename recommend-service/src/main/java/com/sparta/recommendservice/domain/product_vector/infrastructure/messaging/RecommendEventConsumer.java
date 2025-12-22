@@ -38,7 +38,7 @@ public class RecommendEventConsumer {
 		autoCreateTopics = "true",
 		dltTopicSuffix = ".dlq"
 	)
-	@KafkaListener(topics = "embedding.updated")
+	@KafkaListener(topics = "embedding-updated")
 	public void handleEmbeddingUpdated(String message) {
 		EmbeddingUpdatedEvent event;
 		try {
@@ -86,7 +86,7 @@ public class RecommendEventConsumer {
 
 		try {
 			String dlqMessage = objectMapper.writeValueAsString(new EmbeddingUpdatedEvent(List.of(productId)));
-			kafkaPublisher.publishToDlq("embedding.updated.dlq", dlqMessage);
+			kafkaPublisher.publishToDlq("embedding-updated-dlq", dlqMessage);
 		} catch (JsonProcessingException ex) {
 			log.error("[Fallback] DLQ 직렬화 실패 -> productId={}", productId, ex);
 		}

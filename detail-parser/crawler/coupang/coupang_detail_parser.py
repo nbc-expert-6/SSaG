@@ -48,7 +48,7 @@ class CoupangDetailParser(DetailParser):
         # print(f"[INFO] 상품 페이지 오픈: {url}")
         try:
             self.driver.get(url)
-            time.sleep(3)
+            time.sleep(2)
         except Exception as e:
             raise DetailParseException(
                 stage="page_load",

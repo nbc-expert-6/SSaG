@@ -80,7 +80,7 @@ class AuctionUrlParser(UrlParser):
             search_box.clear()
             search_box.send_keys(keyword)
             search_box.send_keys(Keys.ENTER)
-            time.sleep(1)
+            time.sleep(0.7)
         except:
             logging.info(self.driver.page_source)
 
@@ -89,12 +89,12 @@ class AuctionUrlParser(UrlParser):
             sort_button = self.wait.until(EC.presence_of_element_located(
                 (By.CSS_SELECTOR, "button.button--toggle_sort_item_list")))
             self.driver.execute_script("arguments[0].click();", sort_button)
-            time.sleep(1)
+            time.sleep(0.7)
 
             low_price_link = self.wait.until(EC.presence_of_element_located(
                 (By.XPATH, "//ul[@class='list']/li[3]/a[@class='link']")))
             self.driver.execute_script("arguments[0].click();", low_price_link)
-            time.sleep(1)
+            time.sleep(0.7)
         except Exception as e:
             print(f"정렬 실패: {e}")
 

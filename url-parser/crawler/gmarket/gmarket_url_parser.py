@@ -81,7 +81,7 @@ class GmarketUrlParser(UrlParser):
         search_box.clear()
         search_box.send_keys(keyword)
         search_box.send_keys(Keys.ENTER)
-        time.sleep(2)
+        time.sleep(1.5)
 
     def has_result(self) -> bool:
         try:
@@ -108,7 +108,7 @@ class GmarketUrlParser(UrlParser):
         )
         low_price_btn.click()
 
-        time.sleep(2)
+        time.sleep(1.5)
 
     def remove_add(self):
         pass

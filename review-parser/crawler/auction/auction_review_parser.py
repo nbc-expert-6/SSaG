@@ -70,9 +70,9 @@ class AuctionReviewParser(ReviewParser):
                 ec.presence_of_element_located((By.CSS_SELECTOR, "a[href*='#vip_tab_comment']"))
             )
             self.driver.execute_script("arguments[0].scrollIntoView(true);", review_tab)
-            time.sleep(1)
+            time.sleep(0.7)
             self.driver.execute_script("arguments[0].click();", review_tab)
-            time.sleep(1)
+            time.sleep(0.7)
 
             # 리뷰 없음 확인
             if self.driver.find_elements(By.CSS_SELECTOR, ".box__vip-review--none"):
@@ -148,7 +148,7 @@ class AuctionReviewParser(ReviewParser):
             if next_btn:
                 self.driver.execute_script("arguments[0].scrollIntoView(true);", next_btn[0])
                 self.driver.execute_script("arguments[0].click();", next_btn[0])
-                time.sleep(1.5)
+                time.sleep(0.7)
                 return False  # 같은 page index로 다시 탐색
             else:
                 return False
@@ -157,7 +157,7 @@ class AuctionReviewParser(ReviewParser):
         btn = page_buttons[0]
         self.driver.execute_script("arguments[0].scrollIntoView(true);", btn)
         self.driver.execute_script("arguments[0].click();", btn)
-        time.sleep(1)
+        time.sleep(0.7)
 
         return True
 

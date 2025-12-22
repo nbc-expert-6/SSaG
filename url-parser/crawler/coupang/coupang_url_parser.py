@@ -88,7 +88,7 @@ class CoupangUrlParser(UrlParser):
             search_box.clear()
             search_box.send_keys(keyword)
             search_box.send_keys(Keys.ENTER)
-            time.sleep(2)
+            time.sleep(1)
         except:
             logging.info(self.driver.page_source)
 
@@ -109,7 +109,7 @@ class CoupangUrlParser(UrlParser):
             EC.element_to_be_clickable((By.CSS_SELECTOR, "label[for='sorter-LOW_PRICE']"))
         )
         low_price_btn.click()
-        time.sleep(3)
+        time.sleep(1.5)
 
     def remove_add(self):
         # 쿠팡 광고 제거 로직 필요하면 구현

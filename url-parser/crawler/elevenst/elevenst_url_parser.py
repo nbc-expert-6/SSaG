@@ -78,7 +78,7 @@ class ElevenStUrlParser(UrlParser):
         search_box.clear()
         search_box.send_keys(keyword)
         search_box.send_keys(Keys.ENTER)
-        time.sleep(2)
+        time.sleep(1.5)
 
     def sort_by_low_price(self):
         try:
@@ -95,7 +95,7 @@ class ElevenStUrlParser(UrlParser):
                 )
             )
             self.driver.execute_script("arguments[0].click();", low_price_btn)
-            time.sleep(2)
+            time.sleep(1.5)
 
             return True
         except Exception as e:

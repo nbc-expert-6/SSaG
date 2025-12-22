@@ -51,7 +51,7 @@ class ElevenStDetailParser(DetailParser):
     def open_product_detail_page(self, url: str):
         try:
             self.driver.get(url)
-            time.sleep(2)
+            time.sleep(1.5)
         except Exception as e:
             raise DetailParseException(
                 stage="page_load",
@@ -73,7 +73,7 @@ class ElevenStDetailParser(DetailParser):
 
             self.wait.until(ec.element_to_be_clickable((By.ID, "tabMenuDetail1")))
             review_tab.click()
-            time.sleep(1.2)
+            time.sleep(1)
 
             # 브랜드 정보 파싱
             brand_el = driver.find_element(By.XPATH,

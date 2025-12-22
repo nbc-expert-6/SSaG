@@ -9,7 +9,7 @@ import com.sparta.productservice.product.domain.vo.PlatformType;
 import com.sparta.productservice.review.app.command.CreateReviewsCommand;
 
 public record CrawledReviewMessage(
-	@JsonProperty("main_product_id") UUID mainProductId,
+	@JsonProperty("main_product_id") String mainProductId,
 	@JsonProperty("platform") String platform,
 	@JsonProperty("reviews") List<CrawledReview> reviews
 ) {
@@ -32,7 +32,7 @@ public record CrawledReviewMessage(
 				.toList();
 
 		return new CreateReviewsCommand(
-			mainProductId,
+			UUID.fromString(mainProductId),
 			platformType,
 			reviewCommands
 		);

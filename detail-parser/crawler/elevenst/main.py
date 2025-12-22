@@ -1,6 +1,5 @@
 import threading
 import time
-import traceback
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
 from common.exceptions import DetailParseException

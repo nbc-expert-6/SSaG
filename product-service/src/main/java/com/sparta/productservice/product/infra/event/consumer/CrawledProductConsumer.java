@@ -21,7 +21,7 @@ public class CrawledProductConsumer extends AbstractKafkaConsumer<CrawledProduct
 	@KafkaListener(
 		topics = KafkaTopicType.Topics.PRODUCT_DETAILS,
 		groupId = "${spring.kafka.consumer.group-id}",
-		containerFactory = "kafkaListenerContainerFactory"
+		containerFactory = "crawledProductKafkaListenerContainerFactory"
 	)
 	public void consume(CrawledProductMessage message) {
 		log.info("📥 Consumed Product: mainProductId={}, url={}",

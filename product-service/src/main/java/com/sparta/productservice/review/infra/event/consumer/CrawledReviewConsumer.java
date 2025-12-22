@@ -23,13 +23,13 @@ public class CrawledReviewConsumer extends AbstractKafkaConsumer<CrawledReviewMe
 	@KafkaListener(
 		topics = KafkaTopicType.Topics.PRODUCT_REVIEWS,
 		groupId = "${spring.kafka.consumer.group-id}",
-		containerFactory = "kafkaListenerContainerFactory"
+		containerFactory = "crawledReviewKafkaListenerContainerFactory"
 	)
 	public void consume(CrawledReviewMessage message) {
-		log.info("📥 Consumed Review: mainProductId={}", message.getMainProductId());
+		log.info("📥 Consumed Review: mainProductId={}", message.mainProductId());
 
 		handler.handleCrawledReview(message);
 
-		log.info("✅ Successfully processed review: mainProductId={}", message.getMainProductId());
+		log.info("✅ Successfully processed review: mainProductId={}", message.mainProductId());
 	}
 }

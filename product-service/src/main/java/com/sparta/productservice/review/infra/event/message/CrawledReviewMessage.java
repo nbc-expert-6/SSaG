@@ -8,25 +8,11 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.sparta.productservice.product.domain.vo.PlatformType;
 import com.sparta.productservice.review.app.command.CreateReviewsCommand;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.ToString;
-
-@Getter
-@NoArgsConstructor
-@AllArgsConstructor
-@ToString
-public class CrawledReviewMessage {
-
-	@JsonProperty("main_product_id")
-	private UUID mainProductId;
-
-	@JsonProperty("platform")
-	private String platform;
-
-	@JsonProperty("reviews")
-	private List<CrawledReview> reviews;
+public record CrawledReviewMessage(
+	@JsonProperty("main_product_id") UUID mainProductId,
+	@JsonProperty("platform") String platform,
+	@JsonProperty("reviews") List<CrawledReview> reviews
+) {
 
 	public CreateReviewsCommand toCommand() {
 
@@ -36,12 +22,12 @@ public class CrawledReviewMessage {
 		List<CreateReviewsCommand.CreateReviewDto> reviewCommands =
 			reviews.stream()
 				.map(review -> new CreateReviewsCommand.CreateReviewDto(
-					review.getPlatformReviewId(),
-					review.getTitle(),
-					review.getContent(),
-					review.getAuthorName(),
-					BigDecimal.valueOf(review.getRating()),
-					review.getImageUrls()
+					review.platformReviewId(),
+					review.title(),
+					review.content(),
+					review.authorName(),
+					BigDecimal.valueOf(review.rating()),
+					review.imageUrls()
 				))
 				.toList();
 
@@ -52,31 +38,13 @@ public class CrawledReviewMessage {
 		);
 	}
 
-	@Getter
-	@NoArgsConstructor
-	@AllArgsConstructor
-	@ToString
-	public static class CrawledReview {
-
-		@JsonProperty("id")
-		private String platformReviewId;
-
-		@JsonProperty("title")
-		private String title;
-
-		@JsonProperty("content")
-		private String content;
-
-		@JsonProperty("rating")
-		private double rating;
-
-		@JsonProperty("image_urls")
-		private List<String> imageUrls;
-
-		@JsonProperty("created_at")
-		private String createdAt;
-
-		@JsonProperty("author_name")
-		private String authorName;
-	}
+	public record CrawledReview(
+		@JsonProperty("id") String platformReviewId,
+		@JsonProperty("title") String title,
+		@JsonProperty("content") String content,
+		@JsonProperty("rating") double rating,
+		@JsonProperty("image_urls") List<String> imageUrls,
+		@JsonProperty("created_at") String createdAt,
+		@JsonProperty("author_name") String authorName
+	) {}
 }

@@ -13,13 +13,11 @@ services:
       SPRING_DATASOURCE_USERNAME: postgres
       SPRING_DATASOURCE_PASSWORD: qwer1234!
       SPRING_ELASTICSEARCH_URIS: http://elasticsearch:9200
-      OTEL_EXPORTER_OTLP_ENDPOINT: http://tempo:4318
       OTEL_EXPORTER_OTLP_TRACES_ENDPOINT: http://tempo:4318/v1/traces
-      OTEL_EXPORTER_OTLP_PROTOCOL: http/protobuf
       LOKI_URL: http://loki:3100/loki/api/v1/push
     networks:
       - infra
 
 networks:
   infra:
-    external: true
+    name: infra

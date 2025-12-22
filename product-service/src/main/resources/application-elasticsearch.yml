@@ -22,7 +22,7 @@ spring:
     activate:
       on-profile: local
   elasticsearch:
-    uris: ${SPRING_ELASTICSEARCH_URIS}
+    uris: http://elasticsearch:9200
     connection-timeout: 5s
     socket-timeout: 60s
   cloud:

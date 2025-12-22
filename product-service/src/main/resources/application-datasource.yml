@@ -30,7 +30,7 @@ spring:
     activate:
       on-profile: local
   datasource:
-    url: jdbc:postgresql://localhost:5432/product_service_db
+    url: jdbc:postgresql://postgres:5432/product_service_db
     driver-class-name: org.postgresql.Driver
     username: postgres
     password: qwer1234!
@@ -57,14 +57,14 @@ spring:
     activate:
       on-profile: dev
   datasource:
-    url: jdbc:postgresql://localhost:5432/product_service_db
+    url: ${DB_HOST}
     driver-class-name: org.postgresql.Driver
-    username: postgres
-    password: qwer1234!
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
 
   jpa:
     hibernate:
-      ddl-auto: update
+      ddl-auto: none
     properties:
       hibernate:
         format_sql: false

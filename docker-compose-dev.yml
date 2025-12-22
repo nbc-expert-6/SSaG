@@ -36,7 +36,6 @@ services:
       KAFKA_DELETE_TOPIC_ENABLE: "true"
     networks:
       - infra
-
   elasticsearch:
     build:
       context: .
@@ -54,7 +53,6 @@ services:
       - "9200:9200"
     networks:
       - infra
-
   redis:
     image: redis
     container_name: redis

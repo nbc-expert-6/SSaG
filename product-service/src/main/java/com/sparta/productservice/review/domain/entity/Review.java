@@ -41,7 +41,7 @@ public class Review extends BaseEntity {
 	@Embedded
 	private ReviewRating rating;
 
-	@Column(name = "content", nullable = false, columnDefinition = "TEXT")
+	@Column(name = "content", columnDefinition = "TEXT")
 	private String content;
 
 	@Column(name = "main_product_id", nullable = false, columnDefinition = "uuid")
@@ -51,7 +51,7 @@ public class Review extends BaseEntity {
 	@Column(name = "platform_type", nullable = false)
 	private PlatformType platformType;
 
-	@Column(name = "title", nullable = false, length = 500)
+	@Column(name = "title", length = 500)
 	private String title;
 
 	@Column(name = "author_name", length = 100)

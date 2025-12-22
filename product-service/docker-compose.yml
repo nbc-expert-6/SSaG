@@ -2,20 +2,22 @@ version: '3.8'
 
 services:
   product-service:
-    image: ssag-product-service:latest
+    image: product-service:latest
     container_name: product-service
     ports:
       - "8080:8080"
     environment:
-      SPRING_PROFILES_ACTIVE: dev
+      SPRING_PROFILES_ACTIVE: local
       SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/product_service_db
       SPRING_DATASOURCE_USERNAME: postgres
       SPRING_DATASOURCE_PASSWORD: qwer1234!
       SPRING_ELASTICSEARCH_URIS: http://elasticsearch:9200
+      OTEL_EXPORTER_OTLP_TRACES_ENDPOINT: http://tempo:4318/v1/traces
+      LOKI_URL: http://loki:3100/loki/api/v1/push
     networks:
       - infra
 
 networks:
   infra:
-    external: true
+    name: infra

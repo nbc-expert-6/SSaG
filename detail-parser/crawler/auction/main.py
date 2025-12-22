@@ -98,13 +98,10 @@ if __name__ == "__main__":
                         "reason": e.reason,
                         "original_exception_type": e.original_exception_type,
                         "exception_message": str(e),
-                        "stacktrace": traceback.format_exc(),
                     },
                 )
                 continue
             except Exception as e:
-                # DetailParseException 아닌 예외
-                # TODO: 별도 exception, 중단 기준 설정
                 logger.exception(
                     "UNEXPECTED_EXCEPTION",
                     main_product_id=main_product_id,

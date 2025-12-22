@@ -101,7 +101,6 @@ if __name__ == "__main__":
                         "reason": e.reason,
                         "original_exception_type": e.original_exception_type,
                         "exception_message": str(e),
-                        "stacktrace": traceback.format_exc(),
                     },
                 )
                 continue

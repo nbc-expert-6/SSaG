@@ -44,7 +44,7 @@ public class UserEventConsumer {
 		autoCreateTopics = "true",
 		dltTopicSuffix = ".dlq"
 	)
-	@KafkaListener(topics = "user.event", groupId = "user-group")
+	@KafkaListener(topics = "user-event", groupId = "user-group")
 	public void consume(String payload) {
 		UserActivityEvent event;
 
@@ -72,7 +72,7 @@ public class UserEventConsumer {
 
 	// 로그
 	private void logEventReceived(UserActivityEvent event) {
-		log.info("[CONSUME user.event] sessionId={}, eventType={}, productId={}, meta={}",
+		log.info("[CONSUME user-event] sessionId={}, eventType={}, productId={}, meta={}",
 			event.sessionId(),
 			event.eventType(),
 			event.productId() != null ? event.productId() : "NONE",

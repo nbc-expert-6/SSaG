@@ -15,7 +15,7 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 
 @Getter
-@Document(indexName = "user-events")
+@Document(indexName = "user_events")
 @EqualsAndHashCode
 public class UserEventDocument implements Serializable {
 

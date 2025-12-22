@@ -16,19 +16,19 @@ public class KafkaDlqConsumer {
 
 	private final ObjectMapper objectMapper;
 
-	@KafkaListener(topics = "user.event.dlq", groupId = "dlq-user-event-group")
+	@KafkaListener(topics = "user-event-dlq", groupId = "dlq-user-event-group")
 	public void listenUserEventDlq(String payload) {
 		UserActivityEvent event = deserialize(payload);
 		if (event != null) {
-			log.error("[DLQ 수신 - user.event.dlq] 비정상 처리된 이벤트 감지 -> {}", event);
+			log.error("[DLQ 수신 - user-event.dlq] 비정상 처리된 이벤트 감지 -> {}", event);
 		}
 	}
 
-	@KafkaListener(topics = "product.analysis.dlq", groupId = "dlq-product-analysis-group")
+	@KafkaListener(topics = "product-analysis-dlq", groupId = "dlq-product-analysis-group")
 	public void listenProductAnalysisDlq(String payload) {
 		UserActivityEvent event = deserialize(payload);
 		if (event != null) {
-			log.error("[DLQ 수신 - product.analysis.dlq] Python 분석 파이프라인 전달 실패 이벤트 감지 -> {}", event);
+			log.error("[DLQ 수신 - product-analysis-dlq] Python 분석 파이프라인 전달 실패 이벤트 감지 -> {}", event);
 		}
 	}
 

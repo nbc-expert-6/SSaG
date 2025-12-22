@@ -25,7 +25,7 @@ conn = psycopg2.connect(
 # -----------------------------
 def fetch_recent_events(batch_size=1000):
     consumer = KafkaConsumer(
-        "product.analysis",
+        "product-analysis",
         bootstrap_servers="kafka:9092",
         auto_offset_reset="earliest",
         group_id="my_consumer_group",

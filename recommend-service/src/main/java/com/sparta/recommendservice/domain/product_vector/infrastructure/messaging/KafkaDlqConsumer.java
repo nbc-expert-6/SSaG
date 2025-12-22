@@ -18,11 +18,11 @@ public class KafkaDlqConsumer {
 
 	private final ObjectMapper objectMapper;
 
-	@KafkaListener(topics = "embedding.updated.dlq", groupId = "dlq-embedding-updated-group")
+	@KafkaListener(topics = "embedding-updated-dlq", groupId = "dlq-embedding-updated-group")
 	public void listendEmbeddingUpdatedDlq(String payload) {
 		EmbeddingUpdatedEvent event = deserialize(payload);
 		if (event != null) {
-			log.error("[DLQ 수신 - embedding.updated.dlq] 비정상 처리된 이벤트 감지 -> {}", event);
+			log.error("[DLQ 수신 - embedding-updated-dlq] 비정상 처리된 이벤트 감지 -> {}", event);
 		}
 	}
 

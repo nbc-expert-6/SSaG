@@ -9,7 +9,7 @@ public class KafkaTopicConfig {
 
 	@Bean
 	public NewTopic embeddingUpdatedTopic() {
-		return new NewTopic("embedding.updated", 3, (short)1);
+		return new NewTopic("embedding-updated", 3, (short)1);
 	}
 
 	@Bean

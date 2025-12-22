@@ -33,8 +33,8 @@ public class KafkaPublisher {
 
 		try {
 			String jsonPayload = objectMapper.writeValueAsString(event);
-			kafkaTemplate.send("user.event", jsonPayload);
-			log.info("[PUBLISH → user.event] sessionId={}, eventType={}, productId={}, meta={}",
+			kafkaTemplate.send("user-event", jsonPayload);
+			log.info("[PUBLISH → user-event] sessionId={}, eventType={}, productId={}, meta={}",
 				sessionId, eventType, productId, meta);
 		} catch (JsonProcessingException e) {
 			log.error("Kafka 전송 실패 - JSON 직렬화 오류 sessionId={}, productId={}, error={}",
@@ -43,7 +43,7 @@ public class KafkaPublisher {
 	}
 
 	public void fallbackpublishUserEvent(UUID sessionId, UUID productId, String eventType, String meta, Throwable e) {
-		log.error("Kafka user.event publish failed -> sessionId={}, productId={}, error={}",
+		log.error("Kafka user-event publish failed -> sessionId={}, productId={}, error={}",
 			sessionId, productId, e.getMessage(), e);
 
 		// default 이벤트 객체
@@ -56,10 +56,10 @@ public class KafkaPublisher {
 
 		// 1. 본 Topic으로 defaultEvent라도 무조건 재전송 (중단 방지 운영 목적)
 		try {
-			kafkaTemplate.send("user.event", defaultEvent);
-			log.warn("Fallback 기본 이벤트 재전송 완료 → user.event");
+			kafkaTemplate.send("user-event", defaultEvent);
+			log.warn("Fallback 기본 이벤트 재전송 완료 → user-event");
 		} catch (Exception ex) {
-			log.error("Fallback 본 Topic(user.event) 재전송 실패 — DLQ 처리로 전환 (sessionId={}, productId={}, eventType={})",
+			log.error("Fallback 본 Topic(user-event) 재전송 실패 — DLQ 처리로 전환 (sessionId={}, productId={}, eventType={})",
 				sessionId, productId, eventType, ex);
 		}
 
@@ -75,8 +75,8 @@ public class KafkaPublisher {
 				} catch (JsonProcessingException ex) {
 					log.error("DLQ 전송 실패 - JSON 직렬화 오류", e);
 				}
-				kafkaTemplate.send("user.event.dlq", jsonPayload);
-				log.warn("DLQ 전송 완료 → user.event.dlq");
+				kafkaTemplate.send("user-event-dlq", jsonPayload);
+				log.warn("DLQ 전송 완료 → user-event-dlq");
 				return null;
 			}, throwable -> {
 				log.error("DLQ 전송도 실패 -> 회로 OPEN 가능성 있음 (Slack/문자 알림 필요)");
@@ -84,7 +84,7 @@ public class KafkaPublisher {
 			}
 		);
 
-		log.warn("DLQ로 이동 완료 => user.event.dlq");
+		log.warn("DLQ로 이동 완료 => user-event-dlq");
 	}
 
 	//============================================================================================
@@ -105,8 +105,8 @@ public class KafkaPublisher {
 
 		try {
 			String data = objectMapper.writeValueAsString(event);
-			kafkaTemplate.send("product.analysis", data);
-			log.info("[PUBLISH → product.analysis] sessionId={}, productId={}, timestamp={}",
+			kafkaTemplate.send("product-analysis", data);
+			log.info("[PUBLISH → product-analysis] sessionId={}, productId={}, timestamp={}",
 				sessionId, productId, timestamp);
 		} catch (JsonProcessingException e) {
 			log.error("Kafka 전송 실패 - JSON 직렬화 오류 sessionId={}, productId={}, timestamp={}, error={}",
@@ -116,7 +116,7 @@ public class KafkaPublisher {
 
 	public void fallbackPublishProductAnalysisEvent(UUID sessionId, UUID productId, Instant timestamp,
 		Throwable e) {
-		log.error("[Fallback] product.analysis publish failed -> sessionId={}, productId={}, error={}",
+		log.error("[Fallback] product-analysis publish failed -> sessionId={}, productId={}, error={}",
 			sessionId, productId, e.getMessage(), e);
 
 		UserActivityEvent defaultEvent = new UserActivityEvent(
@@ -129,11 +129,11 @@ public class KafkaPublisher {
 
 		try {
 			String defaultData = objectMapper.writeValueAsString(defaultEvent);
-			kafkaTemplate.send("product.analysis", defaultData);
-			log.warn("Fallback 기본 이벤트 재전송 완료 → product.analysis");
+			kafkaTemplate.send("product-analysis", defaultData);
+			log.warn("Fallback 기본 이벤트 재전송 완료 → product-analysis");
 		} catch (Exception ex) {
 			log.error(
-				"Fallback 본 Topic(product.analysis) 재전송 실패 — DLQ로 대체 처리 진행 (sessionId={}, productId={}, timestamp={})",
+				"Fallback 본 Topic(product-analysis) 재전송 실패 — DLQ로 대체 처리 진행 (sessionId={}, productId={}, timestamp={})",
 				sessionId, productId, timestamp, ex);
 		}
 
@@ -141,8 +141,8 @@ public class KafkaPublisher {
 			String data = objectMapper.writeValueAsString(
 				new UserActivityEvent(sessionId, productId, "UNKNOWN_EVENT", timestamp, null)
 			);
-			kafkaTemplate.send("product.analysis.dlq", data);
-			log.warn("DLQ 저장 완료 → product.analysis.dlq");
+			kafkaTemplate.send("product-analysis-dlq", data);
+			log.warn("DLQ 저장 완료 → product-analysis-dlq");
 		} catch (JsonProcessingException ex) {
 			log.error("DLQ 메시지 직렬화 실패 → 운영자 알림 필요 | {}", ex.getMessage(), ex);
 		} catch (Exception ex) {

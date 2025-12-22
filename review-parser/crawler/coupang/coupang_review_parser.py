@@ -58,7 +58,7 @@ class CoupangReviewParser(ReviewParser):
     def open_product_detail_page(self, url: str):
         try:
             self.driver.get(url)
-            time.sleep(3)
+            time.sleep(2)
         except Exception as e:
             raise ReviewParseException(
                 stage="page_load",
@@ -83,7 +83,7 @@ class CoupangReviewParser(ReviewParser):
                 return
             self.has_review = True
             review_tab.click()
-            time.sleep(2)
+            time.sleep(1)
         except Exception as e:
             self.has_review = False
             raise ReviewParseException(
@@ -156,7 +156,7 @@ class CoupangReviewParser(ReviewParser):
             # 다음 블록 버튼 클릭
             self.driver.execute_script("arguments[0].scrollIntoView({block:'center'});", next_block_btn)
             next_block_btn.click()
-            time.sleep(2)
+            time.sleep(1)
             print("[INFO] 다음 블록(>) 클릭 완료")
 
             return True

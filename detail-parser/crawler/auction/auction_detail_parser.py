@@ -47,7 +47,7 @@ class AuctionDetailParser(DetailParser):
     def open_product_detail_page(self, url: str):
         try:
             self.driver.get(url)
-            time.sleep(2)
+            time.sleep(1.5)
         except Exception as e:
             raise DetailParseException(
                 stage="page_load",

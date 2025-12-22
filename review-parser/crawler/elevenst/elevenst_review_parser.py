@@ -68,7 +68,7 @@ class ElevenStReviewParser(ReviewParser):
 
             self.wait.until(ec.element_to_be_clickable((By.ID, "tabMenuDetail2")))
             review_tab.click()
-            time.sleep(1.2)
+            time.sleep(1)
         except Exception as e:
             raise ReviewParseException(
                 stage="move_to_review",
@@ -227,7 +227,7 @@ class ElevenStReviewParser(ReviewParser):
                 self.driver.execute_script("arguments[0].scrollIntoView({block:'center'});", more_review_btn)
                 time.sleep(0.3)
                 more_review_btn.click()
-                time.sleep(1.0)
+                time.sleep(0.7)
             except Exception as e:
                 raise ReviewParseException(
                     stage="get_review_info",

@@ -82,18 +82,25 @@ class ElevenStUrlParser(UrlParser):
 
     def sort_by_low_price(self):
         try:
-            # 드롭다운 열기
-            sort_button = self.wait.until(EC.element_to_be_clickable((By.CSS_SELECTOR, "button.btn_icon.select")))
-            sort_button.click()
-            time.sleep(1)
+            dropdown = self.wait.until(
+                EC.visibility_of_element_located(
+                    (By.CSS_SELECTOR, "div.dropdown_selected")
+                )
+            )
+            self.driver.execute_script("arguments[0].click();", dropdown)
 
-            # 낮은 가격순 정렬 산텍
-            low_price_btn = self.wait.until(EC.element_to_be_clickable((By.CSS_SELECTOR, "button[data-log-body*='낮은 가격순']")))
-            low_price_btn.click()
-            time.sleep(1)
+            low_price_btn = self.wait.until(
+                EC.visibility_of_element_located(
+                    (By.XPATH, "//button[normalize-space()='낮은 가격순']")
+                )
+            )
+            self.driver.execute_script("arguments[0].click();", low_price_btn)
+            time.sleep(2)
 
+            return True
         except Exception as e:
             print(f"정렬 실패: {e}")
+            return False
 
     def remove_add(self):
         pass
@@ -121,8 +128,8 @@ class ElevenStUrlParser(UrlParser):
         if self.has_no_result():
             return []
 
-        self.sort_by_low_price()
-        self.remove_add()
+        if not self.sort_by_low_price():
+            return []
 
         links = self.get_product_links()
         return links[:self.max_links]

@@ -152,20 +152,11 @@ class ElevenStReviewParser(ReviewParser):
                     )
 
                 # 내용
+                content = None
                 content_box = item.find_elements(By.CSS_SELECTOR, ".cont_text_wrap")
                 if content_box:
-                    try:
-                        p = content_box[0].find_element(By.CSS_SELECTOR, "p")
-                        content = p.get_attribute("innerText").strip()
-                    except Exception as e:
-                        raise ReviewParseException(
-                            stage="content",
-                            reason="content parsing failed",
-                            original_exception=e,
-                            original_exception_type=type(e).__name__,
-                        )
-                else:
-                    content = ""
+                    p = content_box[0].find_element(By.CSS_SELECTOR, "p")
+                    content = p.get_attribute("innerText").strip()
 
                 # 작성 날짜
                 try:
@@ -180,28 +171,23 @@ class ElevenStReviewParser(ReviewParser):
 
                 # 이미지
                 image_urls = []
-                try:
-                    thumbs = item.find_elements(By.CSS_SELECTOR, ".c_product_review_thumbnail2 ul.list li button")
-                    for btn in thumbs:
+                thumbs = item.find_elements(By.CSS_SELECTOR,".c_product_review_thumbnail2 ul.list li button")
+                for btn in thumbs:
+                    try:
                         li = btn.find_element(By.XPATH, "./..")
                         if "item_video" in li.get_attribute("class"):
                             continue
-                        style = btn.get_attribute("style")
+                        style = btn.get_attribute("style") or ""
                         m = re.search(r"url\(['\"]?(.*?)['\"]?\)", style)
                         if m:
                             image_urls.append(m.group(1))
-                except Exception as e:
-                    raise ReviewParseException(
-                        stage="image",
-                        reason="image parsing failed",
-                        original_exception=e,
-                        original_exception_type=type(e).__name__,
-                    )
+                    except Exception:
+                        continue
 
                 results.append({
                     "id": review_id,
                     "author_name": author_name,
-                    "title": "",
+                    "title": None,
                     "rating": rating,
                     "created_at": created_at,
                     "content": content,

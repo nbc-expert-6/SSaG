@@ -2,6 +2,7 @@ import re
 import time
 
 import undetected_chromedriver as uc
+from selenium.common import NoSuchElementException
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 
@@ -67,6 +68,8 @@ class CoupangDetailParser(DetailParser):
         try:
             brand_elem = self.driver.find_element(By.CSS_SELECTOR, "div.twc-text-sm.twc-text-blue-600")
             info["brand"] = brand_elem.text.strip()
+        except NoSuchElementException:
+            info["brand"] = None
         except Exception as e:
             raise DetailParseException(
                 stage="brand",

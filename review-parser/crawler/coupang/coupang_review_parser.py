@@ -1,6 +1,7 @@
 import time
 
 import undetected_chromedriver as uc
+from selenium.common import NoSuchElementException
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
@@ -209,6 +210,8 @@ class CoupangReviewParser(ReviewParser):
                 review_data["title"] = article.find_element(
                     By.XPATH, ".//div[contains(@class,'twc-font-bold') and contains(@class,'twc-text-bluegray-900')]"
                 ).text.strip()
+            except NoSuchElementException:
+                review_data["title"] = None
             except Exception as e:
                 raise ReviewParseException(
                     stage="title",
@@ -237,6 +240,8 @@ class CoupangReviewParser(ReviewParser):
                 review_data["content"] = article.find_element(
                     By.XPATH, ".//div[contains(@class,'twc-break-all')]//span"
                 ).text.strip()
+            except NoSuchElementException:
+                review_data["content"] = None
             except Exception as e:
                 raise ReviewParseException(
                     stage="content",
@@ -275,24 +280,19 @@ class CoupangReviewParser(ReviewParser):
 
             # 이미지 파싱
             img_urls = []
-            try:
-                img_elems = article.find_elements(By.XPATH, ".//div[contains(@class,'twc-relative')]//img")
+            img_elems = article.find_elements(By.XPATH, ".//div[contains(@class,'twc-relative')]//img")
 
-                if img_elems:
-                    for img in img_elems:
-                        img_url = img.get_attribute("src")
-                        if img_url and img_url.startswith("//"):
-                            img_url = "https:" + img_url
-                        if img_url:
-                            img_urls.append(img_url)
-                review_data["image_urls"] = img_urls
-            except Exception as e:
-                raise ReviewParseException(
-                    stage="image",
-                    reason="image parsing failed",
-                    original_exception=e,
-                    original_exception_type=type(e).__name__,
-                )
+            for img in img_elems:
+                try:
+                    img_url = img.get_attribute("src")
+                    if img_url and img_url.startswith("//"):
+                        img_url = "https:" + img_url
+                    if img_url:
+                        img_urls.append(img_url)
+                except Exception:
+                    continue
+
+            review_data["image_urls"] = img_urls
 
             reviews.append(review_data)
 

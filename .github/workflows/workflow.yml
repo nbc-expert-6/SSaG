@@ -5,31 +5,34 @@ on:
     tags:
       - "[0-9]+.[0-9]+.[0-9]+-[apr]d.[0-9]+"
 
+
 jobs:
   deploy:
-    name: 🚀 Build & Deploy
+    name: 🚀 Build & Push
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
 
-      - name: Extract service name
+      - name: Extract service and tag
         id: extract
         run: |
           TAG="${GITHUB_REF#refs/tags/}"
           SERVICE_PREFIX=$(echo $TAG | grep -oP '(?<=-)[arp](?=d)')
           
+          echo "tag=$TAG" >> $GITHUB_OUTPUT
+          
           case $SERVICE_PREFIX in
             a)
               echo "service=analysis-service" >> $GITHUB_OUTPUT
-              echo "deployment=analysis-service-deployment" >> $GITHUB_OUTPUT
+              echo "context=./analysis-service" >> $GITHUB_OUTPUT
               ;;
             p)
               echo "service=product-service" >> $GITHUB_OUTPUT
-              echo "deployment=product-service-deployment" >> $GITHUB_OUTPUT
+              echo "context=./product-service" >> $GITHUB_OUTPUT
               ;;
             r)
               echo "service=recommend-service" >> $GITHUB_OUTPUT
-              echo "deployment=recommend-service-deployment" >> $GITHUB_OUTPUT
+              echo "context=./recommend-service" >> $GITHUB_OUTPUT
               ;;
           esac
 
@@ -49,10 +52,13 @@ jobs:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
           SERVICE: ${{ steps.extract.outputs.service }}
           TAG: ${{ steps.extract.outputs.tag }}
+          CONTEXT: ${{ steps.extract.outputs.context }}
         run: |
           docker buildx build \
             --platform linux/amd64 \
-            --build-arg SPRING_PROFILE=dev \
+            --build-arg SPRING_PROFILES_ACTIVE=dev \
             -t $ECR_REGISTRY/$SERVICE:$TAG \
             --push \
-            .
+            $CONTEXT
+          
+          echo "✅ Image pushed: $ECR_REGISTRY/$SERVICE:$TAG"

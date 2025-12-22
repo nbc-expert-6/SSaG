@@ -1,0 +1,58 @@
+name: SSaG Microservices CI/CD
+
+on:
+  push:
+    tags:
+      - "[0-9]+.[0-9]+.[0-9]+-[apr]d.[0-9]+"
+
+jobs:
+  deploy:
+    name: 🚀 Build & Deploy
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Extract service name
+        id: extract
+        run: |
+          TAG="${GITHUB_REF#refs/tags/}"
+          SERVICE_PREFIX=$(echo $TAG | grep -oP '(?<=-)[arp](?=d)')
+          
+          case $SERVICE_PREFIX in
+            a)
+              echo "service=analysis-service" >> $GITHUB_OUTPUT
+              echo "deployment=analysis-service-deployment" >> $GITHUB_OUTPUT
+              ;;
+            p)
+              echo "service=product-service" >> $GITHUB_OUTPUT
+              echo "deployment=product-service-deployment" >> $GITHUB_OUTPUT
+              ;;
+            r)
+              echo "service=recommend-service" >> $GITHUB_OUTPUT
+              echo "deployment=recommend-service-deployment" >> $GITHUB_OUTPUT
+              ;;
+          esac
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ap-northeast-2
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v1
+
+      - name: Build, tag, and push image to Amazon ECR
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          SERVICE: ${{ steps.extract.outputs.service }}
+          TAG: ${{ steps.extract.outputs.tag }}
+        run: |
+          docker buildx build \
+            --platform linux/amd64 \
+            --build-arg SPRING_PROFILE=dev \
+            -t $ECR_REGISTRY/$SERVICE:$TAG \
+            --push \
+            .

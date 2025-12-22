@@ -96,20 +96,6 @@ class GmarketDetailParser(DetailParser):
     def get_product_info(self) -> dict:
         info = {}
 
-        # 브랜드
-        try:
-            brand_elem = self.wait.until(EC.presence_of_element_located(
-                (By.CSS_SELECTOR, "span.text__brand span.text")
-            ))
-            info["brand"] = brand_elem.text.strip()
-        except Exception as e:
-            raise DetailParseException(
-                stage="brand",
-                reason="brand parsing failed",
-                original_exception=e,
-                original_exception_type=type(e).__name__,
-            )
-
         # 판매자
         try:
             seller_elem = self.wait.until(EC.presence_of_element_located(
@@ -120,6 +106,20 @@ class GmarketDetailParser(DetailParser):
             raise DetailParseException(
                 stage="seller",
                 reason="seller parsing failed",
+                original_exception=e,
+                original_exception_type=type(e).__name__,
+            )
+
+        # 브랜드
+        try:
+            brand_elem = self.driver.find_elements(
+                By.CSS_SELECTOR, "span.text__brand span.text"
+            )
+            info["brand"] = brand_elem[0].text.strip() if brand_elem else None
+        except Exception as e:
+            raise DetailParseException(
+                stage="brand",
+                reason="brand parsing failed",
                 original_exception=e,
                 original_exception_type=type(e).__name__,
             )

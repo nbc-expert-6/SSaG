@@ -60,26 +60,13 @@ class AuctionDetailParser(DetailParser):
     def get_product_info(self) -> dict:
         driver = self.driver
 
-        # 이미지
-        try:
-            image_url = driver.find_element(
-                By.CSS_SELECTOR, "ul.viewer li.on img"
-            ).get_attribute("src")
-        except Exception as e:
-            raise DetailParseException(
-                stage="image",
-                reason="image parsing failed",
-                original_exception=e,
-                original_exception_type=type(e).__name__,
-            )
-
         # 브랜드
         try:
             brand_elements = driver.find_elements(
                 By.CSS_SELECTOR,
                 "div.box__official-store span.text__brand span.text",
             )
-            brand = brand_elements[0].text if brand_elements else ""
+            brand = brand_elements[0].text if brand_elements else None
         except Exception as e:
             raise DetailParseException(
                 stage="brand",
@@ -151,6 +138,19 @@ class AuctionDetailParser(DetailParser):
             raise DetailParseException(
                 stage="shipping_fee",
                 reason="shipping fee parsing failed",
+                original_exception=e,
+                original_exception_type=type(e).__name__,
+            )
+
+        # 이미지
+        try:
+            image_url = driver.find_element(
+                By.CSS_SELECTOR, "ul.viewer li.on img"
+            ).get_attribute("src")
+        except Exception as e:
+            raise DetailParseException(
+                stage="image",
+                reason="image parsing failed",
                 original_exception=e,
                 original_exception_type=type(e).__name__,
             )

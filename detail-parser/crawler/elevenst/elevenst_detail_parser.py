@@ -76,9 +76,9 @@ class ElevenStDetailParser(DetailParser):
             time.sleep(1)
 
             # 브랜드 정보 파싱
-            brand_el = driver.find_element(By.XPATH,
+            brand_els = driver.find_element(By.XPATH,
                     "//table[contains(@class,'prdc_detail_table')]//th[contains(text(),'브랜드')]/following-sibling::td")
-            brand = brand_el.text.strip()
+            brand = brand_els[0].text.strip() if brand_els else None
         except Exception as e:
             raise DetailParseException(
                 stage="brand",

@@ -1,6 +1,6 @@
-import threading
 import time
 from concurrent.futures import ThreadPoolExecutor, as_completed
+from queue import Queue
 
 from common.exceptions import ReviewParseException
 from common.kafka_utils import create_consumer, create_producer
@@ -16,34 +16,47 @@ DLQ_TOPIC = "elevenst-review.dlq"
 PRODUCT_REVIEWS_TOPIC = "product-reviews"
 PLATFORM = Platform.ELEVENST.value
 MAX_WORKERS = 3
+DRIVER_POOL_SIZE = 3
 
 logger = setup_logger(PLATFORM)
 
-# thread-local storage (스레드별 parser)
-_thread_local = threading.local()
+# parser pool
+driver_pool: Queue[ElevenStReviewParser] = Queue(maxsize=DRIVER_POOL_SIZE)
 
 
-def get_parser():
-    if not hasattr(_thread_local, "parser"):
-        _thread_local.parser = ElevenStReviewParser()
-        logger.info("REVIEW_PARSER_CREATED")
-    return _thread_local.parser
+def init_driver_pool():
+    for _ in range(DRIVER_POOL_SIZE):
+        driver_pool.put(ElevenStReviewParser())
+
+
+def shutdown_driver_pool():
+    while not driver_pool.empty():
+        parser = driver_pool.get_nowait()
+        try:
+            parser.quit()
+        except Exception:
+            pass
 
 
 def worker_task(url: str, main_product_id: str, producer):
     parser_start = time.perf_counter()
     CRAWL_TRIAL_COUNT.labels(platform=PLATFORM).inc()
 
-    parser = get_parser()
+    parser = None
 
     try:
+        # parser 획득 (없으면 block)
+        parser = driver_pool.get()
+
         reviews = parser.get_reviews(url)
 
         if len(reviews) < 1:
             logger.info("REVIEW_NO_RESULT")
 
             parser_end = time.perf_counter()
-            CRAWL_LATENCY.labels(platform=PLATFORM).observe(parser_end - parser_start)
+            CRAWL_LATENCY.labels(platform=PLATFORM).observe(
+                parser_end - parser_start
+            )
             logger.perf(
                 "PARSING_COMPLETED",
                 time=round(parser_end - parser_start, 4),
@@ -112,9 +125,16 @@ def worker_task(url: str, main_product_id: str, producer):
         )
         CRAWL_EXCEPTION_COUNT.labels(platform=PLATFORM).inc()
 
+    finally:
+        # parser 반납
+        if parser is not None:
+            driver_pool.put(parser)
+
 
 if __name__ == "__main__":
     start_metrics_server()
+    init_driver_pool()
+
     total_start = time.perf_counter()
 
     consumer = create_consumer(
@@ -132,12 +152,11 @@ if __name__ == "__main__":
             main_product_id = url_info.value["main_product_id"]
             urls = url_info.value["urls"]
 
-
             futures = [
                 executor.submit(
                     worker_task,
                     url,
-                    "main_product_id",
+                    main_product_id,
                     producer,
                 )
                 for url in urls
@@ -152,6 +171,7 @@ if __name__ == "__main__":
 
     finally:
         executor.shutdown(wait=True)
+        shutdown_driver_pool()
         producer.close()
 
         total_end = time.perf_counter()

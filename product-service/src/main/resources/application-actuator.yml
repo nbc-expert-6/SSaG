@@ -6,6 +6,7 @@ spring:
 management:
   endpoints:
     web:
+      base-path: /products/actuator
       exposure:
         include: health, info, metrics, prometheus
   endpoint:

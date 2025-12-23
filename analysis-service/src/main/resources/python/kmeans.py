@@ -149,7 +149,7 @@ cluster_profiles = (
 
 payload = {"sessions": session_clusters, "clusterProfiles": cluster_profiles}
 
-ANALYSIS_SERVER_URL = "http://k8s-default-apiingre-23aef56856-1588504632.ap-northeast-2.elb.amazonaws.com/api/v1/session-cluster"
+ANALYSIS_SERVER_URL = "http://k8s-ssagalb-682aa72d54-916392037.ap-northeast-2.elb.amazonaws.com/api/v1/session-cluster"
 
 response = requests.post(ANALYSIS_SERVER_URL, json=payload, timeout=5)
 

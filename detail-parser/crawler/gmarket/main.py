@@ -1,6 +1,5 @@
 import logging
 import time
-import traceback
 
 from common.exceptions import DetailParseException
 from common.kafka_utils import create_consumer, create_producer

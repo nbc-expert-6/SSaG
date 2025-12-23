@@ -1,6 +1,6 @@
-import threading
 import time
 from concurrent.futures import ThreadPoolExecutor, as_completed
+from queue import Queue
 
 from common.exceptions import DetailParseException
 from common.kafka_utils import create_consumer, create_producer
@@ -15,34 +15,49 @@ from crawler.elevenst.elevenst_detail_parser import ElevenStDetailParser
 DLQ_TOPIC = "elevenst-detail.dlq"
 PRODUCT_DETAILS_TOPIC = "product-details"
 PLATFORM = Platform.ELEVENST.value
-MAX_WORKERS = 3
+MAX_WORKERS = 3          # Thread 수
+DRIVER_POOL_SIZE = 3     # ChromeDriver 수
 
-# Logging 설정
+
+driver_pool: Queue[ElevenStDetailParser] = Queue(maxsize=DRIVER_POOL_SIZE)
+
 logger = setup_logger(PLATFORM)
 
-# thread-local storage (스레드별 WebDriver)
-_thread_local = threading.local()
+
+# Driver Pool
+def init_driver_pool():
+    logger.info(
+        "INIT_DRIVER_POOL",
+        pool_size=DRIVER_POOL_SIZE,
+    )
+    for _ in range(DRIVER_POOL_SIZE):
+        driver_pool.put(ElevenStDetailParser())
 
 
-def get_parser():
-    if not hasattr(_thread_local, "parser"):
-        _thread_local.parser = ElevenStDetailParser()
-        logger.info("DETAIL_PARSER_CREATED")
-    return _thread_local.parser
+def shutdown_driver_pool():
+    logger.info("SHUTDOWN_DRIVER_POOL")
+    while not driver_pool.empty():
+        parser = driver_pool.get_nowait()
+        try:
+            parser.quit()
+        except Exception:
+            pass
 
 
 def worker_task(url: str, main_product_id: str, producer):
     parser_start = time.perf_counter()
     CRAWL_TRIAL_COUNT.labels(platform=PLATFORM).inc()
 
-    parser = get_parser()
+    parser = None
 
     try:
+        # ChromeDriver 획득 (없으면 block)
+        parser = driver_pool.get()
+
         product_details = parser.get_product_details(url)
         product_details["main_product_id"] = main_product_id
         product_details["platform"] = PLATFORM
 
-        # 파싱 종료
         parser_end = time.perf_counter()
         CRAWL_LATENCY.labels(platform=PLATFORM).observe(parser_end - parser_start)
         logger.perf(
@@ -64,6 +79,7 @@ def worker_task(url: str, main_product_id: str, producer):
 
     except DetailParseException as e:
         parser_end = time.perf_counter()
+
         logger.error(
             "DETAIL_PARSE_FAILED",
             main_product_id=main_product_id,
@@ -74,6 +90,7 @@ def worker_task(url: str, main_product_id: str, producer):
             elapsed=round(parser_end - parser_start, 4),
             exc_info=True,
         )
+
         CRAWL_EXCEPTION_COUNT.labels(platform=PLATFORM).inc()
 
         producer.send(
@@ -99,9 +116,16 @@ def worker_task(url: str, main_product_id: str, producer):
         )
         CRAWL_EXCEPTION_COUNT.labels(platform=PLATFORM).inc()
 
+    finally:
+        # Driver 반납
+        if parser is not None:
+            driver_pool.put(parser)
+
 
 if __name__ == "__main__":
     start_metrics_server()
+    init_driver_pool()
+
     total_start = time.perf_counter()
 
     consumer = create_consumer(
@@ -115,7 +139,7 @@ if __name__ == "__main__":
     try:
         for url_info in consumer:
             value = url_info.value
-            logger.info("KAFKA_CONSUME", value=f"{value}")
+            logger.info("KAFKA_CONSUME", value=value)
 
             main_product_id = value["main_product_id"]
             urls = value["urls"]
@@ -124,7 +148,7 @@ if __name__ == "__main__":
                 executor.submit(
                     worker_task,
                     url,
-                    "main_product_id",
+                    main_product_id,
                     producer,
                 )
                 for url in urls
@@ -139,6 +163,7 @@ if __name__ == "__main__":
 
     finally:
         executor.shutdown(wait=True)
+        shutdown_driver_pool()
         producer.close()
 
         total_end = time.perf_counter()

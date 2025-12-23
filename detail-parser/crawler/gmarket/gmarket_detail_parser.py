@@ -124,6 +124,22 @@ class GmarketDetailParser(DetailParser):
                 original_exception_type=type(e).__name__,
             )
 
+        # 상품명
+        try:
+            name_elem = self.wait.until(
+                EC.presence_of_element_located(
+                    (By.CSS_SELECTOR, "div.box__item-info h1.itemtit")
+                )
+            )
+            info["name"] = name_elem.text.strip()
+        except Exception as e:
+            raise DetailParseException(
+                stage="name",
+                reason="product name parsing failed",
+                original_exception=e,
+                original_exception_type=type(e).__name__,
+            )
+
         # 가격 (쿠폰 적용가 우선)
         coupon_price = self.driver.find_elements(
             By.CSS_SELECTOR, ".price_innerwrap.price_innerwrap-coupon strong.price_real"

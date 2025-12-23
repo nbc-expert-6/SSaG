@@ -1,4 +1,4 @@
-# 🚚📦 SSaG B2C MSA Project
+# 🛍️ SSaG B2C MSA Project
 
 프로젝트 간단 요약 및 소개
 

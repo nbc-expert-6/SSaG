@@ -42,7 +42,7 @@ public class UserEventConsumer {
 		attempts = "3",
 		backoff = @Backoff(delay = 2000, multiplier = 2),
 		autoCreateTopics = "true",
-		dltTopicSuffix = ".dlq"
+		dltTopicSuffix = "-dlq"
 	)
 	@KafkaListener(topics = "user-event", groupId = "user-group")
 	public void consume(String payload) {
@@ -125,8 +125,13 @@ public class UserEventConsumer {
 
 		List<UserEventDocument> clickEvents =
 			clickEventExtractor.fetchClickEvents(startOfDay, endOfDay);
-		clickEvents.forEach(e -> {
+		for (UserEventDocument e : clickEvents) {
 			try {
+				if (isAnomalousSession(e.getSessionId())) {
+					log.info("[ETL] 이상치 세션, 발행 스킵 sessionId={}", e.getSessionId());
+					continue;
+				}
+
 				kafkaPublisher.publishProductAnalysisEvent(e.getSessionId(), e.getProductId(), e.getTimestamp());
 				e.setKafkaPublished(true);
 				repository.save(e);
@@ -135,7 +140,10 @@ public class UserEventConsumer {
 			} catch (Exception ex) {
 				log.error("[ETL] 클릭 이벤트 발행 실패 sessionId={}, productId={}", e.getSessionId(), e.getProductId(), ex);
 			}
-		});
+		}
+	}
+
+	private boolean isAnomalousSession(UUID sessionId) {
+		return Boolean.TRUE.equals(redisTemplate.hasKey("anomalous:session:" + sessionId));
 	}
 }
-

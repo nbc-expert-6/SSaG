@@ -15,6 +15,7 @@ import com.sparta.analysisservice.domain.product_analysis.application.service.Ev
 import com.sparta.analysisservice.domain.product_analysis.application.service.PythonRunner;
 import com.sparta.analysisservice.domain.product_analysis.application.service.SessionClusterService;
 import com.sparta.analysisservice.domain.product_analysis.application.service.UserEventService;
+import com.sparta.analysisservice.domain.product_analysis.infrastructure.messaging.KafkaPublisher;
 import com.sparta.analysisservice.domain.product_analysis.presentation.dto.SessionClusterRequest;
 import com.sparta.analysisservice.domain.product_analysis.presentation.dto.UserEventRequestDto;
 
@@ -31,6 +32,7 @@ public class UserEventController {
 	private final EventEtlService eventEtlService;
 	private final PythonRunner pythonRunner;
 	private final SessionClusterService clusterService;
+	private final KafkaPublisher kafkaPublisher;
 
 	@PostMapping("/user-event")
 	public ResponseEntity<Void> trackEvent(@RequestBody UserEventRequestDto req, HttpSession session) {
@@ -53,14 +55,21 @@ public class UserEventController {
 
 	@PostMapping("/session-cluster")
 	public ResponseEntity<Void> receiveClusterResult(@RequestBody SessionClusterRequest request) {
-		// 로그
 		System.out.println("[SESSION-CLUSTER RECEIVED] sessions: " + request.getSessions().size() +
 			", clusters: " + request.getClusterProfiles().size());
 
+		// 1. 세션 데이터를 저장
 		clusterService.processClusterData(request);
 
-		System.out.println("[SESSION-CLUSTER PROCESSED] successfully");
+		// 2. 이상치 아닌 세션만 Kafka 발행
+		for (SessionClusterRequest.SessionDto s : request.getSessions()) {
+			if (s.isAnomalous()) {
+				clusterService.markAnomalous(s.getSessionId());
+				System.out.println("[ANOMALY FILTER] sessionId=" + s.getSessionId() + " is anomalous");
+			}
+		}
 
+		System.out.println("[SESSION-CLUSTER PROCESSED] successfully");
 		return ResponseEntity.ok().build();
 	}
 

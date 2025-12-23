@@ -101,31 +101,40 @@ kmeans = KMeans(n_clusters=optimal_k, random_state=42)
 df["cluster"] = kmeans.fit_predict(X_scaled)
 
 # 10) DBSCAN으로 이상 세션 탐지 (봇 / 자동화 탐지용)
+n_samples = X_scaled.shape[0]
+n_features = X_scaled.shape[1]
 
-min_samples = X_scaled.shape[1] + 1
+# min_samples는 feature 수 + 1 또는 n_samples보다 작은 값으로 조정
+min_samples = min(n_features + 1, n_samples)
 
-neighbors = NearestNeighbors(n_neighbors=min_samples)
-neighbors_fit = neighbors.fit(X_scaled)
-distances, _ = neighbors_fit.kneighbors(X_scaled)
-k_distances = np.sort(distances[:, -1])
+if n_samples > 1:  # 샘플이 1개 이하이면 DBSCAN 적용 불가
+    neighbors = NearestNeighbors(n_neighbors=min_samples)
+    neighbors_fit = neighbors.fit(X_scaled)
+    distances, _ = neighbors_fit.kneighbors(X_scaled)
+    k_distances = np.sort(distances[:, -1])
 
-diffs = np.diff(k_distances)
-if np.all(diffs <= 0):
-    eps = np.percentile(k_distances, 90)
+    diffs = np.diff(k_distances)
+    if np.all(diffs <= 0):
+        eps = np.percentile(k_distances, 90)
+    else:
+        elbow_idx = np.argmax(diffs)
+        eps = k_distances[elbow_idx]
+
+    eps = max(float(eps), 1e-6)
+    print(f"Estimated eps: {eps:.3f}, min_samples: {min_samples}")
+
+    dbscan = DBSCAN(eps=eps, min_samples=min_samples)
+    db_labels = dbscan.fit_predict(X_scaled)
+    df["is_anomalous"] = db_labels == -1
+
+    # 5 ~ 15%면 적당
+    sessions_to_send = df[["sessionId", "cluster", "is_anomalous"]]
+    detected_anomalies = sessions_to_send["is_anomalous"].sum()
+    anomaly_ratio = detected_anomalies / len(sessions_to_send) * 100
+    print(f"Detected anomalies (to send): {detected_anomalies}, Ratio: {anomaly_ratio:.2f}%")
 else:
-    elbow_idx = np.argmax(diffs)
-    eps = k_distances[elbow_idx]
-
-eps = max(float(eps), 1e-6)
-print(f"Estimated eps: {eps:.3f}, min_samples: {min_samples}")
-
-dbscan = DBSCAN(eps=eps, min_samples=min_samples)
-db_labels = dbscan.fit_predict(X_scaled)
-df["is_anomalous"] = db_labels == -1
-
-# 5 ~ 15%면 적당
-anomaly_ratio = df["is_anomalous"].mean() * 100
-print(f"Detected anomalies: {df['is_anomalous'].sum()}, Ratio: {anomaly_ratio:.2f}%")
+    print("[WARN] Not enough samples for DBSCAN anomaly detection, skipping.")
+    df["is_anomalous"] = False
 
 # 11) Java로 넘길 데이터 생성
 session_clusters = (
@@ -140,7 +149,7 @@ cluster_profiles = (
 
 payload = {"sessions": session_clusters, "clusterProfiles": cluster_profiles}
 
-ANALYSIS_SERVER_URL = "http://analysis-service:8082/api/v1/session-cluster"
+ANALYSIS_SERVER_URL = "http://k8s-default-apiingre-23aef56856-1588504632.ap-northeast-2.elb.amazonaws.com/api/v1/session-cluster"
 
 response = requests.post(ANALYSIS_SERVER_URL, json=payload, timeout=5)
 

@@ -2,6 +2,7 @@
 import json
 import psycopg2  # Python에서 PostgreSQL 데이터베이스 접속
 from datetime import datetime
+from dateutil.parser import isoparse
 from gensim.models import Word2Vec  # 벡터 임베딩
 from itertools import groupby  # 연속된 동일 값들을 그룹화할때
 from kafka import KafkaConsumer
@@ -12,7 +13,7 @@ from psycopg2.extras import execute_values  # Postgre에 대량 데이터를 효
 # 1) PostgreSQL 연결 설정
 # -----------------------------
 conn = psycopg2.connect(
-    host="postgres",
+    host="ssag-database.cnkkgqgcc71r.ap-northeast-2.rds.amazonaws.com",
     port=5432,
     dbname="recommend_service_db",
     user="postgres",
@@ -26,7 +27,7 @@ conn = psycopg2.connect(
 def fetch_recent_events(batch_size=1000):
     consumer = KafkaConsumer(
         "product-analysis",
-        bootstrap_servers="kafka:9092",
+        bootstrap_servers="10.0.32.159:9092",
         auto_offset_reset="earliest",
         group_id="my_consumer_group",
         enable_auto_commit=True,
@@ -70,12 +71,12 @@ def fetch_recent_events(batch_size=1000):
 def build_sequences(logs):
     print("Sorting logs...")
 
-    logs_sorted = sorted(logs, key=itemgetter("sessionId", "timestamp"))
+    logs_sorted = sorted(logs, key=lambda x: (x["sessionId"], isoparse(x["timestamp"])))
 
     sequences = []
     for session_id, items in groupby(logs_sorted, key=itemgetter("sessionId")):
         seq = [item["productId"] for item in items]
-        if len(seq) >= 2:
+        if len(seq) >= 1:
             sequences.append(seq)
 
     return sequences

@@ -12,4 +12,9 @@ public class KafkaTopicConfig {
 		return new NewTopic("user-event", 3, (short)1);
 	}
 
+	@Bean
+	public NewTopic productAnalysisTopic() {
+		return new NewTopic("product-analysis", 3, (short)1);
+	}
+
 }

@@ -92,7 +92,7 @@ public class KafkaPublisher {
 	@CircuitBreaker(name = "kafkaPublishCB", fallbackMethod = "fallbackPublishProductAnalysisEvent")
 	public void publishProductAnalysisEvent(UUID sessionId, UUID productId, Instant timestamp) {
 
-		if (sessionClusterService.isAnomalousSession(sessionId.toString())) {
+		if (sessionClusterService.isAnomalousSession(sessionId)) {
 			log.info(
 				"[ANOMALY FILTER] sessionId={}, skipped recommendation event",
 				sessionId

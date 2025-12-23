@@ -64,20 +64,20 @@ public class KafkaPublisher {
 	public void publishRecommendCompleted(UUID productId, List<UUID> recommendedIds) {
 		try {
 			String message = objectMapper.writeValueAsString(new RecommendCompletedEvent(productId, recommendedIds));
-			kafkaTemplate.send("recommend.completed", message);
-			log.info("Kafka 메시지 전송 성공: recommend.completed -> productId={}, recommendedIds={}", productId,
+			kafkaTemplate.send("recommend-completed", message);
+			log.info("Kafka 메시지 전송 성공: recommend-completed -> productId={}, recommendedIds={}", productId,
 				recommendedIds);
 		} catch (JsonProcessingException e) {
-			log.error("Kafka recommend.completed 직렬화 실패: {}", productId, e);
+			log.error("Kafka recommend-completed 직렬화 실패: {}", productId, e);
 		}
 	}
 
 	public void fallbackPublishRecommendCompleted(UUID productId, List<UUID> recommendedIds, Throwable e) {
-		log.error("Kafka recommend.completed publish failed : {}", productId, e);
+		log.error("Kafka recommend-completed publish failed : {}", productId, e);
 
 		try {
 			String dlqMessage = objectMapper.writeValueAsString(new RecommendCompletedEvent(productId, recommendedIds));
-			publishToDlq("recommend.completed.dlq", dlqMessage);
+			publishToDlq("recommend-completed-dlq", dlqMessage);
 
 		} catch (JsonProcessingException ex) {
 			log.error("DLQ Kafka 직렬화 실패 -> productId={}, error={}", productId, ex.getMessage(), ex);

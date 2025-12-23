@@ -18,5 +18,5 @@ public interface MainProductRepository {
 
 	void increaseClick(UUID id);
 
-	Page<MainProduct> getAll(Pageable pageable);
+	Page<MainProduct> findAllWithProduct(Pageable pageable);
 }

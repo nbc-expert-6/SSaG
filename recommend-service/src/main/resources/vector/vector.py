@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import json
+import os
 import psycopg2  # Python에서 PostgreSQL 데이터베이스 접속
 from datetime import datetime
 from dateutil.parser import isoparse
@@ -13,11 +14,11 @@ from psycopg2.extras import execute_values  # Postgre에 대량 데이터를 효
 # 1) PostgreSQL 연결 설정
 # -----------------------------
 conn = psycopg2.connect(
-    host="ssag-database.cnkkgqgcc71r.ap-northeast-2.rds.amazonaws.com",
-    port=5432,
-    dbname="recommend_service_db",
-    user="postgres",
-    password="qwer1234!",
+    host=os.environ["RDS_HOST"],
+    port=int(os.environ.get("RDS_PORT", 5432)),
+    dbname=os.environ["RDS_DB_NAME"],
+    user=os.environ["RDS_USERNAME"],
+    password=os.environ["RDS_PASSWORD"],
 )
 
 
@@ -27,7 +28,7 @@ conn = psycopg2.connect(
 def fetch_recent_events(batch_size=1000):
     consumer = KafkaConsumer(
         "product-analysis",
-        bootstrap_servers="10.0.32.159:9092",
+        bootstrap_servers=os.environ["KAFKA_BOOTSTRAP_SERVERS"],
         auto_offset_reset="earliest",
         group_id="my_consumer_group",
         enable_auto_commit=True,

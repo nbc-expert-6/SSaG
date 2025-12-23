@@ -17,7 +17,9 @@ import com.sparta.productservice.review.domain.repository.dto.RatingCountQuery;
 import com.sparta.productservice.review.infra.event.producer.ReviewEventProducer;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
@@ -47,6 +49,12 @@ public class ReviewService implements CreateReviewsUseCase {
 			.toList();
 
 		List<Review> savedReviews = reviewRepository.saveAll(newReviews);
+
+		if (savedReviews.isEmpty()) {
+			log.info("신규 리뷰 없음 → 이벤트 발행 스킵 (mainProductId={}, platform={})", command.mainProductId(),
+				command.platformType());
+			return;
+		}
 
 		reviewEventProducer.publishReviewCreatedEvents(
 			ReviewCreatedMessage.from(command.mainProductId(), command.platformType(), savedReviews));

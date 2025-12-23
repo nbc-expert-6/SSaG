@@ -26,11 +26,11 @@ public class KafkaDlqConsumer {
 		}
 	}
 
-	@KafkaListener(topics = "recommend.completed.dlq", groupId = "dlq-recommend-completed-group")
+	@KafkaListener(topics = "recommend-completed-dlq", groupId = "dlq-recommend-completed-group")
 	public void listenRecommendCompletedDlq(String payload) {
 		RecommendCompletedEvent event = deserializeRecommendCompletedEvent(payload);
 		if (event != null) {
-			log.error("[DLQ 수신 - recommend.completed.dlq] 추천 이벤트 비정상 처리 -> productId={}, recommendedIds={}",
+			log.error("[DLQ 수신 - recommend-completed.dlq] 추천 이벤트 비정상 처리 -> productId={}, recommendedIds={}",
 				event.productId(), event.recommendedIds());
 		}
 	}

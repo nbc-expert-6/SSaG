@@ -14,7 +14,7 @@ public class KafkaTopicConfig {
 
 	@Bean
 	public NewTopic recommendCompletedTopic() {
-		return new NewTopic("recommend.completed", 3, (short)1);
+		return new NewTopic("recommend-completed", 3, (short)1);
 	}
 
 }

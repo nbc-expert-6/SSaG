@@ -74,7 +74,7 @@ public class RecommendEventConsumer {
 		log.info("[Redis] 추천 결과 저장 완료 -> key=recommend:{}, value={}", productId, recommended);
 
 		kafkaPublisher.publishRecommendCompleted(productId, recommended);
-		log.info("[Kafka] recommend.completed 이벤트 발행 -> productId={}, recommended={}", productId, recommended);
+		log.info("[Kafka] recommend-completed 이벤트 발행 -> productId={}, recommended={}", productId, recommended);
 	}
 
 	public void fallbackRecommendation(UUID productId, Throwable e) {

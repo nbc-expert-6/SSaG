@@ -76,8 +76,10 @@ class ElevenStDetailParser(DetailParser):
             time.sleep(1)
 
             # 브랜드 정보 파싱
-            brand_els = driver.find_element(By.XPATH,
-                    "//table[contains(@class,'prdc_detail_table')]//th[contains(text(),'브랜드')]/following-sibling::td")
+            brand_els = self.driver.find_elements(By.XPATH,
+                "//table[contains(@class,'prdc_detail_table')]"
+                "//th[contains(text(),'브랜드')]/following-sibling::td"
+            )
             brand = brand_els[0].text.strip() if brand_els else None
         except Exception as e:
             raise DetailParseException(

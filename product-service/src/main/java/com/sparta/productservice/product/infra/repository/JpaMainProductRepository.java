@@ -3,6 +3,8 @@ package com.sparta.productservice.product.infra.repository;
 import java.math.BigDecimal;
 import java.util.UUID;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -33,4 +35,15 @@ public interface JpaMainProductRepository extends JpaRepository<MainProduct, UUI
 		    WHERE m.id = :id
 		""")
 	void increaseClick(@Param("id") UUID id);
+
+	@Query("""
+			select mp
+			from MainProduct mp
+			where exists (
+				select 1
+				from Product p
+				where p.mainProduct = mp
+			)
+		""")
+	Page<MainProduct> findAllWithProduct(Pageable pageable);
 }

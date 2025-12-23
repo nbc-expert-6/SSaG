@@ -10,6 +10,11 @@ public final class KafkaConsumerConstants {
 	public static final int MAX_ATTEMPT_COUNT = 3;
 
 	/**
+	 * Kafka Consumer 최대 시도 횟수 (1 + retry)
+	 */
+	public static final String MAX_ATTEMPT_COUNT_STR = "3";
+
+	/**
 	 * 재시도 초기 지연 시간 (ms)
 	 */
 	public static final long RETRY_DELAY_MS = 1000L;

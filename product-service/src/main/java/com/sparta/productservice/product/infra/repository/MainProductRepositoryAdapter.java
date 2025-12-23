@@ -39,7 +39,7 @@ public class MainProductRepositoryAdapter implements MainProductRepository {
 	}
 
 	@Override
-	public Page<MainProduct> getAll(Pageable pageable) {
-		return jpaMainProductRepository.findAll(pageable);
+	public Page<MainProduct> findAllWithProduct(Pageable pageable) {
+		return jpaMainProductRepository.findAllWithProduct(pageable);
 	}
 }

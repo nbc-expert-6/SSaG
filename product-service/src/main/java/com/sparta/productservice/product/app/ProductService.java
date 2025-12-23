@@ -132,7 +132,7 @@ public class ProductService implements CreateProductUseCase, UpdateMainProductRe
 			Page<MainProduct> result;
 
 			do {
-				result = mainProductRepository.getAll(
+				result = mainProductRepository.findAllWithProduct(
 					PageRequest.of(page, size, Sort.by("createdAt").ascending())
 				);
 

@@ -40,6 +40,6 @@ public enum KafkaTopicType {
 		public static final String PRODUCT_ES_SYNC = "product-es-sync";
 		public static final String PRODUCT_ES_SYNC_BATCH = "product-es-sync-batch";
 
-		public static final String DLT_TOPIC_SUFFIX = "-dlq";
+		public static final String DLT_TOPIC_SUFFIX = "-dlt";
 	}
 }

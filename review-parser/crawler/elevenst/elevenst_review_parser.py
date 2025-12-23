@@ -3,6 +3,7 @@ import time
 from typing import List
 
 import undetected_chromedriver as uc
+from selenium.common import NoSuchElementException
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as ec
 from selenium.webdriver.support.ui import WebDriverWait
@@ -201,6 +202,8 @@ class ElevenStReviewParser(ReviewParser):
             # 리뷰 더보기
             try:
                 more_review_btn = self.driver.find_element(By.CSS_SELECTOR, ".review-next-list-div button")
+            except NoSuchElementException:
+                break
             except Exception as e:
                 raise ReviewParseException(
                     stage="get_review_info",

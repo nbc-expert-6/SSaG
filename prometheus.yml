@@ -17,7 +17,7 @@ scrape_configs:
           app: "prometheus"
 
   - job_name: "product-service"
-    metrics_path: '/actuator/prometheus'
+    metrics_path: '/products/actuator/prometheus'
     scrape_interval: 10s
     static_configs:
       - targets: [ 'host.docker.internal:8080' ]

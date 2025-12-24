@@ -241,6 +241,7 @@
 
 ### Infrastructure
 - **Amazon EKS**
+- **Amazon EC2**
 - **Amazon ECR**
 - **Amazon RDS (PostgreSQL)**
 - **ElastiCache for Redis**

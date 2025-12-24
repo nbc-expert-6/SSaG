@@ -138,14 +138,21 @@
 
 ---
 
-## 🗂 ERD
+## 🗄️ ERD
 ![erd.png](docs/erd.png)
 
 ---
 
-## 시스템 아키텍쳐
+## 🌐 시스템 아키텍쳐
 ![infra-architecture.png](docs/infra-architecture.png)
+
 ---
+
+## 🔁 CI/CD
+![cicd.png](docs/cicd.png)
+
+---
+
 ## 🔑 API 주요 기능
 
 ### 🛒 상품
@@ -222,11 +229,9 @@
 
 # 🔧 기술 스택
 
-
 ### Data Crawling
 - **Python**
 - **Selenium**
-- **BeautifulSoup**
 - **Undetected Chromedriver**
 
 ### Back-end
@@ -235,14 +240,16 @@
 - **Spring Data JPA**
 
 ### Infrastructure
+- **Amazon EKS**
+- **Amazon EC2**
+- **Amazon ECR**
+- **Amazon RDS (PostgreSQL)**
+- **ElastiCache for Redis**
 - **Kafka**
-- **Redis**
 - **ElasticSearch**
-- **EKS**
-- **ECR**
 - **Docker**
-- **PostgreSQL**
 - **ArgoCD**
+- **GitHub Actions**
 
 ### Monitoring
 - **Grafana**

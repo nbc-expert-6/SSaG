@@ -1,6 +1,7 @@
 # 🛍️ SSaG B2C MSA Project
+> 🏆 **2025 Java 단기심화 4기 부트캠프 우수 프로젝트 선정**
 
-프로젝트 간단 요약 및 소개
+## 프로젝트 개요
 
 - **프로젝트 목적**: 동일 상품의 실제 최저가를 직관적으로 비교할 수 있는 **패션 특화 가격 비교 플랫폼**을 구축하는 것을 목표로 합니다.
 
@@ -228,40 +229,6 @@
     - `POST /api/v1/session-cluster`
 
 # 🔧 기술 스택
+![skills.jpg](docs/skills.jpg)
 
-### Data Crawling
-- **Python**
-- **Selenium**
-- **Undetected Chromedriver**
-
-### Back-end
-- **Java**
-- **Spring Boot**
-- **Spring Data JPA**
-
-### Infrastructure
-- **Amazon EKS**
-- **Amazon EC2**
-- **Amazon ECR**
-- **Amazon RDS (PostgreSQL)**
-- **ElastiCache for Redis**
-- **Kafka**
-- **ElasticSearch**
-- **Docker**
-- **ArgoCD**
-- **GitHub Actions**
-
-### Monitoring
-- **Grafana**
-- **Prometheus**
-- **Loki**
-- **Promtail**
-- **Tempo**
-
-### Cooperation
-- **Git**
-- **GitHub**
-- **Slack**
-- **Notion**
-- **Figma**
 

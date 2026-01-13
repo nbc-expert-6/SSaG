@@ -6,12 +6,12 @@ from core.domain.worker import UrlCrawlWorker
 from core.infra.browser_manager import BrowserManager
 from core.infra.kafka_gateway import KafkaGateway
 from core.infra.metrics_facade import MetricsFacade
+from core.infra.url_parser_resolver import UrlParserResolver
 
 from common.config import BATCH_SIZE, PLATFORM
 from common.logging_utils import setup_dev_logger
 from common.monitoring.logger import setup_logger
 from common.monitoring.metrics_server import start_metrics_server
-from crawler.auction.auction_url_parser import AuctionUrlParser
 
 
 def main() -> None:
@@ -38,9 +38,10 @@ def main() -> None:
 
     # parser 매핑시켜주는 작업
     # 플랫폼을 넘가면 이름기반으로 파서 클래스 찾아서 반환
+    parser = UrlParserResolver.resolve(platform)
 
     # browser / parser
-    browser = BrowserManager(parser_factory=AuctionUrlParser)
+    browser = BrowserManager(parser)
 
     # domain
     worker = UrlCrawlWorker(platform=platform, logger=logger, metrics=metrics)

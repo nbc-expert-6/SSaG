@@ -10,7 +10,7 @@ from common.monitoring.metrics import (CRAWL_EXCEPTION_COUNT, CRAWL_LATENCY,
                                        KAFKA_PUBLISH_LATENCY)
 from common.monitoring.metrics_server import start_metrics_server
 from common.platform import Platform
-from crawler.elevenst.elevenst_detail_parser import ElevenStDetailParser
+from crawler.elevenst.elevenst_detail_parser import ElevenstDetailParser
 
 DLQ_TOPIC = "elevenst-detail.dlq"
 PRODUCT_DETAILS_TOPIC = "product-details"
@@ -19,7 +19,7 @@ MAX_WORKERS = 3          # Thread 수
 DRIVER_POOL_SIZE = 3     # ChromeDriver 수
 
 
-driver_pool: Queue[ElevenStDetailParser] = Queue(maxsize=DRIVER_POOL_SIZE)
+driver_pool: Queue[ElevenstDetailParser] = Queue(maxsize=DRIVER_POOL_SIZE)
 
 logger = setup_logger(PLATFORM)
 
@@ -31,7 +31,7 @@ def init_driver_pool():
         pool_size=DRIVER_POOL_SIZE,
     )
     for _ in range(DRIVER_POOL_SIZE):
-        driver_pool.put(ElevenStDetailParser())
+        driver_pool.put(ElevenstDetailParser())
 
 
 def shutdown_driver_pool():

@@ -12,7 +12,7 @@ from common.config import (CHROME_BINARY, CHROMEDRIVER_PATH, MAX_LINKS,
 from crawler.url_parser import UrlParser
 
 
-class ElevenStUrlParser(UrlParser):
+class ElevenstUrlParser(UrlParser):
     def __init__(self, url=TARGET_11ST_URL, max_links=MAX_LINKS):
         super().__init__(url, max_links)
 

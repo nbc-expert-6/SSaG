@@ -1,39 +1,47 @@
 services:
   auction-url-parser:
-    image: auction-url-parser:latest
+    image: url-parser:latest
     container_name: auction-url-parser
     env_file:
       - .env
+    environment:
+      PLATFORM: Auction
     networks:
       - infra
     tmpfs:
       - /tmp:exec
 
   coupang-url-parser:
-    image: coupang-url-parser:latest
+    image: url-parser:latest
     container_name: coupang-url-parser
     env_file:
       - .env
+    environment:
+      PLATFORM: Coupang
     networks:
       - infra
     tmpfs:
       - /tmp:exec
 
   elevenst-url-parser:
-    image: elevenst-url-parser:latest
+    image: url-parser:latest
     container_name: elevenst-url-parser
     env_file:
       - .env
+    environment:
+      PLATFORM: Elevenst
     networks:
       - infra
     tmpfs:
       - /tmp:exec
 
   gmarket-url-parser:
-    image: gmarket-url-parser:latest
+    image: url-parser:latest
     container_name: gmarket-url-parser
     env_file:
       - .env
+    environment:
+      PLATFORM: Gmarket
     networks:
       - infra
     tmpfs:

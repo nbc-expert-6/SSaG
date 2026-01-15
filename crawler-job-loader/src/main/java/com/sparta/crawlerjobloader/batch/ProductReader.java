@@ -5,7 +5,7 @@ import org.springframework.batch.item.ItemReader;
 import org.springframework.batch.item.database.builder.JpaPagingItemReaderBuilder;
 import org.springframework.stereotype.Component;
 
-import com.sparta.batch.domain.entity.MainProduct;
+import com.sparta.crawlerjobloader.domain.entity.MainProduct;
 
 import jakarta.persistence.EntityManagerFactory;
 

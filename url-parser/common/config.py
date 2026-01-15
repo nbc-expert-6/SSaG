@@ -12,6 +12,7 @@ ENVIRONMENT = os.getenv("ENVIRONMENT")
 
 MAX_LINKS = int(os.getenv("MAX_LINKS", "5"))
 BATCH_SIZE = os.getenv("BATCH_SIZE", "20")
+PLATFORM = os.getenv("PLATFORM")
 
 TARGET_COUPANG_URL = "https://www.coupang.com/"
 TARGET_NAVER_STORE_URL = "https://shopping.naver.com/ns/home"

@@ -12,7 +12,7 @@ from common.exceptions import DetailParseException
 from crawler.detail_parser import DetailParser
 
 
-class ElevenStDetailParser(DetailParser):
+class ElevenstDetailParser(DetailParser):
     def __init__(self):
 
         options = uc.ChromeOptions()

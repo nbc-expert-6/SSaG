@@ -16,14 +16,11 @@ ENV PYTHONPATH=/app
 ENV DISPLAY=:99
 ENV DBUS_SESSION_BUS_ADDRESS=/dev/null
 
-ARG PLATFORM=auction
-ENV PLATFORM=${PLATFORM}
-
 COPY common /app/common
 
-COPY crawler/url_parser.py /app/crawler/url_parser.py
+COPY core /app/core
 
-COPY crawler/${PLATFORM} /app/crawler/${PLATFORM}
+COPY crawler /app/crawler
 
 COPY requirements.txt /app/requirements.txt
 RUN pip install --no-cache-dir -r /app/requirements.txt
@@ -32,4 +29,4 @@ RUN mkdir -p /root/.local/share/undetected_chromedriver && \
     chmod -R 755 /root/.local/share/undetected_chromedriver
 
 CMD Xvfb :99 -screen 0 1280x720x24 -ac +extension GLX +render -noreset & \
-    python crawler/${PLATFORM}/main.py
+    python core/app/main.py

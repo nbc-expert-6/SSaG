@@ -26,8 +26,7 @@ management:
   tracing:
     enabled: true
     sampling:
-      probability: 0.8
-  otlp:
+      probability: 0.5
     tracing:
       endpoint: ${OTEL_EXPORTER_OTLP_TRACES_ENDPOINT:http://localhost:4318/v1/traces}
       timeout: 10s

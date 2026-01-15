@@ -9,9 +9,6 @@ spring:
       group-id: product
       auto-offset-reset: earliest
       enable-auto-commit: false
-      properties:
-        spring.json.trusted.packages: "*"
-        spring.json.use.type.headers: false
     producer:
       bootstrap-servers: ${SPRING_KAFKA_BOOTSTRAP_SERVERS:localhost:29092}
 
@@ -29,9 +26,6 @@ spring:
       bootstrap-servers: localhost:29092
       group-id: product
       auto-offset-reset: earliest
-      properties:
-        spring.json.trusted.packages: "*"
-        spring.json.use.type.headers: false
       enable-auto-commit: false
 
     producer:
@@ -56,9 +50,6 @@ spring:
       bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS}
       group-id: product
       auto-offset-reset: earliest
-      properties:
-        spring.json.trusted.packages: "*"
-        spring.json.use.type.headers: false
       enable-auto-commit: false
     producer:
       bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS}

@@ -5,8 +5,8 @@ import java.util.UUID;
 import org.hibernate.annotations.SQLRestriction;
 import org.hibernate.annotations.UuidGenerator;
 
-import com.sparta.batch.domain.vo.ProductLink;
-import com.sparta.batch.domain.vo.ProductPrice;
+import com.sparta.crawlerjobloader.domain.vo.ProductLink;
+import com.sparta.crawlerjobloader.domain.vo.ProductPrice;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Embedded;

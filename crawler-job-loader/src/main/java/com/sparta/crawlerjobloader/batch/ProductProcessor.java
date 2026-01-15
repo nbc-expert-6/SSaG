@@ -7,7 +7,7 @@ import org.springframework.batch.item.ItemProcessor;
 import org.springframework.stereotype.Component;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.sparta.batch.domain.entity.MainProduct;
+import com.sparta.crawlerjobloader.domain.entity.MainProduct;
 
 @Component
 public class ProductProcessor implements ItemProcessor<MainProduct, String> {

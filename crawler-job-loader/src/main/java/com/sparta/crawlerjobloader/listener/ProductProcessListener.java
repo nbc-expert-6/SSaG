@@ -4,7 +4,7 @@ import org.springframework.batch.core.ItemProcessListener;
 import org.springframework.batch.core.annotation.AfterChunk;
 import org.springframework.stereotype.Component;
 
-import com.sparta.batch.domain.entity.MainProduct;
+import com.sparta.crawlerjobloader.domain.entity.MainProduct;
 
 import lombok.extern.slf4j.Slf4j;
 

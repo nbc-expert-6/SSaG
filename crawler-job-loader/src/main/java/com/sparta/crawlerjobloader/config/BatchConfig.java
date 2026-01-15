@@ -11,11 +11,13 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.orm.jpa.JpaTransactionManager;
 import org.springframework.transaction.PlatformTransactionManager;
 
-import com.sparta.batch.batch.ProductProcessor;
-import com.sparta.batch.batch.ProductReader;
-import com.sparta.batch.batch.ProductWriter;
-import com.sparta.batch.domain.entity.MainProduct;
-import com.sparta.batch.listener.*;
+import com.sparta.crawlerjobloader.batch.ProductProcessor;
+import com.sparta.crawlerjobloader.batch.ProductReader;
+import com.sparta.crawlerjobloader.batch.ProductWriter;
+import com.sparta.crawlerjobloader.domain.entity.MainProduct;
+import com.sparta.crawlerjobloader.listener.KafkaWriteListener;
+import com.sparta.crawlerjobloader.listener.LoggingChunkListener;
+import com.sparta.crawlerjobloader.listener.ProductProcessListener;
 
 import jakarta.persistence.EntityManagerFactory;
 

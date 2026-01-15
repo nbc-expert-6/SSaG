@@ -13,7 +13,7 @@ from common.exceptions import ReviewParseException
 from crawler.review_parser import ReviewParser
 
 
-class ElevenStReviewParser(ReviewParser):
+class ElevenstReviewParser(ReviewParser):
     def __init__(self):
         self.no_review = None
 

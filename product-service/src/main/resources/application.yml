@@ -1,0 +1,15 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: product-service
+
+  profiles:
+    include:
+      - datasource
+      - elasticsearch
+      - serviceurl
+      - kafka
+      - tempo
+      - actuator

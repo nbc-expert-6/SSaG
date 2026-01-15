@@ -1,0 +1,72 @@
+spring:
+  config:
+    activate:
+      on-profile: test
+
+management:
+  health:
+    elasticsearch:
+      enabled: false
+  metrics:
+    enable:
+      process: true
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+  endpoint:
+    health:
+      show-details: always
+
+server:
+  tomcat:
+    mbeanregistry:
+      enabled: true
+
+---
+
+spring:
+  config:
+    activate:
+      on-profile: docker
+
+management:
+  metrics:
+    enable:
+      process: true
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+  endpoint:
+    health:
+      show-details: always
+
+server:
+  tomcat:
+    mbeanregistry:
+      enabled: true
+
+---
+
+spring:
+  config:
+    activate:
+      on-profile: dev
+
+management:
+  metrics:
+    enable:
+      process: true
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+  endpoint:
+    health:
+      show-details: always
+
+server:
+  tomcat:
+    mbeanregistry:
+      enabled: true

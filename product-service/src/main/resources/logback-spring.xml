@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+    <springProperty scope="context" name="SERVICE_NAME" source="spring.application.name"/>
+    <springProperty scope="context" name="HOSTNAME" source="HOSTNAME" defaultValue="localhost"/>
+
+    <!-- Console Appender -->
+    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <!-- traceId가 있을 때만 표시 -->
+            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36}%replace(%X{traceId}){ '^$', ''}%replace(%X{traceId}){ '.+', ' [traceId=%X{traceId}, spanId=%X{spanId}]'} - %msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <!-- Loki Appender -->
+    <appender name="LOKI" class="com.github.loki4j.logback.Loki4jAppender">
+        <http>
+            <url>${LOKI_URL}</url>
+        </http>
+
+        <format>
+            <label>
+                <pattern>app=${SERVICE_NAME},host=${HOSTNAME},level=%level</pattern>
+            </label>
+            <message>
+                <pattern>[%thread] [%X{traceId}] [%X{spanId}] [%logger{36}] %msg%n</pattern>
+            </message>
+            <sortByTime>true</sortByTime>
+        </format>
+    </appender>
+
+    <!-- 로컬 환경: Console만 -->
+    <springProfile name="local">
+        <root level="INFO">
+            <appender-ref ref="CONSOLE"/>
+        </root>
+        <logger name="com.sparta.product" level="DEBUG"/>
+    </springProfile>
+
+    <!-- Dev/Prod 환경: Console + Loki -->
+    <springProfile name="dev">
+        <root level="INFO">
+            <appender-ref ref="CONSOLE"/>
+            <appender-ref ref="LOKI"/>
+        </root>
+        <logger name="com.sparta.product" level="INFO"/>
+    </springProfile>
+</configuration>

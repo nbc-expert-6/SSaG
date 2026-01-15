@@ -1,0 +1,4 @@
+[tool.isort]
+
+# 로컬 패키지(내부 패키지)
+known_first_party = ["crawler", "common"]

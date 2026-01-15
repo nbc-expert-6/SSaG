@@ -1,0 +1,40 @@
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+
+scrape_configs:
+  - job_name: "url-parser"
+    metrics_path: /metrics
+    static_configs:
+      - targets:
+          - auction-url-parser:8000
+          - coupang-url-parser:8000
+          - elevenst-url-parser:8000
+          - gmarket-url-parser:8000
+        labels:
+          parser_type: "url"
+
+  - job_name: "detail-parser"
+    metrics_path: /metrics
+    static_configs:
+      - targets:
+          - auction-detail-parser:8000
+          - coupang-detail-parser:8000
+          - elevenst-detail-parser:8000
+          - gmarket-detail-parser:8000
+        labels:
+          parser_type: "detail"
+
+  - job_name: "review-parser"
+    metrics_path: /metrics
+    static_configs:
+      - targets:
+          - auction-review-parser:8000
+          - coupang-review-parser:8000
+          - elevenst-review-parser:8000
+          - gmarket-review-parser:8000
+        labels:
+          parser_type: "review"
+
+remote_write:
+  - url: "http://host.docker.internal:19090/api/v1/write"

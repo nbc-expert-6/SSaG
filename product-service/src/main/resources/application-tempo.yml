@@ -1,0 +1,51 @@
+
+spring:
+  config:
+    activate:
+      on-profile: test
+
+management:
+  tracing:
+    enabled: true
+    sampling:
+      probability: 1.0
+  otlp:
+    tracing:
+      endpoint: ${OTEL_EXPORTER_OTLP_TRACES_ENDPOINT:http://localhost:4318/v1/traces}
+      timeout: 10s
+      compression: gzip
+
+---
+
+spring:
+  config:
+    activate:
+      on-profile: local
+
+management:
+  tracing:
+    enabled: true
+    sampling:
+      probability: 0.5
+    tracing:
+      endpoint: ${OTEL_EXPORTER_OTLP_TRACES_ENDPOINT:http://localhost:4318/v1/traces}
+      timeout: 10s
+      compression: gzip
+
+---
+
+spring:
+  config:
+    activate:
+      on-profile: dev
+
+management:
+  tracing:
+    enabled: true
+    sampling:
+      probability: 0.1
+  otlp:
+    tracing:
+      endpoint: ${OTEL_EXPORTER_OTLP_TRACES_ENDPOINT}
+      timeout: 30s
+      compression: gzip

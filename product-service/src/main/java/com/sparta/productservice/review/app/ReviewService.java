@@ -1,0 +1,62 @@
+package com.sparta.productservice.review.app;
+
+import java.util.List;
+
+import org.springframework.data.domain.Page;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import com.sparta.productservice.common.kafka.message.ReviewCreatedMessage;
+import com.sparta.productservice.review.app.command.CreateReviewsCommand;
+import com.sparta.productservice.review.app.command.ListReviewCommand;
+import com.sparta.productservice.review.app.dto.ListReviewResult;
+import com.sparta.productservice.review.app.port.in.CreateReviewsUseCase;
+import com.sparta.productservice.review.domain.entity.Review;
+import com.sparta.productservice.review.domain.repository.ReviewRepository;
+import com.sparta.productservice.review.domain.repository.dto.RatingCountQuery;
+import com.sparta.productservice.review.infra.event.producer.ReviewEventProducer;
+
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
+@Service
+@RequiredArgsConstructor
+@Transactional(readOnly = true)
+public class ReviewService implements CreateReviewsUseCase {
+	private final ReviewRepository reviewRepository;
+	private final ReviewEventProducer reviewEventProducer;
+
+	public ListReviewResult getReviewsByMainProductId(ListReviewCommand command) {
+		Page<Review> reviews = reviewRepository.getReviewsByMainProductId(command.mainProductId(), command.pageable());
+
+		Integer totalImageCount = reviewRepository.countImagesByMainProductId(command.mainProductId());
+
+		List<RatingCountQuery> reviewRatingCount = reviewRepository.getReviewRatingCountByMainProductId(
+			command.mainProductId());
+
+		return ListReviewResult.from(reviews, totalImageCount, reviewRatingCount);
+	}
+
+	@Override
+	@Transactional
+	public void createReviews(CreateReviewsCommand command) {
+		List<String> existingReviewIds = reviewRepository.existsPlatformReviewIds(command.getPlatformReviewIds(),
+			command.platformType());
+
+		List<Review> newReviews = command.toReviews().stream()
+			.filter(review -> !existingReviewIds.contains(review.getPlatformReviewId()))
+			.toList();
+
+		List<Review> savedReviews = reviewRepository.saveAll(newReviews);
+
+		if (savedReviews.isEmpty()) {
+			log.info("신규 리뷰 없음 → 이벤트 발행 스킵 (mainProductId={}, platform={})", command.mainProductId(),
+				command.platformType());
+			return;
+		}
+
+		reviewEventProducer.publishReviewCreatedEvents(
+			ReviewCreatedMessage.from(command.mainProductId(), command.platformType(), savedReviews));
+	}
+}

@@ -1,0 +1,4 @@
+psycopg2-binary
+gensim
+kafka-python
+python-dateutil

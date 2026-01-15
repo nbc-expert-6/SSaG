@@ -1,0 +1,81 @@
+server:
+  http_listen_port: 3200
+  log_level: info
+
+distributor:
+  receivers:
+    otlp:
+      protocols:
+        http:
+          endpoint: 0.0.0.0:4318
+        grpc:
+          endpoint: 0.0.0.0:4317
+
+ingester:
+  trace_idle_period: 10s
+  max_block_bytes: 1_048_576
+  max_block_duration: 5m
+
+compactor:
+  compaction:
+    compaction_window: 1h
+    max_compaction_objects: 1000000
+    block_retention: 24h
+    compacted_block_retention: 1h
+
+storage:
+  trace:
+    backend: local
+    block:
+      bloom_filter_false_positive: .05
+      v2_encoding: snappy
+    wal:
+      path: /tmp/tempo/wal
+    local:
+      path: /tmp/tempo/blocks
+
+query_frontend:
+  search:
+    duration_slo: 5s
+    throughput_bytes_slo: 1_073_741_824
+  trace_by_id:
+    duration_slo: 5s
+
+metrics_generator:
+  registry:
+    external_labels:
+      source: tempo
+      cluster: ssag
+
+  storage:
+    path: /tmp/tempo/generator/wal
+    remote_write:
+      - url: http://prometheus:9090/api/v1/write
+        send_exemplars: true
+
+  traces_storage:
+    path: /tmp/tempo/generator/traces
+
+  processor:
+    service_graphs:
+      dimensions:
+        - service.name
+        - http.method
+        - http.target
+        - http.status_code
+      wait: 10s
+      max_items: 10000
+
+    span_metrics:
+      dimensions:
+        - service.name
+        - span.name
+        - http.method
+        - http.target
+        - http.status_code
+      histogram_buckets: [0.1, 0.5, 1.0, 2.0, 5.0, 10.0, 30.0]
+
+overrides:
+  metrics_generator_processors:
+    - service-graphs
+    - span-metrics

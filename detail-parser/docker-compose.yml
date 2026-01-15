@@ -1,0 +1,44 @@
+services:
+  auction-detail-parser:
+    image: auction-detail-parser:latest
+    container_name: auction-detail-parser
+    env_file:
+      - .env
+    networks:
+      - infra
+    tmpfs:
+      - /tmp:exec
+
+  coupang-detail-parser:
+    image: coupang-detail-parser:latest
+    container_name: coupang-detail-parser
+    env_file:
+      - .env
+    networks:
+      - infra
+    tmpfs:
+      - /tmp:exec
+
+  elevenst-detail-parser:
+    image: elevenst-detail-parser:latest
+    container_name: elevenst-detail-parser
+    env_file:
+      - .env
+    networks:
+      - infra
+    tmpfs:
+      - /tmp:exec
+
+  gmarket-detail-parser:
+    image: gmarket-detail-parser:latest
+    container_name: gmarket-detail-parser
+    env_file:
+      - .env
+    networks:
+      - infra
+    tmpfs:
+      - /tmp:exec
+
+networks:
+  infra:
+    external: true

@@ -1,0 +1,14 @@
+spring:
+  application:
+    name: analysis-service
+
+  profiles:
+    include:
+      - kafka
+      - elasticsearch
+      - redis
+      - actuator
+
+    active: dev
+server:
+  port: 8080

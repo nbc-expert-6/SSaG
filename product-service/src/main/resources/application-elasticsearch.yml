@@ -1,0 +1,61 @@
+spring:
+  config:
+    activate:
+      on-profile: test
+  elasticsearch:
+    uris: http://localhost:9200
+    connection-timeout: 5s
+    socket-timeout: 30s
+  cloud:
+    config:
+      enabled: false
+    discovery:
+      enabled: false
+
+logging:
+  level:
+    org.springframework.data.elasticsearch: debug
+
+---
+spring:
+  config:
+    activate:
+      on-profile: local
+  elasticsearch:
+    uris: http://localhost:9200
+    connection-timeout: 5s
+    socket-timeout: 60s
+  cloud:
+    config:
+      enabled: false
+    discovery:
+      enabled: false
+
+logging:
+  level:
+    org.springframework.data.elasticsearch: debug
+
+---
+spring:
+  config:
+    activate:
+      on-profile: dev
+  data:
+    elasticsearch:
+      repositories:
+        enabled: true
+  elasticsearch:
+    uris: ${ES_HOST}
+    username: ${ES_USERNAME}
+    password: ${ES_PASSWORD}
+    connection-timeout: 5s
+    socket-timeout: 60s
+  cloud:
+    config:
+      enabled: false
+    discovery:
+      enabled: false
+
+logging:
+  level:
+    org.springframework.data.elasticsearch: debug

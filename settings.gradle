@@ -5,3 +5,8 @@ pluginManagement {
     }
 }
 rootProject.name = 'ssag'
+include 'detail-parser'
+include 'product-service'
+include 'recommend-service'
+include 'url-parser'
+include 'analysis-service'

@@ -1,0 +1,38 @@
+spring:
+  config:
+    activate:
+      on-profile: test
+  data:
+    elasticsearch:
+      host: localhost
+      port: 9200
+
+---
+spring:
+  config:
+    activate:
+      on-profile: docker
+  elasticsearch:
+    uris: http://elasticsearch:9200
+    username: elasticsearch
+    password: qwer1234!
+
+etl:
+  elasticsearch:
+    host: http://elasticsearch:9200
+    index: user_events
+
+---
+spring:
+  config:
+    activate:
+      on-profile: dev
+  elasticsearch:
+    uris: ${ES_HOST}
+    username: ${ES_USERNAME}
+    password: ${ES_PASSWORD}
+
+etl:
+  elasticsearch:
+    host: ${ES_HOST}
+    index: user_events

@@ -1,0 +1,13 @@
+# Selenium 기반 크롤링
+selenium
+undetected-chromedriver
+
+# 메시지 큐 / 스트리밍
+kafka-python
+
+# 환경변수 주입
+python-dotenv
+
+# 모니터링
+prometheus-client
+structlog

@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>상품 상세 - SSaGnawa</title>
+    <link rel="stylesheet" href="/css/product-detail.css">
+</head>
+<body>
+<!-- 헤더 -->
+<header class="header">
+    <div class="header-container">
+        <div class="logo" onclick="location.href='/products'">SSaGnawa</div>
+        <div class="search-container">
+            <input type="text" class="search-input" id="searchInput" placeholder="검색어를 입력하세요">
+            <button class="search-btn" onclick="searchProducts()">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="11" cy="11" r="8"/>
+                    <path d="m21 21-4.35-4.35"/>
+                </svg>
+            </button>
+        </div>
+    </div>
+</header>
+
+<!-- 메인 컨텐츠 -->
+<div class="main-container" id="productDetail">
+    <!-- 브레드크럼 -->
+    <div class="breadcrumb" id="breadcrumb">
+        <a href="/products">홈</a> &gt; <span id="categoryPath"></span>
+    </div>
+
+    <!-- 상품 정보 섹션 -->
+    <div class="product-section">
+        <!-- 왼쪽: 이미지 -->
+        <div class="product-image-section">
+            <div class="main-image-wrap">
+                <img id="mainImage" src="" alt="" class="main-image" onerror="handleImageError(this)">
+            </div>
+        </div>
+
+        <!-- 중간: 가격 정보 -->
+        <div class="product-info-section">
+            <div class="product-header">
+                <span class="platform-badge" id="platformBadge">맨투맨</span>
+                <h1 class="product-name" id="productName"></h1>
+            </div>
+
+            <div class="price-section">
+                <div class="lowest-price-box">
+                    <span class="label">최저가</span>
+                    <span class="price" id="lowestPrice"></span>
+                    <button class="buy-btn" id="buyBtn">최저가 구매하기</button>
+                </div>
+
+                <div class="shopping-mall-label">쇼핑몰별 최저가</div>
+
+                <!-- 쇼핑몰 가격 테이블 -->
+                <div class="price-table" id="priceTable">
+                    <!-- 동적으로 생성 -->
+                </div>
+            </div>
+        </div>
+
+        <!-- 오른쪽: 리뷰 요약 & 추천 -->
+        <div class="product-side-section">
+            <!-- 상품평 요약 -->
+            <div class="review-summary-box">
+                <div class="summary-title">상품평</div>
+                <div class="rating-score">
+                    <span class="score" id="avgRating">0</span>
+                    <div class="stars" id="avgStars"></div>
+                </div>
+                <div class="review-count" id="reviewCount">(0)</div>
+
+                <!-- 평점 분포 -->
+                <div class="rating-distribution" id="ratingDistribution">
+                    <!-- 동적으로 생성 -->
+                </div>
+            </div>
+
+            <!-- 다른 상품 추천 -->
+            <div class="recommend-box">
+                <div class="recommend-title">다른 고객이 함께 본 상품</div>
+                <div class="recommend-list" id="recommendList">
+                    <!-- 동적으로 생성 -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 탭 섹션 -->
+    <div class="tab-section">
+        <div class="tab-menu">
+            <button class="tab-btn active" data-tab="price">가격비교 <span id="priceCompareCount"></span></button>
+            <button class="tab-btn" data-tab="detail">상품 상세정보</button>
+            <button class="tab-btn" data-tab="review">의견/리뷰 <span id="reviewTabCount"></span></button>
+        </div>
+
+        <!-- 가격비교 탭 내용 -->
+        <div class="tab-content active" id="priceTab">
+            <div class="online-shops">
+                <h3>오프라켓</h3>
+                <div class="shop-list" id="onlineShopList">
+                    <!-- 동적으로 생성 -->
+                </div>
+            </div>
+        </div>
+
+        <!-- 상품 상세정보 탭 -->
+        <div class="tab-content" id="detailTab">
+            <div class="detail-content">
+                <p>상품 상세 정보가 여기에 표시됩니다.</p>
+            </div>
+        </div>
+
+        <!-- 리뷰 탭 내용 -->
+        <div class="tab-content" id="reviewTab">
+            <!-- 리뷰 필터 -->
+            <div class="review-filter">
+                <button class="filter-btn active" data-filter="all">전체</button>
+                <button class="filter-btn" data-filter="photo">포토 리뷰만 보기</button>
+                <div class="review-sort">
+                    <select id="reviewSort" onchange="changeReviewSort()">
+                        <option value="latest">최신순</option>
+                        <option value="rating-high">평점 높은순</option>
+                        <option value="rating-low">평점 낮은순</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- 리뷰 리스트 -->
+            <div class="review-list" id="reviewList">
+                <!-- 동적으로 생성 -->
+            </div>
+
+            <!-- 페이지네이션 -->
+            <div class="pagination" id="reviewPagination">
+                <!-- 동적으로 생성 -->
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="/js/product-detail.js"></script>
+</body>
+</html>

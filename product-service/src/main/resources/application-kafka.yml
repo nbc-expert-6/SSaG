@@ -1,0 +1,60 @@
+spring:
+  config:
+    activate:
+      on-profile: test
+  kafka:
+    bootstrap-servers: localhost:29092
+    consumer:
+      bootstrap-servers: ${SPRING_KAFKA_BOOTSTRAP_SERVERS:localhost:29092}
+      group-id: product
+      auto-offset-reset: earliest
+      enable-auto-commit: false
+    producer:
+      bootstrap-servers: ${SPRING_KAFKA_BOOTSTRAP_SERVERS:localhost:29092}
+
+    listener:
+      ack-mode: manual
+      concurrency: 3
+---
+
+spring:
+  config:
+    activate:
+      on-profile: local
+  kafka:
+    consumer:
+      bootstrap-servers: localhost:29092
+      group-id: product
+      auto-offset-reset: earliest
+      enable-auto-commit: false
+
+    producer:
+      bootstrap-servers: localhost:29092
+    listener:
+      ack-mode: manual
+      concurrency: 3
+      observation-enabled: true
+
+    template:
+      observation-enabled: true
+    bootstrap-servers: localhost:29092
+
+---
+
+spring:
+  config:
+    activate:
+      on-profile: dev
+  kafka:
+    consumer:
+      bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS}
+      group-id: product
+      auto-offset-reset: earliest
+      enable-auto-commit: false
+    producer:
+      bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS}
+
+    listener:
+      ack-mode: record
+      concurrency: 3
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS}

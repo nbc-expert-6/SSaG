@@ -1,0 +1,15 @@
+spring:
+  application:
+    name: recommend-service
+
+  profiles:
+    include:
+      - datasource
+      - redis
+      - kafka
+      - service
+      - actuator
+    active: dev
+server:
+  port: 8080
+
